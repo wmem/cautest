@@ -285,8 +285,21 @@ export async function startUml(name: string, image: UmlImageArtifact, environmen
   child.once("exit", (code, signal) => control.fail(new CautestError(`UML 已退出: code=${code}, signal=${signal}`, { code: "transport_error" })));
   const resource = { child, control, stdout, stderr, buildId: image.buildId } satisfies UmlRuntimeResource;
   context.state.set(`uml:${name}`, resource);
-  const ready = await Promise.race([control.waitReady(environment.machine?.readyTimeoutMs ?? 30_000), once(child, "exit").then(([code, signal]) => { throw new CautestError(`UML 在 Ready 前退出: code=${code}, signal=${signal}\n${Buffer.concat(stderr).toString("utf8")}`, { code: "provision_error" }); })]);
-  if (ready.buildId !== image.buildId) throw new CautestError(`UML Catalog Build ID 不匹配: expected=${image.buildId}, actual=${ready.buildId}`, { code: "target_error" });
+  context.resources.publish({ kind: "uml", name, state: "starting", handle: resource, metadata: { buildId: image.buildId, kernelPath: image.kernelPath, rootfsPath: image.rootfsPath, ...(coverageDir === undefined ? {} : { coverageDir }) } });
+  context.defer(async () => {
+    if (child.exitCode === null) child.kill("SIGTERM");
+    await Promise.race([once(child, "exit"), new Promise((resolve) => setTimeout(resolve, 500))]);
+    if (child.exitCode === null) child.kill("SIGKILL");
+    await control.close().catch(() => {});
+  }, `stop-uml:${name}`);
+  try {
+    const ready = await Promise.race([control.waitReady(environment.machine?.readyTimeoutMs ?? 30_000), once(child, "exit").then(([code, signal]) => { throw new CautestError(`UML 在 Ready 前退出: code=${code}, signal=${signal}\n${Buffer.concat(stderr).toString("utf8")}`, { code: "provision_error" }); })]);
+    if (ready.buildId !== image.buildId) throw new CautestError(`UML Catalog Build ID 不匹配: expected=${image.buildId}, actual=${ready.buildId}`, { code: "target_error" });
+    context.resources.ready("uml", name);
+  } catch (error) {
+    context.resources.fail("uml", name, { message: error instanceof Error ? error.message : String(error) });
+    throw error;
+  }
   return resource;
 }
 
@@ -310,6 +323,10 @@ export async function collectUml(name: string, context: StepExecutionContext): P
   await mkdir(context.project.resultDir, { recursive: true });
   const consolePath = path.join(context.project.resultDir, `${name}-console.log`); const errorPath = path.join(context.project.resultDir, `${name}-host-stderr.log`);
   await Promise.all([writeFile(consolePath, Buffer.concat(resource.stdout)), writeFile(errorPath, Buffer.concat(resource.stderr))]);
+  if (!context.artifacts.has("log", `${name}-console`)) context.artifacts.publish({ kind: "log", name: `${name}-console`, path: consolePath, metadata: { source: "uml-console" } });
+  if (!context.artifacts.has("log", `${name}-host-stderr`)) context.artifacts.publish({ kind: "log", name: `${name}-host-stderr`, path: errorPath, metadata: { source: "uml-host-stderr" } });
   await resource.control.close().catch(() => {});
+  const lifecycle = context.resources.get("uml", name);
+  if (lifecycle.state !== "closed") context.resources.close("uml", name);
   return [{ code: "uml_logs", message: consolePath }, { code: "uml_host_stderr", message: errorPath }];
 }

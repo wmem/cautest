@@ -796,31 +796,36 @@
       "kind": "test-file",
       "key": "tests/kernel/build-module.sh",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "由 buildIsolatedKernelModule 和 test/kernel-module.test.js 取代，自动校验全量 Manifest"
     },
     {
       "kind": "test-file",
       "key": "tests/kernel/module/Makefile",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "kernelCTestJob 在专属 Work 目录自动生成 Kbuild/Makefile"
     },
     {
       "kind": "test-file",
       "key": "tests/kernel/module/test_cases.c",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移为 test/fixtures/kernel/smoke_test.c，并由 test:uml 在真实 UML 执行"
     },
     {
       "kind": "test-file",
       "key": "tests/kernel/module/test_registry.c",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "Registry、module_init/module_exit 和 MODULE_LICENSE 由 kernelCTestJob 自动生成"
     },
     {
       "kind": "test-file",
       "key": "tests/kernel/run-tests.sh",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "模型测试纳入 pnpm test:c，真实链路由 pnpm test:uml 执行"
     },
     {
       "kind": "test-file",
@@ -877,25 +882,29 @@
       "kind": "test-file",
       "key": "tests/probe/build-kernel-modules.sh",
       "area": "driver-probe",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "driverAbiCTestJob 自动隔离构建 Probe 和 Driver；已用真实 UML/Driver ABI 链路验证"
     },
     {
       "kind": "test-file",
       "key": "tests/probe/driver-preset.test.js",
       "area": "driver-probe",
-      "status": "pending"
+      "status": "implemented",
+      "note": "test/driver.test.js 覆盖唯一 Schema、自动 Guest 和缓存，真实 Probe 链路已验证"
     },
     {
       "kind": "test-file",
       "key": "tests/probe/guest_entry.c",
       "area": "driver-probe",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "buildDriverGuestCTest 根据 Build ID 自动生成入口"
     },
     {
       "kind": "test-file",
       "key": "tests/probe/guest_registry.c",
       "area": "driver-probe",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "buildDriverGuestCTest 根据 suites 自动生成 Registry"
     },
     {
       "kind": "test-file",
@@ -957,37 +966,43 @@
       "kind": "test-file",
       "key": "tests/uml/config/busybox.config",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "BusyBox 必需项由 buildBusyBox 内建，项目差异通过 environment.busybox.configFragments 追加"
     },
     {
       "kind": "test-file",
       "key": "tests/uml/guest-helper.c",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "implemented",
+      "note": "test/uml.test.js 覆盖 Guest Program 独立缓存与 Rootfs Catalog 安装"
     },
     {
       "kind": "test-file",
       "key": "tests/uml/out-of-tree-build.test.js",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/kernel-build.test.js，覆盖共享源码并发与源码变更指纹"
     },
     {
       "kind": "test-file",
       "key": "tests/uml/run-integration.mjs",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移为 test/integration/uml-smoke.mjs 和 pnpm test:uml"
     },
     {
       "kind": "test-file",
       "key": "tests/uml/run.sh",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "统一由 pnpm test:uml 调用构建后的 V2 集成脚本"
     },
     {
       "kind": "test-file",
       "key": "tests/uml/uml-workflow.test.js",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "implemented",
+      "note": "test/kernel.test.js、test/uml.test.js 覆盖展开、Control、Resource、日志和 Rootfs"
     },
     {
       "kind": "test-file",

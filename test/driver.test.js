@@ -11,7 +11,7 @@ import { buildDriverGuestCTest } from "../dist/uml/runtime.js";
 test("Driver ABI Job 使用唯一 Schema 展开 Driver、Guest 和 UML Workflow", () => {
   const environment = umlKernelEnvironment({ kernel: { sourceDir: "linux" }, busybox: { sourceDir: "busybox" } });
   const job = driverAbiCTestJobFactory({ environment })({ id: "integration.driver.demo", drivers: [{ name: "demo", sourceDir: "driver", output: "demo.ko" }], guest: { tests: ["test/driver_test.c"] } });
-  assert.deepEqual(planConfig(testConfig({ jobs: [job] }))[0].workflow.map((step) => step.kind), ["driverKernelEnvironmentBuild", "kernelModuleBuild", "driverGuestCTestBuild", "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs"]);
+  assert.deepEqual(planConfig(testConfig({ jobs: [job] }))[0].workflow.map((step) => step.kind), ["kernelBuild", "busyboxBuild", "kernelModuleBuild", "driverGuestCTestBuild", "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs"]);
 });
 
 test("Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3", async () => {
