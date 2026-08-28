@@ -21,7 +21,7 @@ export async function doctorJobs(jobs: readonly TestJob[], configDir: string): P
   for (const job of jobs) {
     const builtModules = new Set<string>();
     for (const step of job.workflow) {
-      for (const field of ["tests", "sources", "headers", "files"]) await checkPatterns(job, step, field, configDir, issues);
+      for (const field of ["tests", "sources", "headers", "files", "inputs", "extraSymbols"]) await checkPatterns(job, step, field, configDir, issues);
       const file = step.details.file;
       if (typeof file === "string" && !await exists(path.resolve(configDir, file))) issues.push({ code: "CT-DOCTOR-INPUT-002", severity: "error", jobId: job.id, step: step.kind, message: `文件不存在: ${file}`, hint: "修正配置文件路径" });
       const sourceDir = step.details.sourceDir;
@@ -31,6 +31,18 @@ export async function doctorJobs(jobs: readonly TestJob[], configDir: string): P
         try { directoryValid = (await stat(directory)).isDirectory(); } catch { /* issue below */ }
         if (!directoryValid) issues.push({ code: "CT-DOCTOR-KMOD-001", severity: "error", jobId: job.id, step: step.kind, message: `sourceDir 不存在或不是目录: ${sourceDir}`, hint: "修正 Module/Kernel/BusyBox sourceDir" });
         else if (step.kind === "kernelModuleBuild" && !await exists(path.join(directory, "Makefile")) && !await exists(path.join(directory, "Kbuild"))) issues.push({ code: "CT-DOCTOR-KMOD-002", severity: "error", jobId: job.id, step: step.kind, message: `Kernel Module 缺少 Makefile/Kbuild: ${sourceDir}`, hint: "添加 Kbuild 或使用自动生成 Kernel Test Module" });
+      }
+      for (const [kind, value] of [["Kernel", step.details.kernel], ["BusyBox", step.details.busybox]] as const) {
+        if (typeof value !== "object" || value === null || !("sourceDir" in value) || typeof value.sourceDir !== "string") continue;
+        const directory = path.resolve(configDir, value.sourceDir);
+        let valid = false;
+        try { valid = (await stat(directory)).isDirectory(); } catch { /* issue below */ }
+        if (!valid) issues.push({ code: "CT-DOCTOR-ENV-001", severity: "error", jobId: job.id, step: step.kind, message: `${kind} sourceDir 不存在或不是目录: ${value.sourceDir}`, hint: `修正公共 UML Environment 的 ${kind.toLowerCase()}.sourceDir` });
+        else if (!await exists(path.join(directory, "Makefile"))) issues.push({ code: "CT-DOCTOR-ENV-002", severity: "error", jobId: job.id, step: step.kind, message: `${kind} 源码目录缺少 Makefile: ${value.sourceDir}`, hint: `确认 ${kind} sourceDir 指向源码根目录` });
+      }
+      for (const inputRoot of patterns(step.details.inputRoots)) {
+        try { if (!(await stat(path.resolve(configDir, inputRoot))).isDirectory()) throw new Error(); }
+        catch { issues.push({ code: "CT-DOCTOR-KMOD-005", severity: "error", jobId: job.id, step: step.kind, message: `inputRoots 不存在或不是目录: ${inputRoot}`, hint: "修正 Kernel Module inputRoots" }); }
       }
       if (step.kind === "kernelModuleBuild") {
         const output = step.details.output;

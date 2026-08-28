@@ -8,11 +8,15 @@ import { testJob } from "../config/define.js";
 import { buildIsolatedKernelModule, type KernelModuleArtifact } from "../kernel/module-build.js";
 import { CautestError } from "../model/error.js";
 import { runCommand } from "../runtime/process.js";
+import { buildBusyBox, buildGuestProgram, buildRootfs, collectUml, mergeConfigText, runUmlEndpoint, sourceTreeIdentity, startUml, type BusyBoxArtifact, type UmlImageArtifact } from "../uml/runtime.js";
+import type { UmlRuntimeResource } from "../uml/control.js";
 import { defineStep } from "../workflow/step.js";
 
 const ENVIRONMENT = Symbol.for("@cautest/config/uml-kernel-environment");
 const environments = new WeakMap<UmlKernelEnvironment, Readonly<UmlKernelEnvironmentInput>>();
 const kitRoot = fileURLToPath(new URL("../../assets/cautest-c", import.meta.url));
+const requiredKernelConfig = fileURLToPath(new URL("../../assets/kernel-config/uml-required.config", import.meta.url));
+const coverageKernelConfig = fileURLToPath(new URL("../../assets/kernel-config/uml-coverage.config", import.meta.url));
 
 type InternalEnvironment = UmlKernelEnvironment & { readonly [ENVIRONMENT]: true };
 
@@ -20,7 +24,8 @@ function object(value: unknown, label: string): asserts value is Record<string, 
   if (typeof value !== "object" || value === null || Array.isArray(value)) throw new CautestError(`${label} 必须是对象`, { code: "config_error" });
 }
 
-function environmentValue(value: UmlKernelEnvironment): Readonly<UmlKernelEnvironmentInput> {
+/** @internal */
+export function environmentValue(value: UmlKernelEnvironment): Readonly<UmlKernelEnvironmentInput> {
   const result = environments.get(value);
   if (result === undefined) throw new CautestError("environment 必须由 umlKernelEnvironment() 创建", { code: "config_error" });
   return result;
@@ -49,20 +54,37 @@ export function umlKernelEnvironment(input: UmlKernelEnvironmentInput): UmlKerne
 function safe(value: string): string { return value.replace(/[^A-Za-z0-9_]/gu, "_"); }
 function unique(values: readonly string[]): readonly string[] { return [...new Set(values)]; }
 
-async function buildKernel(environment: Readonly<UmlKernelEnvironmentInput>, context: Parameters<Parameters<typeof defineStep>[0]["execute"]>[0], name: string): Promise<string> {
+/** @internal */
+export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInput>, context: Parameters<Parameters<typeof defineStep>[0]["execute"]>[0], name: string, coverage = false): Promise<string> {
   const input = environment.kernel;
   const source = path.resolve(context.project.configDir, input.sourceDir);
-  const identity = createHash("sha256").update(JSON.stringify({ input, name })).digest("hex");
-  const output = path.join(context.project.cacheDir, "kernel", identity);
+  const fragments = input.configFragments === undefined ? [] : await expandFilePatterns(input.configFragments, { baseDir: context.project.configDir, label: "kernel.configFragments" });
+  const make = input.make ?? "make";
+  const [sourceIdentity, makeIdentity, userFragmentContents, requiredContents, coverageContents] = await Promise.all([
+    sourceTreeIdentity(source, context),
+    runCommand({ program: make, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
+    Promise.all(fragments.map((item) => readFile(path.join(context.project.configDir, item)))),
+    readFile(requiredKernelConfig),
+    coverage ? readFile(coverageKernelConfig) : Promise.resolve(Buffer.alloc(0)),
+  ]);
+  const fragmentContents = [...userFragmentContents, requiredContents, ...(coverage ? [coverageContents] : [])];
+  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, ({ ...process.env, ...input.env })[key] ?? null]));
+  const identity = createHash("sha256").update(JSON.stringify({ schema: 2, input, sourceIdentity, makeIdentity: makeIdentity.stdout, fingerprintEnvironment })).update(Buffer.concat(fragmentContents)).digest("hex");
+  const kernelRoot = path.resolve(context.project.configDir, input.cache?.enabled === false ? context.project.workDir : (input.cache?.directory ?? context.project.cacheDir));
+  const output = path.join(kernelRoot, "kernel", identity);
   const marker = path.join(output, input.target ?? "linux");
-  try { await readFile(marker); return output; } catch { /* build */ }
+  try { await readFile(marker); if (input.prepareModules !== false) await readFile(path.join(output, "Module.symvers")); return output; } catch { /* build */ }
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
-  const make = input.make ?? "make";
   const base = ["-C", source, `O=${output}`, `ARCH=${input.arch ?? "um"}`, ...(input.crossCompile === undefined ? [] : [`CROSS_COMPILE=${input.crossCompile}`])];
-  for (const args of [[...base, input.configTarget ?? "x86_64_defconfig"], [...base, `-j${input.jobs ?? 4}`, ...(input.makeArgs ?? []), input.target ?? "linux"], ...(input.prepareModules === false ? [] : [[...base, `-j${input.jobs ?? 4}`, "modules_prepare"]])]) {
+  const commands = [[...base, input.configTarget ?? "x86_64_defconfig"]];
+  if (fragmentContents.length > 0) commands.push([...base, "olddefconfig"]);
+  commands.push([...base, `-j${input.jobs ?? 4}`, ...(input.makeArgs ?? []), input.target ?? "linux"]);
+  if (input.prepareModules !== false) commands.push([...base, `-j${input.jobs ?? 4}`, "modules"]);
+  for (const [index, args] of commands.entries()) {
     const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: { ...process.env, ...input.env }, signal: context.signal, onOutput: context.output });
     if (result.exitCode !== 0) throw new CautestError(`Kernel 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
+    if (index === 0 && fragmentContents.length > 0) await writeFile(path.join(output, ".config"), mergeConfigText(await readFile(path.join(output, ".config"), "utf8"), Buffer.concat(fragmentContents).toString("utf8")));
   }
   return output;
 }
@@ -97,16 +119,17 @@ export function kernelCTestJob(input: KernelCTestJobInput): TestJob {
   const environment = environmentValue(input.environment);
   const name = safe(input.id);
   const moduleDefaults = environment.moduleDefaults ?? {};
-  const kernel = defineStep({ kind: "kernelBuild", name, phase: "build", details: { ...environment.kernel }, ...(environment.kernel.timeoutMs === undefined ? {} : { timeoutMs: environment.kernel.timeoutMs }), async execute(context) { const output = await buildKernel(environment, context, name); context.state.set("kernelOutput", output); return { diagnostics: [{ code: "kernel_ready", message: output }] }; } });
-  const busybox = defineStep({ kind: "busyboxBuild", name, phase: "build", details: { ...environment.busybox }, ...(environment.busybox.timeoutMs === undefined ? {} : { timeoutMs: environment.busybox.timeoutMs }), execute() { return { diagnostics: [{ code: "busybox_deferred", message: environment.busybox.sourceDir }] }; } });
+  const kernel = defineStep({ kind: "kernelBuild", name, phase: "build", details: { ...environment.kernel }, ...(environment.kernel.timeoutMs === undefined ? {} : { timeoutMs: environment.kernel.timeoutMs }), async execute(context) { const output = await buildKernel(environment, context, name, input.coverage !== undefined); context.state.set("kernelOutput", output); return { diagnostics: [{ code: "kernel_ready", message: output }] }; } });
+  const busybox = defineStep({ kind: "busyboxBuild", name, phase: "build", details: { ...environment.busybox }, ...(environment.busybox.timeoutMs === undefined ? {} : { timeoutMs: environment.busybox.timeoutMs }), async execute(context) { const artifact = await buildBusyBox(environment.busybox, context); context.state.set("busybox", artifact); return { diagnostics: [{ code: artifact.cacheHit ? "cache_hit" : "cache_miss", message: artifact.path }] }; } });
   const runtime = defineStep({ kind: "kernelModuleBuild", name: "cautest_kernel", phase: "build", details: { sourceDir: "assets/cautest-c/kernel/cautest-kernel", output: "cautest_kernel.ko" }, async execute(context) { const kernelOutput = context.state.get("kernelOutput"); if (typeof kernelOutput !== "string") throw new CautestError("Kernel Output 不存在", { code: "build_error" }); const artifact = await buildIsolatedKernelModule({ module: { name: "cautest_kernel", sourceDir: "kernel/cautest-kernel", sandboxRoot: ".", output: "cautest_kernel.ko", ...(moduleDefaults.make === undefined ? {} : { make: moduleDefaults.make }), ...(moduleDefaults.jobs === undefined ? {} : { jobs: moduleDefaults.jobs }), makeVariables: { CAUTEST_KERNEL_MAX_REGISTRIES: environment.runtime?.maxRegistries ?? 16, CAUTEST_KERNEL_EVENT_CAPACITY: environment.runtime?.eventCapacity ?? 128, CAUTEST_KERNEL_WORKSPACE_SIZE: environment.runtime?.workspaceSize ?? 16384 }, ...(moduleDefaults.cache === undefined ? {} : { cache: moduleDefaults.cache }) }, kernelOutput, configDir: kitRoot, cacheDir: path.join(context.project.cacheDir, "kernel-modules"), workDir: path.join(context.project.workDir, "kernel-modules"), arch: environment.kernel.arch ?? "um", ...(environment.kernel.crossCompile === undefined ? {} : { crossCompile: environment.kernel.crossCompile }), signal: context.signal, output: context.output }); context.state.set("module:cautest_kernel", artifact); return { diagnostics: [{ code: artifact.cacheHit ? "cache_hit" : "cache_miss", message: artifact.module }] }; } });
   const extras = (input.extraModules ?? []).map((module) => defineStep({ kind: "kernelModuleBuild", name: module.name, phase: "build", details: { ...module }, ...(module.timeoutMs === undefined ? {} : { timeoutMs: module.timeoutMs }), async execute(context) { const kernelOutput = context.state.get("kernelOutput"); if (typeof kernelOutput !== "string") throw new CautestError("Kernel Output 不存在", { code: "build_error" }); const dependencies = (module.extraModules ?? []).map((dependency) => { const artifact = context.state.get(`module:${dependency}`) as KernelModuleArtifact | undefined; if (artifact === undefined) throw new CautestError(`extraModules 依赖尚未构建: ${dependency}`, { code: "config_error" }); return artifact.symbols; }); const artifact = await buildIsolatedKernelModule({ module, kernelOutput, configDir: context.project.configDir, cacheDir: path.join(context.project.cacheDir, "kernel-modules"), workDir: path.join(context.project.workDir, "kernel-modules"), arch: environment.kernel.arch ?? "um", ...(environment.kernel.crossCompile === undefined ? {} : { crossCompile: environment.kernel.crossCompile }), ...(input.env === undefined ? {} : { env: input.env }), dependencySymbols: dependencies, signal: context.signal, output: context.output }); context.state.set(`module:${module.name}`, artifact); return { diagnostics: [{ code: artifact.cacheHit ? "cache_hit" : "cache_miss", message: artifact.module }] }; } }));
   const testModule = defineStep({ kind: "generatedKernelTestModule", name, phase: "build", details: { tests: input.tests, sources: input.sources ?? [], headers: input.headers ?? [], suites: input.suites ?? [safe(input.id.split(".").at(-1) ?? input.id)] }, ...(input.module?.timeoutMs === undefined ? {} : { timeoutMs: input.module.timeoutMs }), async execute(context) { const kernelOutput = context.state.get("kernelOutput"); const core = context.state.get("module:cautest_kernel") as KernelModuleArtifact | undefined; if (typeof kernelOutput !== "string" || core === undefined) throw new CautestError("Kernel Runtime Artifact 不存在", { code: "build_error" }); const artifact = await generatedModule(input, moduleDefaults, kernelOutput, context, [core.symbols]); context.state.set(`module:${artifact.name}`, artifact); return { diagnostics: [{ code: artifact.cacheHit ? "cache_hit" : "cache_miss", message: artifact.module }] }; } });
-  const rootfs = defineStep({ kind: "umlRootfsBuild", name, phase: "build", details: { overlays: environment.rootfs?.overlays ?? [], modules: ["cautest_kernel", ...(input.extraModules ?? []).map((item) => item.name), input.module?.name ?? name] }, execute() { return { diagnostics: [{ code: "rootfs_plan", message: "Rootfs inputs resolved" }] }; } });
-  const start = defineStep({ kind: "umlStart", name, phase: "provision", details: { ...environment.machine }, ...(environment.machine?.startTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.startTimeoutMs }), execute() { throw new CautestError("当前环境未提供可启动的 UML Image Artifact", { code: "provision_error" }); } });
-  const run = defineStep({ kind: "cTestRun", name, phase: "run", details: { transport: "uml", endpoint: "kernel", selection: input.run ?? {} }, ...(input.run?.stepTimeoutMs === undefined ? {} : { timeoutMs: input.run.stepTimeoutMs }), execute() { throw new CautestError("UML 未启动，无法建立 Kernel CTP3 Session", { code: "transport_error" }); } });
-  const collect = defineStep({ kind: "umlLogs", name, phase: "collect", runWhen: "always", details: {}, ...(environment.machine?.collectTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.collectTimeoutMs }), execute() { return { diagnostics: [] }; } });
-  return testJob({ id: input.id, level: input.level ?? "unit", tags: input.tags ?? [input.level ?? "unit", "kernel", "uml"], workflow: [kernel, busybox, runtime, ...extras, testModule, rootfs, start, run, collect], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
+  const rootfs = defineStep({ kind: "umlRootfsBuild", name, phase: "build", details: { overlays: environment.rootfs?.overlays ?? [], modules: ["cautest_kernel", ...(input.extraModules ?? []).map((item) => item.name), input.module?.name ?? name], guestPrograms: input.guestPrograms?.map((item) => item.name) ?? [], coverage: input.coverage !== undefined }, ...(environment.rootfs?.timeoutMs === undefined ? {} : { timeoutMs: environment.rootfs.timeoutMs }), async execute(context) { const kernelOutput = context.state.get("kernelOutput"); const busyboxArtifact = context.state.get("busybox") as BusyBoxArtifact | undefined; if (typeof kernelOutput !== "string" || busyboxArtifact === undefined) throw new CautestError("Kernel/BusyBox Artifact 不存在", { code: "build_error" }); const moduleNames = ["cautest_kernel", ...(input.extraModules ?? []).map((item) => item.name), input.module?.name ?? name]; const modules = moduleNames.map((item) => { const artifact = context.state.get(`module:${item}`) as KernelModuleArtifact | undefined; if (artifact === undefined) throw new CautestError(`Rootfs Module Artifact 不存在: ${item}`, { code: "build_error" }); return artifact; }); const programs = []; for (const program of input.guestPrograms ?? []) programs.push(await buildGuestProgram(program, context)); const image = await buildRootfs({ name, environment, kernelOutput, busybox: busyboxArtifact, modules, programs, coverage: input.coverage !== undefined }, context); context.state.set(`image:${name}`, image); return { diagnostics: [{ code: "rootfs_ready", message: image.rootfsPath }] }; } });
+  const start = defineStep({ kind: "umlStart", name, phase: "provision", details: { ...environment.machine }, ...(environment.machine?.startTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.startTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("UML Image Artifact 不存在", { code: "provision_error" }); const coverageDir = input.coverage === undefined ? undefined : path.join(context.project.resultDir, "coverage", name, "raw"); const resource = await startUml(name, image, environment, context, coverageDir); return { diagnostics: [{ code: "uml_ready", message: `pid=${resource.child.pid}` }] }; } });
+  const run = defineStep({ kind: "cTestRun", name, phase: "run", details: { transport: "uml", endpoint: "kernel", selection: input.run ?? {} }, ...(input.run?.stepTimeoutMs === undefined ? {} : { timeoutMs: input.run.stepTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("UML Image Artifact 不存在", { code: "transport_error" }); const results = await runUmlEndpoint(name, "kernel", image, input.run ?? {}, context); const cases = results.flatMap((suite) => suite.cases); if (cases.length === 0 && input.policy?.allowEmpty !== true) throw new CautestError("Kernel C Test 没有选中任何 Case", { code: "selection_error" }); return { outcome: cases.some((item) => item.status === "FAIL" || item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: results }; } });
+  const coverage = input.coverage === undefined ? [] : [defineStep({ kind: "kernelCoverage", name, phase: "collect", runWhen: "always", details: { tool: input.coverage.tool ?? "gcov" }, ...(input.coverage.timeoutMs === undefined ? {} : { timeoutMs: input.coverage.timeoutMs }), async execute(context) { const resource = context.state.get(`uml:${name}`) as UmlRuntimeResource | undefined; if (resource === undefined) return { diagnostics: [{ code: "coverage_skipped", message: "UML 未启动" }] }; const response = await resource.control.command("GCOV", (line) => /^GCOV [0-9]+$/u.test(line), 30_000); return { diagnostics: [{ code: "kernel_coverage_raw", message: `${response}: ${path.join(context.project.resultDir, "coverage", name, "raw")}` }] }; } })];
+  const collect = defineStep({ kind: "umlLogs", name, phase: "collect", runWhen: "always", details: {}, ...(environment.machine?.collectTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.collectTimeoutMs }), async execute(context) { return { diagnostics: await collectUml(name, context) }; } });
+  return testJob({ id: input.id, level: input.level ?? "unit", tags: input.tags ?? [input.level ?? "unit", "kernel", "uml"], workflow: [kernel, busybox, runtime, ...extras, testModule, rootfs, start, run, ...coverage, collect], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }
 
 /** 绑定 UML Environment 和公共 Module 默认项。 */

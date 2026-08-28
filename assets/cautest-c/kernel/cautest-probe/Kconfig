@@ -1,0 +1,14 @@
+config CAUTEST
+	bool "Cautest test-only kernel facilities"
+	default n
+	help
+	  只为自动测试内核启用。Production kernel 必须保持关闭；关闭后不会
+	  构建 /dev/cautest、/dev/cautest-probe 或任何驱动 Probe hook。
+
+config CAUTEST_PROBE
+	tristate "Cautest driver boundary probe"
+	depends on CAUTEST
+	default m
+	help
+	  提供 /dev/cautest-probe 和 IRQ-safe 有界事件队列，只记录事实，
+	  不在内核中判断测试 PASS/FAIL。

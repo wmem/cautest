@@ -62,7 +62,7 @@ async function collectFiles(root: string, relative = ""): Promise<string[]> {
 
 async function createPortableTree(root: string, build: BuildInfo): Promise<void> {
   await mkdir(path.join(root, "lib"), { recursive: true });
-  for (const directory of ["config", "doctor", "jobs", "kernel", "model", "protocol", "workflow"]) {
+  for (const directory of ["config", "doctor", "jobs", "kernel", "model", "protocol", "uml", "workflow"]) {
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true });
   }
   await mkdir(path.join(root, "lib/runtime"));
@@ -79,6 +79,7 @@ async function createPortableTree(root: string, build: BuildInfo): Promise<void>
   await cp(path.join(packageRoot, "assets/portable/README.md"), path.join(root, "README.md"));
   await mkdir(path.join(root, "assets"));
   await cp(path.join(packageRoot, "assets/cautest-c"), path.join(root, "assets/cautest-c"), { recursive: true });
+  await cp(path.join(packageRoot, "assets/kernel-config"), path.join(root, "assets/kernel-config"), { recursive: true });
   await chmod(path.join(root, "cautest.js"), 0o755);
   await writeFile(path.join(root, "package.json"), `${JSON.stringify({
     name: "cautest-portable",
