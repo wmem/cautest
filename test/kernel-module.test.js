@@ -54,6 +54,15 @@ test("Kernel Module 只在 Sandbox 构建，完整校验发布 Artifact 并支�
   assert.equal(repaired.cacheHit, false);
   assert.equal((await readFile(repaired.symbols, "utf8")).includes("driver_symbol"), true);
 
+  const covered = await buildIsolatedKernelModule({ ...base, module: { ...module, makeVariables: { CC: "cc", CAUTEST_TEST_COVERAGE: 1 } }, kernelOutput: kernelA, arch: "um" });
+  assert.equal(covered.coverageNotes.length, 1);
+  assert.equal(covered.coverageSources.length, 1);
+  assert.equal(await readFile(covered.coverageNotes[0], "utf8"), "gcov notes\n");
+  await writeFile(covered.coverageNotes[0], "corrupt\n");
+  const repairedCoverage = await buildIsolatedKernelModule({ ...base, module: { ...module, makeVariables: { CC: "cc", CAUTEST_TEST_COVERAGE: 1 } }, kernelOutput: kernelA, arch: "um" });
+  assert.equal(repairedCoverage.cacheHit, false);
+  assert.equal(await readFile(repairedCoverage.coverageNotes[0], "utf8"), "gcov notes\n");
+
   const [archA, archB] = await Promise.all([
     buildIsolatedKernelModule({ ...base, kernelOutput: kernelA, arch: "x86" }),
     buildIsolatedKernelModule({ ...base, kernelOutput: kernelB, arch: "arm64" }),

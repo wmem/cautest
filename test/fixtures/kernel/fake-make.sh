@@ -6,9 +6,11 @@ if [ "$1" = "--version" ]; then
 fi
 
 module_dir=''
+coverage=''
 for argument in "$@"; do
     case "$argument" in
         M=*) module_dir=${argument#M=} ;;
+        CAUTEST_TEST_COVERAGE=1) coverage=1 ;;
     esac
 done
 if [ -z "$module_dir" ]; then
@@ -22,5 +24,8 @@ printf '%s\n' 'sandbox command' > "$module_dir/.driver.o.cmd"
 printf '%s\n' 'sandbox generated' > "$module_dir/driver.mod.c"
 printf '0x1\tdriver_symbol\tdriver\tEXPORT_SYMBOL\n' > "$module_dir/Module.symvers"
 printf '%s\n' 'driver.ko' > "$module_dir/modules.order"
+if [ -n "$coverage" ]; then
+    printf '%s\n' 'gcov notes' > "$module_dir/driver.gcno"
+fi
 mkdir -p "$module_dir/../product"
 printf '%s\n' 'sandbox product object' > "$module_dir/../product/product.o"

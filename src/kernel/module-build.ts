@@ -13,6 +13,9 @@ export interface KernelModuleArtifact {
   readonly module: string;
   readonly symbols: string;
   readonly modulesOrder: string;
+  /** Kbuild 产生并由 Cache Manifest 校验的 GCOV Notes。 */
+  readonly coverageNotes: readonly string[];
+  readonly coverageSources: readonly { readonly path: string; readonly originalPath: string }[];
 }
 
 export interface IsolatedKernelModuleBuildInput {
@@ -31,7 +34,7 @@ export interface IsolatedKernelModuleBuildInput {
 }
 
 interface FileRecord { readonly identity: string; readonly path: string }
-interface OutputRecord { readonly name: "module" | "symbols" | "modulesOrder"; readonly path: string; readonly size: number; readonly sha256: string }
+interface OutputRecord { readonly name: "module" | "symbols" | "modulesOrder" | "coverage" | "coverageSource"; readonly path: string; readonly size: number; readonly sha256: string; readonly originalPath?: string }
 
 function within(parent: string, child: string): boolean {
   const relative = path.relative(parent, child);
@@ -72,13 +75,24 @@ async function outputRecord(root: string, name: OutputRecord["name"], relative: 
 async function validCache(root: string, key: string): Promise<readonly OutputRecord[] | undefined> {
   try {
     const manifest = JSON.parse(await readFile(path.join(root, "manifest.json"), "utf8")) as { schema?: number; key?: string; outputs?: OutputRecord[] };
-    if (manifest.schema !== 2 || manifest.key !== key || !Array.isArray(manifest.outputs) || manifest.outputs.length !== 3) return undefined;
+    if (manifest.schema !== 4 || manifest.key !== key || !Array.isArray(manifest.outputs) || manifest.outputs.length < 3) return undefined;
+    if (!["module", "symbols", "modulesOrder"].every((name) => manifest.outputs!.some((output) => output.name === name))) return undefined;
     for (const output of manifest.outputs) {
       const current = await outputRecord(root, output.name, output.path);
       if (current.size !== output.size || current.sha256 !== output.sha256) return undefined;
     }
     return manifest.outputs;
   } catch { return undefined; }
+}
+
+async function filesWithExtension(root: string, extension: string, relative = ""): Promise<string[]> {
+  const output: string[] = [];
+  for (const entry of await readdir(path.join(root, relative), { withFileTypes: true })) {
+    const child = path.join(relative, entry.name);
+    if (entry.isDirectory()) output.push(...await filesWithExtension(root, extension, child));
+    else if (entry.isFile() && entry.name.endsWith(extension)) output.push(child);
+  }
+  return output.sort();
 }
 
 function compilerCommand(module: KernelModuleInput, environment: NodeJS.ProcessEnv, crossCompile: string): string {
@@ -96,7 +110,7 @@ function makeVariableArguments(values: KernelModuleInput["makeVariables"]): stri
 
 /**
  * 在专属 Sandbox 中执行 External Module Kbuild，源码树永远不会作为 `M=` 传入。
- * Cache 只发布三个下游 Artifact，并逐个校验内容摘要。
+ * Cache 发布 Module、Symbol、Order 和可选 GCOV Notes，并逐个校验内容摘要。
  */
 export async function buildIsolatedKernelModule(input: IsolatedKernelModuleBuildInput): Promise<KernelModuleArtifact> {
   const module = input.module;
@@ -167,12 +181,19 @@ export async function buildIsolatedKernelModule(input: IsolatedKernelModuleBuild
       await copyFile(moduleSource, path.join(publish, path.basename(outputPath)));
       await copyFile(path.join(sandboxModule, "Module.symvers"), path.join(publish, "Module.symvers"));
       await copyFile(path.join(sandboxModule, "modules.order"), path.join(publish, "modules.order"));
+      const notes = await filesWithExtension(sandboxModule, ".gcno");
+      const noteStems = new Set(notes.map((note) => path.basename(note, ".gcno")));
+      const coverageSources = notes.length === 0 ? [] : (await filesWithExtension(sandboxModule, ".c")).filter((source) => noteStems.has(path.basename(source, ".c")));
+      for (const note of notes) { const target = path.join(publish, "coverage", note); await mkdir(path.dirname(target), { recursive: true }); await copyFile(path.join(sandboxModule, note), target); }
+      for (const source of coverageSources) { const target = path.join(publish, "coverage-sources", source); await mkdir(path.dirname(target), { recursive: true }); await copyFile(path.join(sandboxModule, source), target); }
       outputs = Object.freeze([
         await outputRecord(publish, "module", path.basename(outputPath)),
         await outputRecord(publish, "symbols", "Module.symvers"),
         await outputRecord(publish, "modulesOrder", "modules.order"),
+        ...await Promise.all(notes.map((note) => outputRecord(publish, "coverage", path.join("coverage", note)))),
+        ...await Promise.all(coverageSources.map(async (source) => ({ ...await outputRecord(publish, "coverageSource", path.join("coverage-sources", source)), originalPath: path.join(sandboxModule, source) }))),
       ]);
-      await writeFile(path.join(publish, "manifest.json"), `${JSON.stringify({ schema: 2, key, outputs }, null, 2)}\n`);
+      await writeFile(path.join(publish, "manifest.json"), `${JSON.stringify({ schema: 4, key, outputs }, null, 2)}\n`);
       try { await rename(publish, cachePath); }
       catch (cause) { const existing = await validCache(cachePath, key); if (existing === undefined) throw cause; outputs = existing; await rm(publish, { recursive: true, force: true }); }
     } finally {
@@ -180,6 +201,6 @@ export async function buildIsolatedKernelModule(input: IsolatedKernelModuleBuild
       await rm(publish, { recursive: true, force: true });
     }
   }
-  const byName = new Map(outputs.map((output) => [output.name, output.path]));
-  return Object.freeze({ name: module.name, cacheKey: key, cacheHit, module: path.join(cachePath, byName.get("module") ?? ""), symbols: path.join(cachePath, byName.get("symbols") ?? ""), modulesOrder: path.join(cachePath, byName.get("modulesOrder") ?? "") });
+  const byName = new Map(outputs.filter((output) => !["coverage", "coverageSource"].includes(output.name)).map((output) => [output.name, output.path]));
+  return Object.freeze({ name: module.name, cacheKey: key, cacheHit, module: path.join(cachePath, byName.get("module") ?? ""), symbols: path.join(cachePath, byName.get("symbols") ?? ""), modulesOrder: path.join(cachePath, byName.get("modulesOrder") ?? ""), coverageNotes: Object.freeze(outputs.filter((output) => output.name === "coverage").map((output) => path.join(cachePath, output.path))), coverageSources: Object.freeze(outputs.filter((output) => output.name === "coverageSource" && output.originalPath !== undefined).map((output) => Object.freeze({ path: path.join(cachePath, output.path), originalPath: output.originalPath! }))) });
 }

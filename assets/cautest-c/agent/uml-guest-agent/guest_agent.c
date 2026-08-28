@@ -675,8 +675,10 @@ static int export_gcov(int fd)
     char response[32];
     int length;
     if (child == 0) {
-        execl("/bin/busybox", "busybox", "cp", "-a",
-              "/sys/kernel/debug/gcov/.", "/mnt/cautest-coverage/",
+        execl("/bin/busybox", "busybox", "sh", "-c",
+              "cd /sys/kernel/debug/gcov && "
+              "/bin/busybox find . -type f -name '*.gcda' "
+              "-exec /bin/busybox cp --parents '{}' /mnt/cautest-coverage/ ';'",
               (char *)0);
         _exit(127);
     }

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { KernelCTestJobFactoryInput, KernelCTestJobInput, KernelModuleDefaultsInput, KernelModuleInput, TestJob, UmlKernelEnvironment, UmlKernelEnvironmentInput } from "../config/schema/index.js";
@@ -53,6 +53,7 @@ export function umlKernelEnvironment(input: UmlKernelEnvironmentInput): UmlKerne
 
 function safe(value: string): string { return value.replace(/[^A-Za-z0-9_]/gu, "_"); }
 function unique(values: readonly string[]): readonly string[] { return [...new Set(values)]; }
+async function extensionFiles(root: string, extension: string): Promise<string[]> { const output: string[] = []; async function visit(directory: string): Promise<void> { let entries; try { entries = await readdir(directory, { withFileTypes: true }); } catch (error) { if (typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT") return; throw error; } for (const entry of entries) { const location = path.join(directory, entry.name); if (entry.isDirectory()) await visit(location); else if (entry.isFile() && entry.name.endsWith(extension)) output.push(location); } } await visit(root); return output.sort(); }
 
 /** @internal */
 export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInput>, context: Parameters<Parameters<typeof defineStep>[0]["execute"]>[0], name: string, coverage = false): Promise<string> {
@@ -60,16 +61,19 @@ export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInpu
   const source = path.resolve(context.project.configDir, input.sourceDir);
   const fragments = input.configFragments === undefined ? [] : await expandFilePatterns(input.configFragments, { baseDir: context.project.configDir, label: "kernel.configFragments" });
   const make = input.make ?? "make";
-  const [sourceIdentity, makeIdentity, userFragmentContents, requiredContents, coverageContents] = await Promise.all([
+  const compiler = input.env?.CC ?? process.env.CC ?? `${input.crossCompile ?? ""}gcc`;
+  const [sourceIdentity, makeIdentity, compilerIdentity, compilerTarget, userFragmentContents, requiredContents, coverageContents] = await Promise.all([
     sourceTreeIdentity(source, context),
     runCommand({ program: make, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, signal: context.signal }),
     Promise.all(fragments.map((item) => readFile(path.join(context.project.configDir, item)))),
     readFile(requiredKernelConfig),
     coverage ? readFile(coverageKernelConfig) : Promise.resolve(Buffer.alloc(0)),
   ]);
   const fragmentContents = [...userFragmentContents, requiredContents, ...(coverage ? [coverageContents] : [])];
   const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, ({ ...process.env, ...input.env })[key] ?? null]));
-  const identity = createHash("sha256").update(JSON.stringify({ schema: 2, input, sourceIdentity, makeIdentity: makeIdentity.stdout, fingerprintEnvironment })).update(Buffer.concat(fragmentContents)).digest("hex");
+  const identity = createHash("sha256").update(JSON.stringify({ schema: 3, sourceIdentity, makeIdentity: makeIdentity.stdout, compilerIdentity: compilerIdentity.stdout, compilerTarget: compilerTarget.stdout, arch: input.arch ?? "um", crossCompile: input.crossCompile ?? "", configTarget: input.configTarget ?? "x86_64_defconfig", target: input.target ?? "linux", prepareModules: input.prepareModules !== false, makeArgs: input.makeArgs ?? [], env: input.env ?? {}, fingerprintEnvironment })).update(Buffer.concat(fragmentContents)).digest("hex");
   const kernelRoot = path.resolve(context.project.configDir, input.cache?.enabled === false ? context.project.workDir : (input.cache?.directory ?? context.project.cacheDir));
   const output = path.join(kernelRoot, "kernel", identity);
   const marker = path.join(output, input.target ?? "linux");
@@ -109,7 +113,7 @@ async function generatedModule(input: KernelCTestJobInput, defaults: KernelModul
     const includeDirs = unique([...(defaults.includeDirs ?? []), ...(input.module?.includeDirs ?? [])]).map((directory) => `-I${path.resolve(context.project.configDir, directory)}`);
     const defines = { ...(defaults.defines ?? {}), ...(input.module?.defines ?? {}) };
     const flags = [...Object.entries(defines).map(([key, value]) => `-D${key}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`), ...(defaults.cflags ?? []), ...(input.module?.cflags ?? [])];
-    await writeFile(path.join(moduleDir, "Makefile"), `obj-m += ${moduleName}.o\n${moduleName}-y := ${objects.join(" ")}\nccflags-y += -I${path.join(kitRoot, "include")} -I${path.join(kitRoot, "target/linux-kernel/include")} -I$(src)/include ${includeDirs.join(" ")} ${flags.join(" ")}\n`);
+    await writeFile(path.join(moduleDir, "Makefile"), `obj-m += ${moduleName}.o\n${moduleName}-y := ${objects.join(" ")}\n${input.coverage === undefined ? "" : "GCOV_PROFILE := y\n"}ccflags-y += -I${path.join(kitRoot, "include")} -I${path.join(kitRoot, "target/linux-kernel/include")} -I$(src)/include ${includeDirs.join(" ")} ${flags.join(" ")}\n`);
     return await buildIsolatedKernelModule({ module: { name: moduleName, sourceDir: ".", sandboxRoot: ".", output: `${moduleName}.ko`, ...(defaults.make === undefined ? {} : { make: defaults.make }), ...((input.module?.jobs ?? defaults.jobs) === undefined ? {} : { jobs: input.module?.jobs ?? defaults.jobs }), ...(input.module?.makeVariables === undefined ? {} : { makeVariables: input.module.makeVariables }), ...(input.module?.makeArgs === undefined ? {} : { makeArgs: input.module.makeArgs }), ...((input.module?.cache ?? defaults.cache) === undefined ? {} : { cache: input.module?.cache ?? defaults.cache }) }, kernelOutput, configDir: moduleDir, cacheDir: path.join(context.project.cacheDir, "kernel-modules"), workDir: path.join(context.project.workDir, "kernel-modules"), arch: environmentValue(input.environment).kernel.arch ?? "um", ...(environmentValue(input.environment).kernel.crossCompile === undefined ? {} : { crossCompile: environmentValue(input.environment).kernel.crossCompile }), ...(input.env === undefined ? {} : { env: input.env }), dependencySymbols: dependencies, signal: context.signal, output: context.output });
   } finally { await rm(root, { recursive: true, force: true }); }
 }
@@ -127,7 +131,33 @@ export function kernelCTestJob(input: KernelCTestJobInput): TestJob {
   const rootfs = defineStep({ kind: "umlRootfsBuild", name, phase: "build", details: { overlays: environment.rootfs?.overlays ?? [], modules: ["cautest_kernel", ...(input.extraModules ?? []).map((item) => item.name), input.module?.name ?? name], guestPrograms: input.guestPrograms?.map((item) => item.name) ?? [], coverage: input.coverage !== undefined }, ...(environment.rootfs?.timeoutMs === undefined ? {} : { timeoutMs: environment.rootfs.timeoutMs }), async execute(context) { const kernelOutput = context.state.get("kernelOutput"); const busyboxArtifact = context.state.get("busybox") as BusyBoxArtifact | undefined; if (typeof kernelOutput !== "string" || busyboxArtifact === undefined) throw new CautestError("Kernel/BusyBox Artifact 不存在", { code: "build_error" }); const moduleNames = ["cautest_kernel", ...(input.extraModules ?? []).map((item) => item.name), input.module?.name ?? name]; const modules = moduleNames.map((item) => { const artifact = context.state.get(`module:${item}`) as KernelModuleArtifact | undefined; if (artifact === undefined) throw new CautestError(`Rootfs Module Artifact 不存在: ${item}`, { code: "build_error" }); return artifact; }); const programs = []; for (const program of input.guestPrograms ?? []) programs.push(await buildGuestProgram(program, context)); const image = await buildRootfs({ name, environment, kernelOutput, busybox: busyboxArtifact, modules, programs, coverage: input.coverage !== undefined }, context); context.state.set(`image:${name}`, image); return { diagnostics: [{ code: "rootfs_ready", message: image.rootfsPath }] }; } });
   const start = defineStep({ kind: "umlStart", name, phase: "provision", details: { ...environment.machine }, ...(environment.machine?.startTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.startTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("UML Image Artifact 不存在", { code: "provision_error" }); const coverageDir = input.coverage === undefined ? undefined : path.join(context.project.resultDir, "coverage", name, "raw"); const resource = await startUml(name, image, environment, context, coverageDir); return { diagnostics: [{ code: "uml_ready", message: `pid=${resource.child.pid}` }] }; } });
   const run = defineStep({ kind: "cTestRun", name, phase: "run", details: { transport: "uml", endpoint: "kernel", selection: input.run ?? {} }, ...(input.run?.stepTimeoutMs === undefined ? {} : { timeoutMs: input.run.stepTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("UML Image Artifact 不存在", { code: "transport_error" }); const results = await runUmlEndpoint(name, "kernel", image, input.run ?? {}, context); const cases = results.flatMap((suite) => suite.cases); if (cases.length === 0 && input.policy?.allowEmpty !== true) throw new CautestError("Kernel C Test 没有选中任何 Case", { code: "selection_error" }); return { outcome: cases.some((item) => item.status === "FAIL" || item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: results }; } });
-  const coverage = input.coverage === undefined ? [] : [defineStep({ kind: "kernelCoverage", name, phase: "collect", runWhen: "always", details: { tool: input.coverage.tool ?? "gcov" }, ...(input.coverage.timeoutMs === undefined ? {} : { timeoutMs: input.coverage.timeoutMs }), async execute(context) { const resource = context.state.get(`uml:${name}`) as UmlRuntimeResource | undefined; if (resource === undefined) return { diagnostics: [{ code: "coverage_skipped", message: "UML 未启动" }] }; const response = await resource.control.command("GCOV", (line) => /^GCOV [0-9]+$/u.test(line), 30_000); return { diagnostics: [{ code: "kernel_coverage_raw", message: `${response}: ${path.join(context.project.resultDir, "coverage", name, "raw")}` }] }; } })];
+  const coverage = input.coverage === undefined ? [] : [defineStep({
+    kind: "kernelCoverage", name, phase: "collect", runWhen: "always", details: { tool: input.coverage.tool ?? "gcov" }, ...(input.coverage.timeoutMs === undefined ? {} : { timeoutMs: input.coverage.timeoutMs }),
+    async execute(context) {
+      const resource = context.state.get(`uml:${name}`) as UmlRuntimeResource | undefined;
+      const artifact = context.state.get(`module:${input.module?.name ?? name}`) as KernelModuleArtifact | undefined;
+      if (resource === undefined || artifact === undefined) return { diagnostics: [{ code: "coverage_skipped", message: "UML/Test Module 未准备" }] };
+      const response = await resource.control.command("GCOV", (line) => /^GCOV [0-9]+$/u.test(line), 30_000);
+      if (response !== "GCOV 0") throw new CautestError(`Guest GCOV 导出失败: ${response}`, { code: "target_error" });
+      if (artifact.coverageNotes.length === 0) throw new CautestError("Kernel Module Cache 缺少 .gcno Artifact", { code: "cache_error" });
+      const raw = path.join(context.project.resultDir, "coverage", name, "raw");
+      const data = await extensionFiles(raw, ".gcda");
+      const report = path.join(context.project.resultDir, "coverage", name, "gcov");
+      await rm(report, { recursive: true, force: true }); await mkdir(report, { recursive: true });
+      const stems = new Set(artifact.coverageNotes.map((item) => path.basename(item, ".gcno")));
+      for (const note of artifact.coverageNotes) await copyFile(note, path.join(report, path.basename(note)));
+      for (const item of data.filter((file) => stems.has(path.basename(file, ".gcda")))) await copyFile(item, path.join(report, path.basename(item)));
+      for (const source of artifact.coverageSources) {
+        const relative = path.relative(context.project.workDir, source.originalPath);
+        if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) throw new CautestError("Kernel Coverage Source 路径不属于当前 Work 目录；请清理 Module Cache 后重建", { code: "cache_error" });
+        await mkdir(path.dirname(source.originalPath), { recursive: true }); await copyFile(source.path, source.originalPath);
+      }
+      const result = await runCommand({ program: input.coverage?.tool ?? "gcov", args: ["-b", "-c", ...artifact.coverageNotes.map((item) => path.basename(item))], cwd: report, env: { ...process.env, ...input.env }, signal: context.signal, onOutput: context.output });
+      const reports = await extensionFiles(report, ".gcov");
+      if (result.exitCode !== 0 || reports.length === 0) throw new CautestError(`Kernel GCOV 报告生成失败 (exit ${result.exitCode})`, { code: "build_error" });
+      return { diagnostics: [{ code: "kernel_coverage_collected", message: `${reports.length} reports: ${report}` }] };
+    },
+  })];
   const collect = defineStep({ kind: "umlLogs", name, phase: "collect", runWhen: "always", details: {}, ...(environment.machine?.collectTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.collectTimeoutMs }), async execute(context) { return { diagnostics: await collectUml(name, context) }; } });
   return testJob({ id: input.id, level: input.level ?? "unit", tags: input.tags ?? [input.level ?? "unit", "kernel", "uml"], workflow: [kernel, busybox, runtime, ...extras, testModule, rootfs, start, run, ...coverage, collect], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }

@@ -81,11 +81,15 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   const source = path.resolve(context.project.configDir, input.sourceDir);
   const fragments = input.configFragments === undefined ? [] : await expandFilePatterns(input.configFragments, { baseDir: context.project.configDir, label: "busybox.configFragments" });
   const make = input.make ?? "make";
-  const [identity, version] = await Promise.all([
+  const compiler = input.env?.CC ?? process.env.CC ?? "cc";
+  const [identity, version, compilerVersion, compilerTarget] = await Promise.all([
     sourceTreeIdentity(source, context),
     runCommand({ program: make, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, signal: context.signal }),
   ]);
-  const key = await hashFiles(fragments.map((item) => path.join(context.project.configDir, item)), { schema: 1, identity, version: version.stdout, input });
+  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, ({ ...process.env, ...input.env })[key] ?? null]));
+  const key = await hashFiles(fragments.map((item) => path.join(context.project.configDir, item)), { schema: 2, identity, make: version.stdout, compiler: compilerVersion.stdout, compilerTarget: compilerTarget.stdout, static: input.static !== false, makeArgs: input.makeArgs ?? [], env: input.env ?? {}, fingerprintEnvironment });
   const cacheRoot = path.resolve(context.project.configDir, input.cache?.directory ?? context.project.cacheDir);
   const output = path.join(input.cache?.enabled === false ? context.project.workDir : cacheRoot, "busybox", key);
   const binary = path.join(output, "busybox");
@@ -210,7 +214,7 @@ export async function buildRootfs(options: { readonly name: string; readonly env
     for (const overlay of overlays) await cp(path.resolve(context.project.configDir, overlay), root, { recursive: true, force: true });
     const catalog = [`build_id=${key}`, `kernel\tkernel\t${key}\t/dev/cautest`, ...(options.programs ?? []).map((item) => `${item.endpoint}\tprocess\t${item.buildId}\t${item.installPath}`), ""].join("\n");
     await writeFile(path.join(root, "etc/cautest/catalog"), catalog);
-    const coverage = options.coverage ? `mkdir -p /sys/kernel/debug\nmount -t debugfs debugfs /sys/kernel/debug\ncoverage_dir=$(sed -n 's/.*cautest.coverage_dir=\\([^ ]*\\).*/\\1/p' /proc/cmdline)\nmount -t hostfs none /mnt/cautest-coverage -o "$coverage_dir" || exec /bin/sh\n` : "";
+    const coverage = options.coverage ? `/bin/busybox mkdir -p /sys/kernel/debug\nmount -t debugfs debugfs /sys/kernel/debug\ncoverage_dir=$(/bin/busybox sed -n 's/.*cautest.coverage_dir=\\([^ ]*\\).*/\\1/p' /proc/cmdline)\n[ -n "$coverage_dir" ] || exec /bin/sh\nmount -t hostfs none /mnt/cautest-coverage -o "$coverage_dir" || exec /bin/sh\n` : "";
     await writeFile(path.join(root, "init"), `#!/bin/sh\nmount -t devtmpfs devtmpfs /dev\nmount -t proc proc /proc\nmount -t sysfs sysfs /sys\n${coverage}for module in /opt/cautest/modules/*.ko; do insmod "$module" || exec /bin/sh; done\necho "cautest: modules loaded" >/dev/console\nexec /opt/cautest/bin/agent /dev/ttyS0 /etc/cautest/catalog\n`); await chmod(path.join(root, "init"), 0o755);
     await cpio(root, path.join(temporary, "rootfs.cpio"), options.environment.rootfs?.cpio ?? "cpio", context.signal);
     await mkdir(path.dirname(directory), { recursive: true });
