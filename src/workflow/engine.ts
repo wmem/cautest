@@ -28,7 +28,7 @@ export interface WorkflowExecutionOptions {
   readonly defaultJobTimeoutMs?: number;
   readonly project?: Partial<WorkflowProjectContext>;
   readonly onOutput?: (event: { readonly jobId: string; readonly step: WorkflowStep; readonly channel: "stdout" | "stderr"; readonly text: string }) => void;
-  readonly onStep?: (event: { readonly type: "START" | "END"; readonly jobId: string; readonly step: WorkflowStep; readonly status?: StepStatus }) => void;
+  readonly onStep?: (event: { readonly type: "START" | "END"; readonly jobId: string; readonly step: WorkflowStep; readonly status?: StepStatus; readonly durationMs?: number; readonly diagnostics?: readonly unknown[] }) => void;
 }
 
 function errorValue(value: unknown): Error {
@@ -114,7 +114,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
           diagnostics: result?.diagnostics ?? [],
           testResults: result?.testResults ?? [],
         });
-        options.onStep?.({ type: "END", jobId: job.id, step, status });
+        options.onStep?.({ type: "END", jobId: job.id, step, status, durationMs: performance.now() - started, diagnostics: result?.diagnostics ?? [] });
       } catch (cause) {
         failed = true;
         executionError = true;
@@ -128,7 +128,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
           testResults: [],
           error: errorValue(cause),
         });
-        options.onStep?.({ type: "END", jobId: job.id, step, status: "ERROR" });
+        options.onStep?.({ type: "END", jobId: job.id, step, status: "ERROR", durationMs: performance.now() - started, diagnostics: [] });
       }
     }
   };
