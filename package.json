@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepare": "tsc -p tsconfig.json && node dist/build-info.js",
-    "test": "pnpm run build && pnpm run test:types && node --test test/schema.test.js test/config.test.js test/factory.test.js test/workflow.test.js test/native.test.js test/kernel.test.js test/kernel-module.test.js test/install.test.js",
+    "test": "pnpm run build && pnpm run test:types && node --test test/schema.test.js test/config.test.js test/factory.test.js test/workflow.test.js test/native.test.js test/kernel.test.js test/kernel-module.test.js test/driver.test.js test/mcu.test.js test/system.test.js test/install.test.js",
     "test:e2e": "node --test test/git-install.test.js",
     "test:types": "tsc --noEmit --strict --exactOptionalPropertyTypes --target ES2022 --module NodeNext --moduleResolution NodeNext test/types/config.mts",
     "typecheck": "tsc -p tsconfig.json --noEmit"

@@ -4,6 +4,9 @@ import {
   nativeCTestJob,
   nativeCTestJobFactory,
   kernelCTestJobFactory,
+  driverAbiCTestJobFactory,
+  mcuCTestJob,
+  scriptSystemTestJob,
   umlKernelEnvironment,
   testJob,
   withJobDefaults,
@@ -42,6 +45,9 @@ nativeCTestJobFactory({ defaults: { build: { compiler: "clang" } } })({
 
 const uml = umlKernelEnvironment({ kernel: { sourceDir: "vendor/linux" }, busybox: { sourceDir: "vendor/busybox" } });
 kernelCTestJobFactory({ environment: uml })({ id: "unit.kernel.queue", tests: ["test/queue_test.c"] });
+driverAbiCTestJobFactory({ environment: uml })({ id: "integration.driver", drivers: [{ name: "driver", sourceDir: "driver", output: "driver.ko" }], guest: { tests: ["test/driver.c"] } });
+mcuCTestJob({ id: "component.mcu", firmware: { kind: "existing", file: "build/firmware" } });
+scriptSystemTestJob({ id: "system.api", file: "test/api.test.mjs" });
 
 // @ts-expect-error Native C Test 的 tests 是非空必填字段。
 nativeCTestJob({ id: "unit.native.missing" });

@@ -94,11 +94,11 @@ function assertion(parsed: ProtocolLine): TestAssertionResult {
   return { ...base, expected: { type, value: flags & 1 ? null : fields[11] ?? "" }, actual: { type, value: flags & 2 ? null : fields[12] ?? "" } };
 }
 
-export interface NativeSessionRequest { readonly program: string; readonly cwd: string; readonly env: NodeJS.ProcessEnv; readonly expectedBuildId: string; readonly run: CTestRunInput; readonly signal: AbortSignal }
+export interface NativeSessionRequest { readonly program: string; readonly args?: readonly string[]; readonly cwd: string; readonly env: NodeJS.ProcessEnv; readonly expectedBuildId: string; readonly run: CTestRunInput; readonly signal: AbortSignal }
 
 /** 通过 POSIX Target 的 FD3/FD4 执行 CTP3 Native Test。 */
 export async function runNativeSession(request: NativeSessionRequest): Promise<readonly TestSuiteResult[]> {
-  const child = spawn(request.program, [], { cwd: request.cwd, env: request.env, stdio: ["ignore", "pipe", "pipe", "pipe", "pipe"] });
+  const child = spawn(request.program, [...(request.args ?? [])], { cwd: request.cwd, env: request.env, stdio: ["ignore", "pipe", "pipe", "pipe", "pipe"] });
   const input = child.stdio[3] as Writable;
   const output = child.stdio[4] as Readable;
   input.on("error", () => { /* Target 退出时关闭控制管道属于正常清理路径。 */ });
