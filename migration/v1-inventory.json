@@ -61,19 +61,22 @@
       "kind": "public-api",
       "key": "CTP_PROTOCOL_MAJOR",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 CTP3 Codec 与 C Header 同步为 3"
     },
     {
       "kind": "public-api",
       "key": "CTP_PROTOCOL_MINOR",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 CTP3 Codec 与 C Header 同步为 1"
     },
     {
       "kind": "public-api",
       "key": "CTestSession",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 protocol/session.ts 严格 Session 状态机"
     },
     {
       "kind": "public-api",
@@ -159,7 +162,8 @@
       "kind": "public-api",
       "key": "ProcessTransport",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 protocol/transport.ts"
     },
     {
       "kind": "public-api",
@@ -209,7 +213,8 @@
       "kind": "public-api",
       "key": "StreamTransport",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 支持分片、行长、超时和取消"
     },
     {
       "kind": "public-api",
@@ -377,7 +382,8 @@
       "kind": "public-api",
       "key": "filterTestDescriptors",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 Host 侧 Suite/Case/Parameter Filter"
     },
     {
       "kind": "public-api",
@@ -545,7 +551,8 @@
       "kind": "public-api",
       "key": "planCTestExecutions",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 区分 Suite 与逐 Case 执行模式"
     },
     {
       "kind": "public-api",
@@ -563,7 +570,8 @@
       "kind": "public-api",
       "key": "processTransport",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 ProcessTransport 工厂"
     },
     {
       "kind": "public-api",
@@ -581,7 +589,8 @@
       "kind": "public-api",
       "key": "runCTestSession",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 严格验证 HELLO/LIST/Execution/Event ID"
     },
     {
       "kind": "public-api",
@@ -673,43 +682,50 @@
       "kind": "test-file",
       "key": "tests/c-core/CMakeLists.txt",
       "area": "c-runtime",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 使用无生成器依赖的 scripts/test-c-runtime.sh 直接编译"
     },
     {
       "kind": "test-file",
       "key": "tests/c-core/freestanding_smoke.c",
       "area": "c-runtime",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/c-runtime/freestanding_smoke.c"
     },
     {
       "kind": "test-file",
       "key": "tests/c-core/run-tests.sh",
       "area": "c-runtime",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "由 pnpm test:c 统一执行"
     },
     {
       "kind": "test-file",
       "key": "tests/c-core/test_cautest.c",
       "area": "c-runtime",
-      "status": "pending"
+      "status": "implemented",
+      "note": "原测试源码完整迁移到 test/c-runtime/test_cautest.c"
     },
     {
       "kind": "test-file",
       "key": "tests/c-protocol/CMakeLists.txt",
       "area": "ctp3-session",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 使用 scripts/test-c-runtime.sh 直接编译"
     },
     {
       "kind": "test-file",
       "key": "tests/c-protocol/run.sh",
       "area": "ctp3-session",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "由 pnpm test:c 统一执行"
     },
     {
       "kind": "test-file",
       "key": "tests/c-protocol/test_ctp3.c",
       "area": "ctp3-session",
-      "status": "pending"
+      "status": "implemented",
+      "note": "原测试源码完整迁移到 test/c-runtime/test_ctp3.c"
     },
     {
       "kind": "test-file",
@@ -727,25 +743,29 @@
       "kind": "test-file",
       "key": "tests/js-protocol/protocol.test.js",
       "area": "ctp3-session",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 test/protocol.test.js"
     },
     {
       "kind": "test-file",
       "key": "tests/js-protocol/protocol.test.mjs",
       "area": "ctp3-session",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 合并为单一 Node Test 文件"
     },
     {
       "kind": "test-file",
       "key": "tests/js-protocol/run.sh",
       "area": "ctp3-session",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "纳入 pnpm test 默认门禁"
     },
     {
       "kind": "test-file",
       "key": "tests/kernel/abi_smoke.c",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/c-runtime/kernel_abi_smoke.c 并纳入 pnpm test:c"
     },
     {
       "kind": "test-file",
@@ -781,7 +801,8 @@
       "kind": "test-file",
       "key": "tests/kernel/selection_model.c",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/c-runtime/kernel_selection_model.c 并纳入 pnpm test:c"
     },
     {
       "kind": "test-file",
@@ -853,13 +874,15 @@
       "kind": "test-file",
       "key": "tests/probe/probe_model_test.c",
       "area": "driver-probe",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/c-runtime/probe_model_test.c"
     },
     {
       "kind": "test-file",
       "key": "tests/probe/run-tests.sh",
       "area": "driver-probe",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 pnpm test:c 覆盖 Probe Model 和 Source Policy"
     },
     {
       "kind": "test-file",
@@ -871,7 +894,8 @@
       "kind": "test-file",
       "key": "tests/session/session.test.js",
       "area": "ctp3-session",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 test/session.test.js 覆盖原有 Session 场景"
     },
     {
       "kind": "test-file",

@@ -15,9 +15,9 @@ class AgentDuplex extends Duplex {
   _write(chunk, _encoding, callback) {
     const command = chunk.toString("utf8").trim();
     const responses = command === "OPEN kernel" ? ["OK"]
-      : command === "AT+HELLO" ? ["+HELLO:3,kernel,build-1", "OK:HELLO"]
-      : command === "AT+LIST" ? ["+CASE:1,1,0,suite,case,", "OK:LIST"]
-      : command.startsWith("AT+CASE=") ? ["+CASE-BEGIN:1,1,1,0,suite,case,", "+CASE-END:1,1,1,0,PASS", "OK:CASE"]
+      : command === "AT+HELLO" ? ["+HELLO:3,0,build-1,boot-1,64,512", "OK:HELLO"]
+      : command === "AT+LIST" ? ["+LIST:START", "+CASE:1,1,0,suite,case,", "+LIST:END,1", "OK:LIST"]
+      : command.startsWith("AT+SUITE=") ? ["+EXEC-START:1,SUITE,1,0,0", "+SUITE-START:1,1", "+CASE-START:1,1,1,0", "+CASE-END:1,1,1,0,PASS", "+SUITE-END:1,1,PASS", "+EXEC-END:1,PASS,1,0,0,0", "OK:SUITE,1"]
       : command === "AT+BYE" ? ["OK:BYE"] : [];
     queueMicrotask(() => this.push(`${responses.join("\n")}\n`));
     callback();

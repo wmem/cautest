@@ -23,15 +23,15 @@ test("External MCU Adapter 通过统一 CTP3 Transport 执行", async () => {
   const crypto = await import("node:crypto");
   const buildId = crypto.createHash("sha256").update("firmware").update("{}").digest("hex").slice(0, 24);
   const responses = [
-    `+HELLO:3,external,${buildId}`, "OK:HELLO", "+CASE:1,1,0,suite,case,", "OK:LIST",
-    "+CASE-BEGIN:1,1,1,0,suite,case,", "+CASE-END:1,1,1,0,PASS", "OK:CASE", "OK:BYE",
+    `+HELLO:3,0,${buildId},boot-1,64,512`, "OK:HELLO", "+LIST:START", "+CASE:1,1,0,suite,case,", "+LIST:END,1", "OK:LIST",
+    "+EXEC-START:1,SUITE,1,0,0", "+SUITE-START:1,1", "+CASE-START:1,1,1,0", "+CASE-END:1,1,1,0,PASS", "+SUITE-END:1,1,PASS", "+EXEC-END:1,PASS,1,0,0,0", "OK:SUITE,1", "OK:BYE",
   ];
   let flashed = false;
   let closed = false;
   const adapter = {
     async flash(value) { flashed = value.path === firmware; },
     reset() { return "boot-1"; },
-    openTransport() { return { write() {}, nextLine() { return responses.shift(); }, close() {} }; },
+    openTransport() { return { open() {}, write() {}, nextLine() { return responses.shift(); }, close() {} }; },
     close() { closed = true; },
   };
   const job = mcuCTestJob({ id: "component.mcu.external", firmware: { kind: "existing", file: firmware }, board: { kind: "external", adapter }, logFiles: ["board.log"] });

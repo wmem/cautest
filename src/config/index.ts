@@ -15,4 +15,7 @@ export { ArtifactStore, CleanupStack, ResourceStore, ResultRecorder } from "../w
 export { EventRecorder } from "../workflow/events.js";
 export { executeRun, writeRunDirectory } from "../result/run.js";
 export { CautestError, serializeError } from "../model/error.js";
+export { CTP_PROTOCOL_MAJOR, CTP_PROTOCOL_MINOR, Ctp3Error, encodeCommand, escapeField, LineDecoder, parseProtocolLine, protocolError, splitEscapedFields } from "../protocol/ctp3.js";
+export { ProcessTransport, processTransport, StreamTransport } from "../protocol/transport.js";
+export { CTestSession, filterTestDescriptors, planCTestExecutions, runCTestSession } from "../protocol/session.js";
 export type * from "./schema/index.js";
