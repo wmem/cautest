@@ -30,9 +30,12 @@ async function verifyPortable(destination) {
   assert.ok(names.includes("cautest.js"));
   assert.ok(!names.includes("node_modules"));
   const config = path.join(path.dirname(path.dirname(destination)), `${path.basename(destination)}.config.mjs`);
-  await writeFile(config, "import { CAUTEST_CONFIG_SCHEMA_VERSION } from '@cautest/config';\nexport default CAUTEST_CONFIG_SCHEMA_VERSION;\n");
-  const result = await exec(path.join(destination, "cautest.js"), ["config-smoke", config]);
-  assert.deepEqual(JSON.parse(result.stdout), { default: 2 });
+  await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config';
+const step = defineStep({ kind: 'gitFixture', phase: 'run', execute() {} });
+export default testConfig({ jobs: [testJob({ id: 'system.git', level: 'system', workflow: [step] })] });
+`);
+  const result = await exec(path.join(destination, "cautest.js"), ["--config", config, "plan", "system.git"]);
+  assert.match(result.stdout, /01-run-gitFixture-gitFixture/u);
   const build = JSON.parse(await readFile(path.join(destination, "build-info.json"), "utf8"));
   assert.match(build.commit, /^[0-9a-f]{40}$/u);
 }

@@ -21,8 +21,9 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   await exec(process.execPath, [installer, destination], { cwd: temporary });
   const rootEntries = await readdir(destination);
   assert.ok(rootEntries.includes("cautest.js"));
-  assert.ok(rootEntries.includes("config"));
+  assert.ok(rootEntries.includes("lib"));
   assert.ok(!rootEntries.includes("node_modules"));
+  assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map"]);
 
   async function visit(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -34,9 +35,20 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   await visit(destination);
 
   const config = path.join(temporary, "cautest.config.mjs");
-  await writeFile(config, "import { CAUTEST_CONFIG_SCHEMA_VERSION } from '@cautest/config';\nexport default CAUTEST_CONFIG_SCHEMA_VERSION;\n");
-  const smoke = await exec(path.join(destination, "cautest.js"), ["config-smoke", config], { cwd: temporary });
-  assert.deepEqual(JSON.parse(smoke.stdout), { default: 2 });
+  await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config';
+
+const prepare = defineStep({ kind: 'prepareFixture', phase: 'prepare', execute() {} });
+const run = defineStep({ kind: 'runFixture', phase: 'run', execute() {} });
+
+export default testConfig({ jobs: [
+  testJob({ id: 'unit.example', level: 'unit', tags: ['unit'], workflow: [prepare, run] }),
+] });
+`);
+  const listed = await exec(path.join(destination, "cautest.js"), ["--config", config, "list"], { cwd: temporary });
+  assert.match(listed.stdout, /^unit\.example\tunit\tenabled\tunit$/mu);
+  const planned = await exec(path.join(destination, "cautest.js"), ["--config", config, "plan", "unit.example"], { cwd: temporary });
+  assert.match(planned.stdout, /01-prepare-prepareFixture-prepareFixture/u);
+  assert.match(planned.stdout, /02-run-runFixture-runFixture/u);
   assert.match((await exec(path.join(destination, "cautest.js"), ["--version"])).stdout, /^Cautest 0\.2\.0 \(commit /u);
   assert.equal((await lstat(path.join(destination, "cautest.js"))).mode & 0o111, 0o111);
   assert.equal(JSON.parse(await readFile(path.join(destination, "manifest.json"), "utf8")).product, "cautest-portable");

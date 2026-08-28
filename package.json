@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepare": "tsc -p tsconfig.json && node dist/build-info.js",
-    "test": "pnpm run build && node --test test/schema.test.js test/install.test.js",
+    "test": "pnpm run build && node --test test/schema.test.js test/config.test.js test/workflow.test.js test/install.test.js",
     "test:e2e": "node --test test/git-install.test.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

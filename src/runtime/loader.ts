@@ -1,5 +1,5 @@
 const entrypoints = new Map([
-  ["@cautest/config", new URL("./config/index.js", import.meta.url).href],
+  ["@cautest/config", new URL("./lib/config/index.js", import.meta.url).href],
 ]);
 
 export async function resolve(

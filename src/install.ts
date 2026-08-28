@@ -58,10 +58,15 @@ async function collectFiles(root: string, relative = ""): Promise<string[]> {
 }
 
 async function createPortableTree(root: string, build: BuildInfo): Promise<void> {
-  await mkdir(path.join(root, "config"), { recursive: true });
-  await cp(path.join(packageRoot, "dist/config"), path.join(root, "config"), { recursive: true });
+  await mkdir(path.join(root, "lib"), { recursive: true });
+  for (const directory of ["config", "model", "workflow"]) {
+    await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true });
+  }
+  await mkdir(path.join(root, "lib/runtime"));
+  for (const file of ["cli.js", "cli.js.map", "cli.d.ts", "cli.d.ts.map"]) {
+    await cp(path.join(packageRoot, `dist/runtime/${file}`), path.join(root, `lib/runtime/${file}`));
+  }
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
-  await cp(path.join(packageRoot, "dist/runtime/cli.js"), path.join(root, "cli.js"));
   await cp(path.join(packageRoot, "dist/runtime/loader.js"), path.join(root, "loader.mjs"));
   await cp(path.join(packageRoot, "assets/portable/README.md"), path.join(root, "README.md"));
   await chmod(path.join(root, "cautest.js"), 0o755);

@@ -150,6 +150,58 @@ export interface CommandInput {
   readonly env?: EnvironmentVariables;
 }
 
+/** Workflow 固定阶段；Step 必须按该顺序排列。 */
+export type WorkflowPhase = "prepare" | "build" | "provision" | "run" | "collect";
+
+/** Step 在正常或失败路径中的执行条件。 */
+export type StepRunWhen = "on-success" | "always" | "on-failure";
+
+/** Step Executor 可以共享的 Job 内状态。 */
+export interface StepExecutionContext {
+  readonly job: TestJob;
+  readonly signal: AbortSignal;
+  readonly state: Map<string, unknown>;
+}
+
+/** Step Executor 返回的诊断信息。 */
+export interface StepExecutionResult {
+  readonly diagnostics?: readonly unknown[];
+}
+
+/** 创建自定义 Workflow Step 的参数。 */
+export interface WorkflowStepInput {
+  /** 稳定 Step 类型。@example "nativeCompile" */
+  readonly kind: string;
+
+  /** 同类型 Step 在当前 Job 中的名称；省略时使用 `kind`。 */
+  readonly name?: string;
+
+  readonly phase: WorkflowPhase;
+
+  /** @defaultValue "on-success" */
+  readonly runWhen?: StepRunWhen;
+
+  /** Step 超时，单位毫秒。 */
+  readonly timeoutMs?: number;
+
+  /** Step 的实际执行函数。 */
+  readonly execute: (
+    context: StepExecutionContext,
+  ) => void | StepExecutionResult | Promise<void | StepExecutionResult>;
+}
+
+declare const WORKFLOW_STEP_TYPE: unique symbol;
+
+/** 由 `defineStep()` 或标准 Step 构造函数创建的不可变 Descriptor。 */
+export interface WorkflowStep {
+  readonly [WORKFLOW_STEP_TYPE]: true;
+  readonly kind: string;
+  readonly name: string;
+  readonly phase: WorkflowPhase;
+  readonly runWhen: StepRunWhen;
+  readonly timeoutMs?: number;
+}
+
 declare const TEST_JOB_TYPE: unique symbol;
 
 /**
@@ -164,6 +216,16 @@ export interface TestJob {
   readonly description: string;
   readonly tags: readonly string[];
   readonly enabled: boolean;
+  readonly timeoutMs?: number;
+  readonly env: EnvironmentVariables;
+  readonly policy: Readonly<Required<TestJobPolicyInput>>;
+  readonly workflow: readonly WorkflowStep[];
+}
+
+/** 通用 `testJob()` 的参数 Schema。 */
+export interface TestJobInput extends TestJobCommonInput {
+  readonly level: TestLevel;
+  readonly workflow: readonly WorkflowStep[];
 }
 
 /** Profile 的 Reporter 和环境变量覆盖。 */
@@ -188,6 +250,16 @@ export interface TestConfigDefaultsInput {
   readonly jobTimeoutMs?: number;
 }
 
+/** Cautest 填充目录和 Step 默认值后的项目配置默认项。 */
+export interface ResolvedTestConfigDefaults {
+  readonly resultDir: DirectoryPath;
+  readonly cacheDir: DirectoryPath;
+  readonly generatedDir: DirectoryPath;
+  readonly workDir: DirectoryPath;
+  readonly stepTimeoutMs: number;
+  readonly jobTimeoutMs?: number;
+}
+
 /** `testConfig()` 的唯一根参数 Schema。 */
 export interface TestConfigInput {
   /**
@@ -198,6 +270,16 @@ export interface TestConfigInput {
 
   readonly defaults?: TestConfigDefaultsInput;
   readonly profiles?: readonly TestProfileInput[];
+}
+
+declare const TEST_CONFIG_TYPE: unique symbol;
+
+/** 经过 `testConfig()` 校验和归一化的项目配置。 */
+export interface TestConfig {
+  readonly [TEST_CONFIG_TYPE]: true;
+  readonly jobs: readonly TestJob[];
+  readonly defaults: Readonly<ResolvedTestConfigDefaults>;
+  readonly profiles: readonly Readonly<Required<TestProfileInput>>[];
 }
 
 /** 一个输入 Schema 明确、每次只产生一个 Test Job 的构造函数。 */
