@@ -1,0 +1,21 @@
+#include <linux/module.h>
+
+#include <cautest/kernel_runtime.h>
+
+extern const struct cautest_registry {{REGISTRY_NAME}};
+
+static int __init {{MODULE_IDENT}}_init(void)
+{
+	return CAUTEST_KERNEL_REGISTER({{REGISTRY_NAME}});
+}
+
+static void __exit {{MODULE_IDENT}}_exit(void)
+{
+	WARN_ON(CAUTEST_KERNEL_UNREGISTER({{REGISTRY_NAME}}));
+}
+
+module_init({{MODULE_IDENT}}_init);
+module_exit({{MODULE_IDENT}}_exit);
+
+MODULE_LICENSE("{{MODULE_LICENSE}}");
+MODULE_DESCRIPTION("{{MODULE_DESCRIPTION}}");

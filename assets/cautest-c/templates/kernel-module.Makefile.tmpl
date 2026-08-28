@@ -1,0 +1,5 @@
+obj-m += {{MODULE_FILE}}.o
+{{MODULE_FILE}}-y := {{OBJECTS}}
+
+ccflags-y += {{INCLUDE_FLAGS}}
+{{EXTRA_KBUILD}}
