@@ -11,11 +11,13 @@ test("Kernel Environment 独立复用并展开自动 Test Module Workflow", () =
     runtime: { maxRegistries: 64, eventCapacity: 512 },
   });
   const factory = kernelCTestJobFactory({ environment, defaults: { tags: ["kernel-unit"] } });
-  const job = factory({ id: "unit.utils.queue", tests: ["test/unit/queue_test.c"], sources: ["src/queue.c"], headers: ["src/queue.h"] });
+  const job = factory({ id: "unit.utils.queue", tests: ["test/unit/queue_test.c"], sources: ["src/queue.c"], headers: ["src/queue.h"], guestPrograms: [{ name: "fixture", sources: ["test/guest.c"] }] });
   const plan = planConfig(testConfig({ jobs: [job] }))[0];
   assert.equal(plan.id, "unit.utils.queue");
-  assert.deepEqual(plan.workflow.map((step) => step.kind), ["kernelBuild", "busyboxBuild", "kernelModuleBuild", "generatedKernelTestModule", "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs"]);
+  assert.deepEqual(plan.workflow.map((step) => step.kind), ["kernelBuild", "busyboxBuild", "kernelModuleBuild", "generatedKernelTestModule", "umlGuestProgramBuild", "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs"]);
   assert.deepEqual(plan.workflow[3].details.suites, ["queue"]);
+  assert.deepEqual(plan.workflow[3].details.headers, ["include/**/*.h", "src/queue.h"]);
+  assert.deepEqual(plan.workflow[4].details.sources, ["test/guest.c"]);
   assert.deepEqual(job.tags, ["kernel-unit"]);
 });
 

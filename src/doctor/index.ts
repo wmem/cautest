@@ -21,7 +21,7 @@ export async function doctorJobs(jobs: readonly TestJob[], configDir: string): P
   for (const job of jobs) {
     const builtModules = new Set<string>();
     for (const step of job.workflow) {
-      for (const field of ["tests", "sources", "headers", "files", "inputs", "extraSymbols"]) await checkPatterns(job, step, field, configDir, issues);
+      for (const field of ["tests", "sources", "headers", "inputs", "extraSymbols", "configFragments"]) await checkPatterns(job, step, field, configDir, issues);
       const file = step.details.file;
       if (typeof file === "string" && !await exists(path.resolve(configDir, file))) issues.push({ code: "CT-DOCTOR-INPUT-002", severity: "error", jobId: job.id, step: step.kind, message: `文件不存在: ${file}`, hint: "修正配置文件路径" });
       const sourceDir = step.details.sourceDir;
@@ -39,6 +39,10 @@ export async function doctorJobs(jobs: readonly TestJob[], configDir: string): P
         try { valid = (await stat(directory)).isDirectory(); } catch { /* issue below */ }
         if (!valid) issues.push({ code: "CT-DOCTOR-ENV-001", severity: "error", jobId: job.id, step: step.kind, message: `${kind} sourceDir 不存在或不是目录: ${value.sourceDir}`, hint: `修正公共 UML Environment 的 ${kind.toLowerCase()}.sourceDir` });
         else if (!await exists(path.join(directory, "Makefile"))) issues.push({ code: "CT-DOCTOR-ENV-002", severity: "error", jobId: job.id, step: step.kind, message: `${kind} 源码目录缺少 Makefile: ${value.sourceDir}`, hint: `确认 ${kind} sourceDir 指向源码根目录` });
+        if ("configFragments" in value && Array.isArray(value.configFragments)) {
+          try { await expandFilePatterns(value.configFragments as readonly string[], { baseDir: configDir, label: `jobs.${job.id}.${kind.toLowerCase()}.configFragments` }); }
+          catch (error) { issues.push({ code: "CT-DOCTOR-INPUT-001", severity: "error", jobId: job.id, step: step.kind, message: error instanceof Error ? error.message : String(error), hint: `修正公共 UML Environment 的 ${kind.toLowerCase()}.configFragments` }); }
+        }
       }
       for (const inputRoot of patterns(step.details.inputRoots)) {
         try { if (!(await stat(path.resolve(configDir, inputRoot))).isDirectory()) throw new Error(); }
