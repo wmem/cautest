@@ -41,6 +41,29 @@ if nm -u "$build_dir/cautest-freestanding-core.o" | grep . >/dev/null 2>&1; then
   exit 1
 fi
 
+# Freestanding Runtime 与 MCU Reference Board 的容量、分片、Reset 模型。
+# shellcheck disable=SC2086
+$cc $strict -I"$project_dir/assets/cautest-c/include" \
+  -I"$project_dir/assets/cautest-c/platform/freestanding" \
+  -I"$project_dir/assets/cautest-c/target/mcu-reference" \
+  "$project_dir/assets/cautest-c/core/cautest.c" \
+  "$project_dir/assets/cautest-c/platform/freestanding/cautest_freestanding.c" \
+  "$project_dir/assets/cautest-c/target/mcu-reference/mcu_reference.c" \
+  "$project_dir/test/c-runtime/mcu_freestanding_model.c" \
+  -o "$build_dir/mcu-freestanding-model"
+"$build_dir/mcu-freestanding-model"
+for source in \
+  "$project_dir/assets/cautest-c/platform/freestanding/cautest_freestanding.c" \
+  "$project_dir/assets/cautest-c/target/mcu-reference/mcu_reference.c"; do
+  object="$build_dir/$(basename "$source" .c).o"
+  # shellcheck disable=SC2086
+  $cc $strict -ffreestanding -fno-builtin -I"$project_dir/assets/cautest-c/include" -c "$source" -o "$object"
+  if nm -u "$object" | grep -E '\b(malloc|calloc|realloc|free|memcpy|memmove|memset|strlen)\b' >/dev/null; then
+    echo "MCU Freestanding Runtime 存在 libc/heap 依赖: $source" >&2
+    exit 1
+  fi
+done
+
 # Kernel ABI、Selection Model 与 Probe Model 均可在 Host 侧独立验证。
 # shellcheck disable=SC2086
 $cc $strict -I"$project_dir/assets/cautest-c/platform/linux-kernel/include" \

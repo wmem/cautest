@@ -10,7 +10,7 @@ export interface CtpTransport {
   close?(): void | Promise<void>;
 }
 
-export interface CtpSessionRequest { readonly transport: CtpTransport; readonly expectedBuildId: string; readonly run: CTestRunInput; readonly signal: AbortSignal; readonly onLog?: (log: TargetLog) => string | void | Promise<string | void> }
+export interface CtpSessionRequest { readonly transport: CtpTransport; readonly expectedBuildId: string; readonly expectedBootId?: string; readonly run: CTestRunInput; readonly signal: AbortSignal; readonly onLog?: (log: TargetLog) => string | void | Promise<string | void> }
 
 /** 将项目 Adapter 统一接入严格 CTestSession。 */
 export async function runCtpSession(request: CtpSessionRequest): Promise<readonly TestSuiteResult[]> {
@@ -24,6 +24,7 @@ export async function runCtpSession(request: CtpSessionRequest): Promise<readonl
   const result = await runCTestSession({
     transport,
     expectedBuildId: request.expectedBuildId,
+    ...(request.expectedBootId === undefined ? {} : { expectedBootId: request.expectedBootId }),
     signal: request.signal,
     ...(request.run.include === undefined ? {} : { include: request.run.include }),
     ...(request.run.exclude === undefined ? {} : { exclude: request.run.exclude }),
@@ -44,6 +45,7 @@ export interface NativeSessionRequest {
   readonly cwd: string;
   readonly env: NodeJS.ProcessEnv;
   readonly expectedBuildId: string;
+  readonly expectedBootId?: string;
   readonly run: CTestRunInput;
   readonly signal: AbortSignal;
   readonly onLog?: (log: TargetLog) => string | void | Promise<string | void>;
@@ -57,6 +59,7 @@ export async function runNativeSession(request: NativeSessionRequest): Promise<r
     const result = await runCTestSession({
       transport,
       expectedBuildId: request.expectedBuildId,
+      ...(request.expectedBootId === undefined ? {} : { expectedBootId: request.expectedBootId }),
       signal: request.signal,
       ...(request.run.include === undefined ? {} : { include: request.run.include }),
       ...(request.run.exclude === undefined ? {} : { exclude: request.run.exclude }),

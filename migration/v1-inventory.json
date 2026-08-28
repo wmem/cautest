@@ -838,19 +838,22 @@
       "kind": "test-file",
       "key": "tests/mcu-sim/firmware_cases.c",
       "area": "mcu",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/fixtures/mcu/firmware_cases.c，覆盖 PASS/FAIL/SKIP/ERROR/Hang"
     },
     {
       "kind": "test-file",
       "key": "tests/mcu-sim/freestanding_test.c",
       "area": "mcu",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/c-runtime/mcu_freestanding_model.c 并检查 libc/heap 未解析依赖"
     },
     {
       "kind": "test-file",
       "key": "tests/mcu-sim/mcu-sim.test.js",
       "area": "mcu",
-      "status": "pending"
+      "status": "implemented",
+      "note": "test/mcu.test.js 覆盖 Firmware、Board 生命周期、Boot ID、状态语义和超时恢复"
     },
     {
       "kind": "test-file",
