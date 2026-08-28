@@ -1125,537 +1125,626 @@
     },
     {
       "kind": "document",
-      "key": "docs/definition/capabilities/CAP-001.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/capabilities/CAP-001.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/capabilities/CAP-002.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/capabilities/CAP-002.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/capabilities/CAP-003.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/capabilities/CAP-003.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/capabilities/CAP-004.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/capabilities/CAP-004.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/capabilities/CAP-005.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/capabilities/CAP-005.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/capabilities/CAP-006.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/capabilities/CAP-006.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/index.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/index.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/specifications/SPEC-001.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/specifications/SPEC-001.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/specifications/SPEC-002.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/specifications/SPEC-002.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/specifications/SPEC-004.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/specifications/SPEC-004.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/definition/specifications/SPEC-005.md",
-      "area": "capabilities-specifications",
-      "status": "pending"
+     "key": "docs/definition/specifications/SPEC-005.md",
+     "area": "capabilities-specifications",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-001.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-001.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-002.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-002.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-003.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-003.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-004.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-004.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-005.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-005.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-006.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-006.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-007.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-007.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-008.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-008.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-009.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-009.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-010.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-010.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/components/CMP-011.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/components/CMP-011.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/ctp3-line-protocol.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/ctp3-line-protocol.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/design/index.md",
-      "area": "architecture",
-      "status": "pending"
+     "key": "docs/design/index.md",
+     "area": "architecture",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/index.md",
-      "area": "project",
-      "status": "pending"
+     "key": "docs/index.md",
+     "area": "project",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/project/briefs/PB-001.md",
-      "area": "project",
-      "status": "pending"
+     "key": "docs/project/briefs/PB-001.md",
+     "area": "project",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/project/context.md",
-      "area": "project",
-      "status": "pending"
+     "key": "docs/project/context.md",
+     "area": "project",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/project/glossary.md",
-      "area": "project",
-      "status": "pending"
+     "key": "docs/project/glossary.md",
+     "area": "project",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/project/index.md",
-      "area": "project",
-      "status": "pending"
+     "key": "docs/project/index.md",
+     "area": "project",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/project/references/REF-001.md",
-      "area": "project",
-      "status": "pending"
+     "key": "docs/project/references/REF-001.md",
+     "area": "project",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/project/references/v1-design-baseline.md",
-      "area": "project",
-      "status": "pending"
+     "key": "docs/project/references/v1-design-baseline.md",
+     "area": "project",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/project/versioning.md",
-      "area": "project",
-      "status": "pending"
+     "key": "docs/project/versioning.md",
+     "area": "project",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/test/index.md",
-      "area": "testing",
-      "status": "pending"
+     "key": "docs/test/index.md",
+     "area": "testing",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/test/specifications/TEST-001.md",
-      "area": "testing",
-      "status": "pending"
+     "key": "docs/test/specifications/TEST-001.md",
+     "area": "testing",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/test/specifications/TEST-002.md",
-      "area": "testing",
-      "status": "pending"
+     "key": "docs/test/specifications/TEST-002.md",
+     "area": "testing",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/test/specifications/TEST-003.md",
-      "area": "testing",
-      "status": "pending"
+     "key": "docs/test/specifications/TEST-003.md",
+     "area": "testing",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/test/specifications/TEST-004.md",
-      "area": "testing",
-      "status": "pending"
+     "key": "docs/test/specifications/TEST-004.md",
+     "area": "testing",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/test/specifications/TEST-005.md",
-      "area": "testing",
-      "status": "pending"
+     "key": "docs/test/specifications/TEST-005.md",
+     "area": "testing",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/test/specifications/TEST-006.md",
-      "area": "testing",
-      "status": "pending"
+     "key": "docs/test/specifications/TEST-006.md",
+     "area": "testing",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/test/strategy.md",
-      "area": "testing",
-      "status": "pending"
+     "key": "docs/test/strategy.md",
+     "area": "testing",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/README.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/README.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/advanced/workflow.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/advanced/workflow.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/component/c-native.md",
-      "area": "native-cache",
-      "status": "pending"
+     "key": "docs/toolkit/usage/component/c-native.md",
+     "area": "native-cache",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/concepts.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/concepts.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/driver/abi-c.md",
-      "area": "driver-probe",
-      "status": "pending"
+     "key": "docs/toolkit/usage/driver/abi-c.md",
+     "area": "driver-probe",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/install-git.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/install-git.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/kernel/uml-c.md",
-      "area": "kernel-uml",
-      "status": "pending"
+     "key": "docs/toolkit/usage/kernel/uml-c.md",
+     "area": "kernel-uml",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/linux-driver/unit.md",
-      "area": "driver-probe",
-      "status": "pending"
+     "key": "docs/toolkit/usage/linux-driver/unit.md",
+     "area": "driver-probe",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/mcu/simulated-c.md",
-      "area": "mcu",
-      "status": "pending"
+     "key": "docs/toolkit/usage/mcu/simulated-c.md",
+     "area": "mcu",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/c-test-api.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/c-test-api.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/cli.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/cli.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/config.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/config.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/probe-api.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/probe-api.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/results.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/results.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/script-test-api.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/script-test-api.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/steps/collect-logs.md",
-      "area": "system-workflow",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/steps/collect-logs.md",
+     "area": "system-workflow",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/steps/exec-step.md",
-      "area": "system-workflow",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/steps/exec-step.md",
+     "area": "system-workflow",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/steps/external-test.md",
-      "area": "system-workflow",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/steps/external-test.md",
+     "area": "system-workflow",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/steps/index.md",
-      "area": "system-workflow",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/steps/index.md",
+     "area": "system-workflow",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/steps/process-start.md",
-      "area": "system-workflow",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/steps/process-start.md",
+     "area": "system-workflow",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/reference/steps/wait-ready.md",
-      "area": "system-workflow",
-      "status": "pending"
+     "key": "docs/toolkit/usage/reference/steps/wait-ready.md",
+     "area": "system-workflow",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/system/script.md",
-      "area": "system-workflow",
-      "status": "pending"
+     "key": "docs/toolkit/usage/system/script.md",
+     "area": "system-workflow",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/troubleshooting.md",
-      "area": "usage",
-      "status": "pending"
+     "key": "docs/toolkit/usage/troubleshooting.md",
+     "area": "usage",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/toolkit/usage/unit/c-native.md",
-      "area": "native-cache",
-      "status": "pending"
+     "key": "docs/toolkit/usage/unit/c-native.md",
+     "area": "native-cache",
+      "status": "implemented",
+      "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-001.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-001.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-002.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-002.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-003.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-003.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-004.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-004.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-005.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-005.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-006.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-006.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-007.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-007.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-008.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-008.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-009.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-009.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-010.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-010.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-011.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-011.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-012.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-012.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-013.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-013.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-014.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-014.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/defects/DEF-015.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/defects/DEF-015.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/index.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/index.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-001.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-001.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-002.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-002.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-003.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-003.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-004.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-004.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-005.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-005.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-006.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-006.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-007.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-007.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-008.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-008.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     },
     {
       "kind": "document",
-      "key": "docs/work/requirements/REQ-009.md",
-      "area": "history",
-      "status": "pending"
+     "key": "docs/work/requirements/REQ-009.md",
+     "area": "history",
+      "status": "intentional-change",
+      "note": "V1 阶段性 Requirement/Defect 不进入当前使用路径；来源由迁移审计和 V1 Commit 保留"
     }
   ]
 }

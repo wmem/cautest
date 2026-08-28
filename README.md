@@ -48,6 +48,10 @@ pnpm dlx --allow-build="cautest@${cautest_spec}" "${cautest_spec}" ./tools/caute
 - [Script System Test](docs/jobs/system.md)
 - [C Assertion API](docs/c-assertions.md)
 - [CLI、Doctor 与结果](docs/cli.md)
+- [执行架构](docs/architecture.md)
+- [CTP3 行协议](docs/protocol-ctp3.md)
+- [结果目录与 Reporter](docs/results.md)
+- [测试策略](docs/testing.md)
 - [Linux Driver Unit 迁移说明](usage/linux-driver/unit.md)
 
 权威参数 Schema 位于 `src/config/schema/*.ts`，构建后保留 JSDoc 生成 `dist/config/schema/*.d.ts`；便携安装中对应 `lib/config/schema/*.d.ts`。
@@ -59,6 +63,7 @@ pnpm install
 pnpm typecheck
 pnpm test
 pnpm test:e2e
+pnpm test:uml # 需要 Linux Kernel 与 BusyBox 源码
 ```
 
 本仓库从 V2 Schema 和便携安装链开始独立演进，不继承 Cautest V1 的 Git 历史。

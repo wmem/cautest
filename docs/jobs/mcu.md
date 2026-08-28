@@ -33,6 +33,6 @@ mcuCTestJob({
 });
 ```
 
-Adapter 的 Transport 与 Native/UML 共用完整 CTP3 Session 逻辑。`logFiles` 可以把项目生成的串口或 Board 日志按相对路径发布到结果目录。调用链：Firmware Build/Load → Board Flash/Reset → CTP3 Transport → 结构化 Result → Logs/Adapter Close。
+Adapter 的 Transport 与 Native/UML 共用完整 CTP3 Session 逻辑。Flash 后的 Build ID 与 Reset 返回的 Boot ID 都必须匹配 HELLO；旧固件或旧启动实例会在执行前被拒绝。`logFiles` 可以把项目生成的串口或 Board 日志按相对路径发布到结果目录。owned Adapter 在 Cleanup 中关闭，borrowed Adapter 只附加不关闭。调用链：Firmware Build/Load → Board Flash/Reset → CTP3 Transport → 结构化 Result → Logs/Cleanup。
 
 权威 Schema：`McuCTestJobInput`、`McuFirmwareInput`、`McuBoardAdapter`、`McuCtpTransport`，见源码 `src/config/schema/mcu.ts` 或安装后的 `lib/config/schema/mcu.d.ts`。

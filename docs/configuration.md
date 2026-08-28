@@ -81,6 +81,23 @@ export default testConfig({
 
 `configHash` 同时覆盖根配置、所有通过来源协议登记的片段，以及最终解析结果。它不依赖检出目录绝对路径。
 
+## Profile 只覆盖运行视图
+
+Profile 不创建 Job，也不改变 Workflow 结构。它只为选中的 Job 追加环境变量并选择附加 Reporter：
+
+```js
+testConfig({
+  profiles: [{
+    id: "ci",
+    reporters: ["json", "junit", "html"],
+    env: { CI: "true" },
+  }],
+  jobs,
+});
+```
+
+使用 `cautest run --profile ci`。Profile 环境变量覆盖 Job 中的同名值；Reporter 输出见[结果目录与 Reporter](results.md)。
+
 ## 编辑器类型提示
 
 配置运行时仍是 JavaScript；安装目录自带 `.d.ts`。项目可用 `jsconfig.json` 把逻辑入口映射到声明：
