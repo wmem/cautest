@@ -16,8 +16,8 @@ import { UmlControlChannel, type UmlRuntimeResource } from "./control.js";
 const kitRoot = fileURLToPath(new URL("../../assets/cautest-c", import.meta.url));
 
 export interface BusyBoxArtifact { readonly path: string; readonly buildId: string; readonly cacheHit: boolean }
-export interface GuestProgramArtifact { readonly name: string; readonly path: string; readonly buildId: string; readonly endpoint: string; readonly installPath: string }
-export interface UmlImageArtifact { readonly kernelPath: string; readonly rootfsPath: string; readonly buildId: string; readonly endpoints: ReadonlyMap<string, { readonly type: "kernel" | "process"; readonly buildId: string }> }
+export interface GuestProgramArtifact { readonly name: string; readonly path: string; readonly buildId: string; readonly endpoint: string; readonly installPath: string; readonly cacheHit: boolean }
+export interface UmlImageArtifact { readonly kernelPath: string; readonly rootfsPath: string; readonly buildId: string; readonly endpoints: ReadonlyMap<string, { readonly type: "kernel" | "process"; readonly buildId: string }>; readonly cacheHit: boolean }
 
 async function files(root: string, relative = ""): Promise<string[]> {
   const output: string[] = [];
@@ -122,12 +122,12 @@ async function buildAgent(context: StepExecutionContext): Promise<GuestProgramAr
   const key = await hashFiles([source, path.join(kitRoot, "platform/linux-kernel/include/cautest/kernel_abi.h")], { version: version.stdout, schema: 1 });
   const directory = path.join(context.project.cacheDir, "uml-agent", key);
   const target = path.join(directory, "agent");
-  try { if ((await lstat(target)).isFile()) return { name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent" }; } catch { /* build */ }
+  try { if ((await lstat(target)).isFile()) return { name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit: true }; } catch { /* build */ }
   await mkdir(directory, { recursive: true });
   const result = await runCommand({ program: compiler, args: ["-O2", "-std=c99", "-Wall", "-Wextra", "-static", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/linux-kernel/include")}`, source, "-o", target], cwd: directory, signal: context.signal, onOutput: context.output });
   if (result.exitCode !== 0) throw new CautestError(`UML Guest Agent 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
   await chmod(target, 0o755);
-  return { name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent" };
+  return { name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit: false };
 }
 
 /** 编译直接放入 Rootfs 的 Guest Program。 */
@@ -159,7 +159,7 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
   const directory = path.join(cacheRoot, "guest-programs", key);
   const target = path.join(directory, input.name);
   if (cacheEnabled) {
-    try { if ((await lstat(target)).isFile()) return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}` }; } catch { /* build */ }
+    try { if ((await lstat(target)).isFile()) return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}`, cacheHit: true }; } catch { /* build */ }
   }
   await rm(directory, { recursive: true, force: true });
   await mkdir(directory, { recursive: true });
@@ -168,7 +168,7 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
   const result = await runCommand({ program: compiler, args: ["-std=c99", "-Wall", "-Wextra", ...(input.static === false ? [] : ["-static"]), ...includes.map((item) => `-I${item}`), ...definitions, ...(input.cflags ?? []), ...sources.map((item) => path.join(context.project.configDir, item)), ...(input.ldflags ?? []), "-o", target], cwd: directory, signal: context.signal, onOutput: context.output });
   if (result.exitCode !== 0) throw new CautestError(`Guest Program ${input.name} 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
   await chmod(target, 0o755);
-  return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}` };
+  return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}`, cacheHit: false };
 }
 
 function registrySource(suites: readonly string[]): string { return `#include <cautest/cautest.h>\n${suites.map((suite) => `CAUTEST_SUITE_DECLARE(${suite});`).join("\n")}\nCAUTEST_REGISTRY(cautest_generated_registry,\n${suites.map((suite) => `    CAUTEST_SUITE_REF(${suite})`).join(",\n")});\n`; }
@@ -209,7 +209,7 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
   const directory = path.join(cacheRoot, "driver-guest", key);
   const target = path.join(directory, name);
   if (cacheEnabled) {
-    try { if ((await lstat(target)).isFile()) return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}` }; } catch { /* build */ }
+    try { if ((await lstat(target)).isFile()) return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}`, cacheHit: true }; } catch { /* build */ }
   }
   await rm(directory, { recursive: true, force: true }); await mkdir(directory, { recursive: true });
   const registry = path.join(directory, "registry.c"); const entry = path.join(directory, "entry.c");
@@ -220,7 +220,7 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
   const result = await runCommand({ program: compiler, args, cwd: directory, signal: context.signal, onOutput: context.output });
   if (result.exitCode !== 0) throw new CautestError(`Driver Guest C Test 构建失败 (exit ${result.exitCode})\n${result.stderr}`, { code: "build_error" });
   await chmod(target, 0o755);
-  return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}` };
+  return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}`, cacheHit: false };
 }
 
 async function cpio(root: string, target: string, program: string, signal: AbortSignal): Promise<void> {
@@ -247,7 +247,7 @@ export async function buildRootfs(options: { readonly name: string; readonly env
   const archive = path.join(directory, "rootfs.cpio");
   const endpoints = new Map<string, { type: "kernel" | "process"; buildId: string }>([["kernel", { type: "kernel", buildId: key }], ...(options.programs ?? []).map((item) => [item.endpoint, { type: "process" as const, buildId: item.buildId }] as const)]);
   if (cacheEnabled) {
-    try { if ((await lstat(archive)).isFile()) return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints }; } catch { /* build */ }
+    try { if ((await lstat(archive)).isFile()) return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints, cacheHit: true }; } catch { /* build */ }
   }
   await rm(directory, { recursive: true, force: true });
   await mkdir(cacheRoot, { recursive: true });
@@ -269,7 +269,7 @@ export async function buildRootfs(options: { readonly name: string; readonly env
     await mkdir(path.dirname(directory), { recursive: true });
     try { await rename(temporary, directory); } catch (cause) { try { await lstat(archive); } catch { throw cause; } }
   } finally { await rm(temporary, { recursive: true, force: true }); }
-  return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints };
+  return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints, cacheHit: false };
 }
 
 /** 启动 UML 并等待 Guest Agent 用 Catalog Build ID 报告 Ready。 */

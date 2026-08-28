@@ -38,6 +38,8 @@ export default testConfig({ defaults: { resultDir: '.state/results' }, jobs: [te
   assert.match(io.value.stderr, /HEARTBEAT Step/u);
   assert.match(io.value.stderr, /CACHE HIT/u);
   assert.match(io.value.stderr, /build-log/u);
+  assert.match(io.value.stderr, /END Job unit\.fixture SUCCESS \d+ms/u);
+  assert.equal(summary.jobs[0].durationMs > 0, true);
   assert.equal(JSON.parse(await readFile(path.join(summary.resultDir, "summary.json"), "utf8")).runId, summary.runId);
 });
 
@@ -72,6 +74,6 @@ export default testConfig({ defaults: { resultDir: '.managed/results', cacheDir:
 
 test("run 子命令提供独立帮助", async () => {
   const io = streams();
-  assert.equal(await runCli(["help", "run"], io.streams), 0);
+  assert.equal(await runCli(["run", "--help"], io.streams), 0);
   assert.match(io.value.stdout, /^用法: cautest .* run/u);
 });

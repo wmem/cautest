@@ -20,6 +20,7 @@ interface ParsedArguments {
   readonly json: boolean;
   readonly verbose: boolean;
   readonly all: boolean;
+  readonly help: boolean;
 }
 
 interface RunSummary {
@@ -65,6 +66,7 @@ function parseArguments(args: readonly string[]): ParsedArguments {
   let json = false;
   let verbose = false;
   let all = false;
+  let help = false;
   const positional: string[] = [];
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -76,6 +78,7 @@ function parseArguments(args: readonly string[]): ParsedArguments {
     } else if (argument === "--json") json = true;
     else if (argument === "--verbose") verbose = true;
     else if (argument === "--all") all = true;
+    else if (argument === "--help" || argument === "-h") help = true;
     else if (argument?.startsWith("-")) throw new CautestError(`未知选项: ${argument}`, { code: "config_error" });
     else if (argument !== undefined) positional.push(argument);
   }
@@ -86,6 +89,7 @@ function parseArguments(args: readonly string[]): ParsedArguments {
     json,
     verbose,
     all,
+    help,
   };
 }
 
@@ -210,7 +214,7 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams): Promise
       },
     });
     results.push(result);
-    line(streams, "stderr", `END Job ${job.id} ${result.status}`);
+    line(streams, "stderr", `END Job ${job.id} ${result.status} ${Math.round(result.durationMs)}ms`);
   }
   const status = results.some((item) => item.status === "ERROR") ? "ERROR" : results.some((item) => item.status === "FAIL") ? "FAIL" : "SUCCESS";
   const summary: RunSummary = {
@@ -237,6 +241,11 @@ export async function runCli(args: readonly string[], streams: CliStreams = proc
       return 0;
     }
     const parsed = parseArguments(args);
+    if (parsed.help) {
+      const topic = parsed.command === "help" ? parsed.selectors[0] : parsed.command;
+      streams.stdout.write(topic === undefined ? usage : (commandHelp[topic] ?? usage));
+      return 0;
+    }
     if (parsed.command === "help") {
       const topic = parsed.selectors[0];
       streams.stdout.write(topic === undefined ? usage : (commandHelp[topic] ?? usage));

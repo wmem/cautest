@@ -19,6 +19,7 @@ export interface ExecutedStep {
 export interface ExecutedWorkflow {
   readonly jobId: string;
   readonly status: "SUCCESS" | "FAIL" | "ERROR";
+  readonly durationMs: number;
   readonly steps: readonly ExecutedStep[];
 }
 
@@ -64,6 +65,7 @@ async function runWithTimeout<T>(
 
 /** 严格按 Test Job 中的顺序执行 Workflow。 */
 export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOptions = {}): Promise<ExecutedWorkflow> {
+  const workflowStarted = performance.now();
   const steps: ExecutedStep[] = [];
   const state = new Map<string, unknown>();
   let failed = false;
@@ -137,6 +139,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
   return Object.freeze({
     jobId: job.id,
     status: executionError ? "ERROR" : (testFailed ? "FAIL" : "SUCCESS"),
+    durationMs: performance.now() - workflowStarted,
     steps: Object.freeze(steps),
   });
 }

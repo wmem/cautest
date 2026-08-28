@@ -22,9 +22,9 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
   const build = defineStep({
     kind: "driverKernelEnvironmentBuild", name, phase: "build", details: { kernel: environment.kernel, busybox: environment.busybox },
     async execute(context) {
-      const [kernelOutput, busybox] = await Promise.all([buildKernel(environment, context, name), buildBusyBox(environment.busybox, context)]);
-      context.state.set("kernelOutput", kernelOutput); context.state.set("busybox", busybox);
-      return { diagnostics: [{ code: "kernel_ready", message: kernelOutput }, { code: busybox.cacheHit ? "cache_hit" : "cache_miss", message: busybox.path }] };
+      const [kernel, busybox] = await Promise.all([buildKernel(environment, context, name), buildBusyBox(environment.busybox, context)]);
+      context.state.set("kernelOutput", kernel.path); context.state.set("busybox", busybox);
+      return { diagnostics: [{ code: kernel.cacheHit ? "cache_hit" : "cache_miss", message: kernel.path }, { code: busybox.cacheHit ? "cache_hit" : "cache_miss", message: busybox.path }] };
     },
   });
   const probe = input.probe === undefined ? [] : [defineStep({
@@ -54,7 +54,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
   const guestName = input.guest.name ?? name;
   const guest = defineStep({
     kind: "driverGuestCTestBuild", name: guestName, phase: "build", details: { ...input.guest }, ...(input.guest.timeoutMs === undefined ? {} : { timeoutMs: input.guest.timeoutMs }),
-    async execute(context) { const artifact = await buildDriverGuestCTest(input.id, input.guest, context); context.state.set(`guest:${guestName}`, artifact); return { diagnostics: [{ code: "guest_ready", message: artifact.path }] }; },
+    async execute(context) { const artifact = await buildDriverGuestCTest(input.id, input.guest, context); context.state.set(`guest:${guestName}`, artifact); return { diagnostics: [{ code: artifact.cacheHit ? "cache_hit" : "cache_miss", message: artifact.path }] }; },
   });
   const rootfs = defineStep({
     kind: "umlRootfsBuild", name, phase: "build", details: { drivers: [...driverNames], guest: guestName, overlays: environment.rootfs?.overlays ?? [] }, ...(environment.rootfs?.timeoutMs === undefined ? {} : { timeoutMs: environment.rootfs.timeoutMs }),
@@ -63,7 +63,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
       if (typeof kernelOutput !== "string" || busybox === undefined || program === undefined) throw new CautestError("Driver Rootfs 输入 Artifact 不完整", { code: "build_error" });
       const driverArtifacts = [...(input.probe === undefined ? [] : ["cautest_probe"]), ...driverNames].map((driver) => { const artifact = context.state.get(`module:${driver}`) as KernelModuleArtifact | undefined; if (artifact === undefined) throw new CautestError(`Driver Artifact 不存在: ${driver}`, { code: "build_error" }); return artifact; });
       const image = await buildRootfs({ name, environment, kernelOutput, busybox, modules: driverArtifacts, programs: [program] }, context); context.state.set(`image:${name}`, image);
-      return { diagnostics: [{ code: "rootfs_ready", message: image.rootfsPath }] };
+      return { diagnostics: [{ code: image.cacheHit ? "cache_hit" : "cache_miss", message: image.rootfsPath }] };
     },
   });
   const start = defineStep({ kind: "umlStart", name, phase: "provision", details: { ...environment.machine }, ...(environment.machine?.startTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.startTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("Driver UML Image 不存在", { code: "provision_error" }); const resource = await startUml(name, image, environment, context); return { diagnostics: [{ code: "uml_ready", message: `pid=${resource.child.pid}` }] }; } });
