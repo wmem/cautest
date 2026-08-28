@@ -59,10 +59,17 @@ export interface SimulatedMcuBoardInput {
 }
 
 /** 外部 Board Adapter 必须实现的最小接口。 */
+export interface McuCtpTransport {
+  open?(options?: { readonly timeoutMs?: number; readonly signal?: AbortSignal }): void | Promise<void>;
+  write(data: string): void | Promise<void>;
+  nextLine(options?: { readonly timeoutMs?: number; readonly signal?: AbortSignal }): string | Promise<string>;
+  close?(): void | Promise<void>;
+}
+
 export interface McuBoardAdapter {
   flash(firmware: { readonly path: string; readonly buildId: string }): void | Promise<void>;
   reset(): string | Promise<string>;
-  openTransport(options?: Readonly<Record<string, unknown>>): unknown;
+  openTransport(options?: Readonly<Record<string, unknown>>): McuCtpTransport | Promise<McuCtpTransport>;
   close?(): void | Promise<void>;
 }
 

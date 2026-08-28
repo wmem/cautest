@@ -14,3 +14,29 @@ test("Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run", asy
   assert.equal(result.status, "SUCCESS");
   assert.equal(result.steps[2].testResults[0].cases[0].status, "PASS");
 });
+
+test("External MCU Adapter 通过统一 CTP3 Transport 执行", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-mcu-external-"));
+  const firmware = path.join(temporary, "firmware.bin");
+  await import("node:fs/promises").then(({ writeFile }) => writeFile(firmware, "firmware"));
+  const crypto = await import("node:crypto");
+  const buildId = crypto.createHash("sha256").update("firmware").update("{}").digest("hex").slice(0, 24);
+  const responses = [
+    `+HELLO:3,external,${buildId}`, "OK:HELLO", "+CASE:1,1,0,suite,case,", "OK:LIST",
+    "+CASE-BEGIN:1,1,1,0,suite,case,", "+CASE-END:1,1,1,0,PASS", "OK:CASE", "OK:BYE",
+  ];
+  let flashed = false;
+  let closed = false;
+  const adapter = {
+    async flash(value) { flashed = value.path === firmware; },
+    reset() { return "boot-1"; },
+    openTransport() { return { write() {}, nextLine() { return responses.shift(); }, close() {} }; },
+    close() { closed = true; },
+  };
+  const job = mcuCTestJob({ id: "component.mcu.external", firmware: { kind: "existing", file: firmware }, board: { kind: "external", adapter } });
+  const result = await executeWorkflow(job, { project: { configDir: temporary, workDir: path.join(temporary, "work"), resultDir: path.join(temporary, "results") } });
+  assert.equal(result.status, "SUCCESS");
+  assert.equal(result.steps[2].testResults[0].cases[0].status, "PASS");
+  assert.equal(flashed, true);
+  assert.equal(closed, true);
+});

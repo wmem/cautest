@@ -94,19 +94,26 @@ function assertion(parsed: ProtocolLine): TestAssertionResult {
   return { ...base, expected: { type, value: flags & 1 ? null : fields[11] ?? "" }, actual: { type, value: flags & 2 ? null : fields[12] ?? "" } };
 }
 
-export interface NativeSessionRequest { readonly program: string; readonly args?: readonly string[]; readonly cwd: string; readonly env: NodeJS.ProcessEnv; readonly expectedBuildId: string; readonly run: CTestRunInput; readonly signal: AbortSignal }
+export interface CtpTransport {
+  open?(options?: { readonly timeoutMs?: number; readonly signal?: AbortSignal }): void | Promise<void>;
+  write(data: string): void | Promise<void>;
+  nextLine(options?: { readonly timeoutMs?: number; readonly signal?: AbortSignal }): string | Promise<string>;
+  close?(): void | Promise<void>;
+}
 
-/** 通过 POSIX Target 的 FD3/FD4 执行 CTP3 Native Test。 */
-export async function runNativeSession(request: NativeSessionRequest): Promise<readonly TestSuiteResult[]> {
-  const child = spawn(request.program, [...(request.args ?? [])], { cwd: request.cwd, env: request.env, stdio: ["ignore", "pipe", "pipe", "pipe", "pipe"] });
-  const input = child.stdio[3] as Writable;
-  const output = child.stdio[4] as Readable;
-  input.on("error", () => { /* Target 退出时关闭控制管道属于正常清理路径。 */ });
-  const queue = new LineQueue(output);
+export interface CtpSessionRequest {
+  readonly transport: CtpTransport;
+  readonly expectedBuildId: string;
+  readonly run: CTestRunInput;
+  readonly signal: AbortSignal;
+}
+
+/** 在任意行式 Transport 上执行完整 CTP3 Session。 */
+export async function runCtpSession(request: CtpSessionRequest): Promise<readonly TestSuiteResult[]> {
   const timeout = request.run.session?.run ?? request.run.runTimeoutMs ?? 60_000;
-  const send = async (command: string) => { input.write(`${command}\n`); };
-  const next = async () => parseLine(await queue.next(timeout, request.signal));
-  const close = async () => { if (child.exitCode === null) child.kill("SIGTERM"); await Promise.race([once(child, "close"), new Promise((resolve) => setTimeout(resolve, 500))]); if (child.exitCode === null) child.kill("SIGKILL"); };
+  await request.transport.open?.({ timeoutMs: request.run.session?.connect ?? 5_000, signal: request.signal });
+  const send = async (command: string) => { await request.transport.write(`${command}\n`); };
+  const next = async () => parseLine(await request.transport.nextLine({ timeoutMs: timeout, signal: request.signal }));
   try {
     await send("AT+HELLO");
     let buildId = "";
@@ -150,6 +157,27 @@ export async function runNativeSession(request: NativeSessionRequest): Promise<r
       await send("AT+BYE");
       await Promise.race([next(), new Promise((resolve) => setTimeout(resolve, 100))]);
     } catch { /* best effort */ }
-    await close();
+    await request.transport.close?.();
   }
+}
+
+export interface NativeSessionRequest { readonly program: string; readonly args?: readonly string[]; readonly cwd: string; readonly env: NodeJS.ProcessEnv; readonly expectedBuildId: string; readonly run: CTestRunInput; readonly signal: AbortSignal }
+
+/** 通过 POSIX Target 的 FD3/FD4 执行 CTP3 Native Test。 */
+export async function runNativeSession(request: NativeSessionRequest): Promise<readonly TestSuiteResult[]> {
+  const child = spawn(request.program, [...(request.args ?? [])], { cwd: request.cwd, env: request.env, stdio: ["ignore", "pipe", "pipe", "pipe", "pipe"] });
+  const input = child.stdio[3] as Writable;
+  const output = child.stdio[4] as Readable;
+  input.on("error", () => { /* Target 退出时关闭控制管道属于正常清理路径。 */ });
+  const queue = new LineQueue(output);
+  const transport: CtpTransport = {
+    write(data) { return new Promise<void>((resolve, reject) => input.write(data, (error) => error ? reject(error) : resolve())); },
+    nextLine(options) { return queue.next(options?.timeoutMs ?? 60_000, options?.signal ?? request.signal); },
+    async close() {
+      if (child.exitCode === null) child.kill("SIGTERM");
+      await Promise.race([once(child, "close"), new Promise((resolve) => setTimeout(resolve, 500))]);
+      if (child.exitCode === null) child.kill("SIGKILL");
+    },
+  };
+  return await runCtpSession({ transport, expectedBuildId: request.expectedBuildId, run: request.run, signal: request.signal });
 }
