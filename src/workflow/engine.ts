@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { SerializedError } from "../model/error.js";
-import type { StepExecutionResult, TestJob, TestSuiteResult, WorkflowProjectContext, WorkflowStep } from "../config/schema/common.js";
+import type { CTestRunOverrides, StepExecutionResult, TestJob, TestSuiteResult, WorkflowProjectContext, WorkflowStep } from "../config/schema/common.js";
 import { CautestError, serializeError } from "../model/error.js";
 import { EventRecorder } from "./events.js";
 import { ArtifactStore, CleanupStack, type CleanupOutcome, ResourceStore, ResultRecorder, type Artifact, type Resource } from "./lifecycle.js";
@@ -43,6 +43,7 @@ export interface WorkflowExecutionOptions {
   readonly project?: Partial<WorkflowProjectContext>;
   readonly events?: EventRecorder;
   readonly heartbeatMs?: number;
+  readonly cTestRun?: CTestRunOverrides;
   readonly onOutput?: (event: { readonly jobId: string; readonly step: WorkflowStep; readonly channel: "stdout" | "stderr"; readonly text: string }) => void;
   readonly onStep?: (event: { readonly type: "START" | "HEARTBEAT" | "END"; readonly jobId: string; readonly step: WorkflowStep; readonly status?: StepStatus; readonly durationMs?: number; readonly diagnostics?: readonly unknown[] }) => void;
 }
@@ -161,6 +162,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
             resources,
             results,
             events,
+            ...(options.cTestRun === undefined ? {} : { cTestRun: options.cTestRun }),
             defer: (callback, name) => cleanupStack.defer(callback, name),
             output: (channel, text) => options.onOutput?.({ jobId: job.id, step, channel, text }),
           }),
@@ -168,7 +170,11 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
           step.phase === "collect" ? undefined : jobSignal,
         ) as StepExecutionResult | void;
         for (const group of result?.testResults ?? []) results.addGroup(group);
-        const status = result?.outcome === "FAIL" ? "FAIL" : "SUCCESS";
+        const status = result?.outcome === "ERROR" ? "ERROR" : result?.outcome === "FAIL" ? "FAIL" : "SUCCESS";
+        const error = status === "ERROR"
+          ? serializeError(result?.error ?? new CautestError(`Step ${id} 返回 ERROR`, { code: phaseError[step.phase] }), phaseError[step.phase])
+          : undefined;
+        if (error !== undefined) { infrastructureFailed = true; errors.push(error); }
         if (status === "FAIL" || hasFailedCase(result?.testResults ?? [])) testFailed = true;
         const record = Object.freeze({
           id,
@@ -179,6 +185,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
           durationMs: performance.now() - stepStarted,
           diagnostics: Object.freeze([...(result?.diagnostics ?? [])]),
           testResults: Object.freeze([...(result?.testResults ?? [])]),
+          ...(error === undefined ? {} : { error }),
         });
         steps.push(record);
         events.emit("STEP_END", { jobId: job.id, stepId: id, status, durationMs: record.durationMs });

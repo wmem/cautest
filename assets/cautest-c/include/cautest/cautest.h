@@ -1,9 +1,7 @@
 #ifndef CAUTEST_CAUTEST_H
 #define CAUTEST_CAUTEST_H
 
-#define CAUTEST_RELEASE_VERSION "0.1.0"
-#define CAUTEST_C_API_MAJOR 2U
-#define CAUTEST_C_API_MINOR 1U
+#include <cautest/version.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -164,6 +164,7 @@ export default testConfig({
 - [MCU C Test](docs/jobs/mcu.md)
 - [Script System Test](docs/jobs/system.md)
 - [C Assertion API](docs/c-assertions.md)
+- [C Kit 构建与消费](docs/c-kit.md)
 - [CLI、Doctor 与结果](docs/cli.md)
 - [完整文档入口](docs/index.md)
 
@@ -176,7 +177,8 @@ pnpm install
 pnpm typecheck
 pnpm test
 pnpm test:e2e
-pnpm test:uml # 需要 Linux Kernel 与 BusyBox 源码
+KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:uml
+KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:driver:uml
 ```
 
 `pnpm pack:portable` 会在 `release/` 下生成解压后可直接使用的 `.tar.gz` 便携包及

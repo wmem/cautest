@@ -73,6 +73,26 @@ export default testConfig({
 
 这里的层级只负责生成稳定 ID `unit.utils.cm_queue`，不会创建另一种运行节点。重复 ID 在根配置合并时直接报错；错误、`plan`、`doctor` 和 `describe` 都保留 `import.meta.url` 来源及完整配置路径。
 
+## Workflow Fragment 与标准能力复用
+
+`defineFragment()` 允许把 Step、嵌套数组和其他 Fragment 组织为可复用单元，`testJob()` 会递归展开后统一校验 Phase 顺序。需要组合标准实现时，不要复制 Job 内部 Executor：`standardJobFragment(job, { phases, kinds, names })` 可从已经配置好的 Native、Kernel、Driver 或 MCU Job 选择标准 Step；`composeJobWorkflows(...jobs)` 会按 `prepare → build → provision → run → collect` 合并多个完整 Workflow。
+
+```js
+const native = nativeCTestJob({ id: "source.native", tests: ["test/native.c"] });
+const service = testJob({ id: "source.service", level: "system", workflow: [
+  processStart({ name: "api", program: "node", args: ["server.mjs"], ready: { type: "process-alive" } }),
+  collectLogs({ name: "api", resource: "process:api" }),
+] });
+
+const combined = testJob({
+  id: "system.combined",
+  level: "system",
+  workflow: [composeJobWorkflows(native, service)],
+});
+```
+
+标准 Fragment 保留原 Job 的声明环境，组合 Job 的同名环境变量优先。Factory 输入中配置的编译、Target 和缓存逻辑原样复用；组合方仍需保证不同来源使用不冲突的 Artifact/Resource/State 名称，尤其不要把两个独立 Kernel/UML Backbone 合并进同一个 Job。
+
 ## Glob、继承和缓存边界
 
 `tests`、`sources`、`headers` 和其他 `FilePattern` 字段支持 `*`、`**`、`?`、字符组、花括号及 `!` 排除。每个正向 Pattern 必须命中文件，结果排序并去重。`headers` 自动进入 Doctor 和缓存指纹，其父目录由 Native/自动 Guest 构建推导为 Include 目录。
@@ -96,7 +116,7 @@ testConfig({
 });
 ```
 
-使用 `cautest run --profile ci`。Profile 环境变量覆盖 Job 中的同名值；Reporter 输出见[结果目录与 Reporter](results.md)。
+使用 `cautest run --profile ci`。Profile 环境变量覆盖 Job 中的同名值，并进入 Native、Kernel、BusyBox、Module、Driver Guest、Rootfs、UML、MCU、System 和自定义 Step 的最终 `context.job.env`。标准构建器使用最终有效环境执行工具，并把声明式 Job/Profile 环境纳入 Cache 指纹；Step 专属环境仍具有最高优先级。Reporter 输出见[结果目录与 Reporter](results.md)。
 
 ## 编辑器类型提示
 

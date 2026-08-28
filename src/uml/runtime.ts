@@ -6,10 +6,13 @@ import { chmod, copyFile, cp, lstat, mkdir, mkdtemp, readFile, readdir, rename, 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { BusyBoxBuildInput, CTestRunInput, DriverGuestCTestInput, StepExecutionContext, UmlGuestProgramInput, UmlKernelEnvironmentInput } from "../config/schema/index.js";
+import { CAUTEST_CACHE_VERSIONS } from "../config/versions.js";
 import { expandFilePatterns } from "../config/file-pattern.js";
 import type { KernelModuleArtifact } from "../kernel/module-build.js";
 import { CautestError } from "../model/error.js";
 import { runCtpSession } from "../protocol/native-session.js";
+import { workflowSessionEventSink } from "../protocol/workflow-session.js";
+import { declaredEnvironment, effectiveEnvironment } from "../runtime/environment.js";
 import { runCommand } from "../runtime/process.js";
 import { UmlControlChannel, type UmlRuntimeResource } from "./control.js";
 
@@ -52,10 +55,11 @@ async function hashFiles(locations: readonly string[], metadata: unknown): Promi
 
 /** 对 Git Worktree 使用 HEAD、完整 Diff 和未跟踪文件，对普通目录使用内容树。 */
 export async function sourceTreeIdentity(source: string, context: StepExecutionContext): Promise<string> {
-  const head = await runCommand({ program: "git", args: ["-C", source, "rev-parse", "HEAD"], cwd: context.project.configDir, signal: context.signal });
+  const environment = effectiveEnvironment(context);
+  const head = await runCommand({ program: "git", args: ["-C", source, "rev-parse", "HEAD"], cwd: context.project.configDir, env: environment, signal: context.signal });
   if (head.exitCode === 0) {
-    const diff = await runCommand({ program: "git", args: ["-C", source, "diff", "--binary", "HEAD"], cwd: context.project.configDir, signal: context.signal });
-    const untracked = await runCommand({ program: "git", args: ["-C", source, "ls-files", "--others", "--exclude-standard"], cwd: context.project.configDir, signal: context.signal });
+    const diff = await runCommand({ program: "git", args: ["-C", source, "diff", "--binary", "HEAD"], cwd: context.project.configDir, env: environment, signal: context.signal });
+    const untracked = await runCommand({ program: "git", args: ["-C", source, "ls-files", "--others", "--exclude-standard"], cwd: context.project.configDir, env: environment, signal: context.signal });
     const extra = untracked.stdout.split("\n").filter(Boolean).map((item) => path.join(source, item));
     return await hashFiles(extra, { head: head.stdout.trim(), diff: diff.stdout });
   }
@@ -81,15 +85,16 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   const source = path.resolve(context.project.configDir, input.sourceDir);
   const fragments = input.configFragments === undefined ? [] : await expandFilePatterns(input.configFragments, { baseDir: context.project.configDir, label: "busybox.configFragments" });
   const make = input.make ?? "make";
-  const compiler = input.env?.CC ?? process.env.CC ?? "cc";
+  const buildEnvironment = effectiveEnvironment(context, input.env);
+  const compiler = buildEnvironment.CC ?? "cc";
   const [identity, version, compilerVersion, compilerTarget] = await Promise.all([
     sourceTreeIdentity(source, context),
-    runCommand({ program: make, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
-    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
-    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: make, args: ["--version"], cwd: context.project.configDir, env: buildEnvironment, signal: context.signal }),
+    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, env: buildEnvironment, signal: context.signal }),
+    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, env: buildEnvironment, signal: context.signal }),
   ]);
-  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, ({ ...process.env, ...input.env })[key] ?? null]));
-  const key = await hashFiles(fragments.map((item) => path.join(context.project.configDir, item)), { schema: 2, identity, make: version.stdout, compiler: compilerVersion.stdout, compilerTarget: compilerTarget.stdout, static: input.static !== false, makeArgs: input.makeArgs ?? [], env: input.env ?? {}, fingerprintEnvironment });
+  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, buildEnvironment[key] ?? null]));
+  const key = await hashFiles(fragments.map((item) => path.join(context.project.configDir, item)), { schema: CAUTEST_CACHE_VERSIONS.busyboxFingerprint, identity, make: version.stdout, compiler: compilerVersion.stdout, compilerTarget: compilerTarget.stdout, static: input.static !== false, makeArgs: input.makeArgs ?? [], environment: declaredEnvironment(context, input.env), fingerprintEnvironment });
   const cacheEnabled = input.cache?.enabled !== false;
   const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (input.cache?.directory ?? context.project.cacheDir) : context.project.workDir);
   const output = path.join(cacheRoot, "busybox", key);
@@ -101,7 +106,7 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   await mkdir(output, { recursive: true });
   const base = ["-C", source, `O=${output}`];
   for (const args of [[...base, "defconfig"]]) {
-    const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: { ...process.env, ...input.env }, signal: context.signal, onOutput: context.output });
+    const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
     if (result.exitCode !== 0) throw new CautestError(`BusyBox 配置失败 (exit ${result.exitCode})`, { code: "build_error" });
   }
   const defaults = `${input.static === false ? "" : "CONFIG_STATIC=y\n"}CONFIG_SH_IS_ASH=y\nCONFIG_ASH=y\nCONFIG_MOUNT=y\nCONFIG_INSMOD=y\nCONFIG_POWEROFF=y\nCONFIG_REBOOT=y\n# CONFIG_TC is not set\n`;
@@ -109,7 +114,7 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   const configPath = path.join(output, ".config");
   await writeFile(configPath, mergeConfigText(await readFile(configPath, "utf8"), defaults + fragmentText));
   for (const args of [[...base, "silentoldconfig"], [...base, `-j${input.jobs ?? 4}`, ...(input.makeArgs ?? []), "busybox"]]) {
-    const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: { ...process.env, ...input.env }, signal: context.signal, onOutput: context.output });
+    const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
     if (result.exitCode !== 0) throw new CautestError(`BusyBox 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
   }
   return { path: binary, buildId: key, cacheHit: false };
@@ -117,14 +122,15 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
 
 async function buildAgent(context: StepExecutionContext): Promise<GuestProgramArtifact> {
   const source = path.join(kitRoot, "agent/uml-guest-agent/guest_agent.c");
-  const compiler = "cc";
-  const version = await runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal });
-  const key = await hashFiles([source, path.join(kitRoot, "platform/linux-kernel/include/cautest/kernel_abi.h")], { version: version.stdout, schema: 1 });
+  const environment = effectiveEnvironment(context);
+  const compiler = environment.CC ?? "cc";
+  const version = await runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, env: environment, signal: context.signal });
+  const key = await hashFiles([source, path.join(kitRoot, "include/cautest/version.h"), path.join(kitRoot, "platform/linux-kernel/include/cautest/kernel_abi.h")], { version: version.stdout, schema: CAUTEST_CACHE_VERSIONS.agentFingerprint, environment: declaredEnvironment(context) });
   const directory = path.join(context.project.cacheDir, "uml-agent", key);
   const target = path.join(directory, "agent");
   try { if ((await lstat(target)).isFile()) return { name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit: true }; } catch { /* build */ }
   await mkdir(directory, { recursive: true });
-  const result = await runCommand({ program: compiler, args: ["-O2", "-std=c99", "-Wall", "-Wextra", "-static", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/linux-kernel/include")}`, source, "-o", target], cwd: directory, signal: context.signal, onOutput: context.output });
+  const result = await runCommand({ program: compiler, args: ["-O2", "-std=c99", "-Wall", "-Wextra", "-static", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/linux-kernel/include")}`, source, "-o", target], cwd: directory, env: environment, signal: context.signal, onOutput: context.output });
   if (result.exitCode !== 0) throw new CautestError(`UML Guest Agent 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
   await chmod(target, 0o755);
   return { name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit: false };
@@ -134,15 +140,16 @@ async function buildAgent(context: StepExecutionContext): Promise<GuestProgramAr
 export async function buildGuestProgram(input: UmlGuestProgramInput, context: StepExecutionContext): Promise<GuestProgramArtifact> {
   const sources = await expandFilePatterns(input.sources, { baseDir: context.project.configDir, label: `guestPrograms.${input.name}.sources` });
   const headers = input.headers === undefined ? [] : await expandFilePatterns(input.headers, { baseDir: context.project.configDir, label: `guestPrograms.${input.name}.headers` });
-  const compiler = input.compiler ?? "cc";
+  const environment = effectiveEnvironment(context);
+  const compiler = input.compiler ?? environment.CC ?? "cc";
   const [version, targetIdentity] = await Promise.all([
-    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
-    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, env: environment, signal: context.signal }),
+    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, env: environment, signal: context.signal }),
   ]);
   const locations = [...sources, ...headers].map((item) => path.join(context.project.configDir, item));
-  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, process.env[key] ?? null]));
+  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, environment[key] ?? null]));
   const key = await hashFiles(locations, {
-    schema: 2,
+    schema: CAUTEST_CACHE_VERSIONS.guestFingerprint,
     compiler: version.stdout,
     compilerTarget: targetIdentity.stdout,
     sources,
@@ -152,6 +159,7 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
     cflags: input.cflags ?? [],
     ldflags: input.ldflags ?? [],
     static: input.static !== false,
+    environment: declaredEnvironment(context),
     fingerprintEnvironment,
   });
   const cacheEnabled = input.cache?.enabled !== false;
@@ -165,7 +173,7 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
   await mkdir(directory, { recursive: true });
   const includes = [...new Set([...(input.includeDirs ?? []).map((item) => path.resolve(context.project.configDir, item)), ...headers.map((item) => path.dirname(path.join(context.project.configDir, item)))])];
   const definitions = Object.entries(input.defines ?? {}).map(([name, value]) => `-D${name}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`);
-  const result = await runCommand({ program: compiler, args: ["-std=c99", "-Wall", "-Wextra", ...(input.static === false ? [] : ["-static"]), ...includes.map((item) => `-I${item}`), ...definitions, ...(input.cflags ?? []), ...sources.map((item) => path.join(context.project.configDir, item)), ...(input.ldflags ?? []), "-o", target], cwd: directory, signal: context.signal, onOutput: context.output });
+  const result = await runCommand({ program: compiler, args: ["-std=c99", "-Wall", "-Wextra", ...(input.static === false ? [] : ["-static"]), ...includes.map((item) => `-I${item}`), ...definitions, ...(input.cflags ?? []), ...sources.map((item) => path.join(context.project.configDir, item)), ...(input.ldflags ?? []), "-o", target], cwd: directory, env: environment, signal: context.signal, onOutput: context.output });
   if (result.exitCode !== 0) throw new CautestError(`Guest Program ${input.name} 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
   await chmod(target, 0o755);
   return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}`, cacheHit: false };
@@ -180,16 +188,17 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
   const sources = input.sources === undefined ? [] : await expandFilePatterns(input.sources, { baseDir: context.project.configDir, label: `jobs.${jobId}.guest.sources` });
   const headers = input.headers === undefined ? [] : await expandFilePatterns(input.headers, { baseDir: context.project.configDir, label: `jobs.${jobId}.guest.headers` });
   const suites = input.suites ?? [jobId.split(".").at(-1)!.replace(/[^A-Za-z0-9_]/gu, "_")];
-  const compiler = input.compiler ?? "cc";
+  const environment = effectiveEnvironment(context);
+  const compiler = input.compiler ?? environment.CC ?? "cc";
   const [version, targetIdentity] = await Promise.all([
-    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
-    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, env: environment, signal: context.signal }),
+    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, env: environment, signal: context.signal }),
   ]);
   const product = [...tests, ...sources, ...headers].map((item) => path.join(context.project.configDir, item));
   const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c", "agent/uml-guest-agent/probe_client.c"].map((item) => path.join(kitRoot, item));
-  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, process.env[key] ?? null]));
-  const key = await hashFiles([...product, ...kitSources], {
-    schema: 2,
+  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, environment[key] ?? null]));
+  const key = await hashFiles([...product, path.join(kitRoot, "include/cautest/version.h"), ...kitSources], {
+    schema: CAUTEST_CACHE_VERSIONS.guestFingerprint,
     compiler: version.stdout,
     compilerTarget: targetIdentity.stdout,
     tests,
@@ -201,6 +210,7 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
     cflags: input.cflags ?? [],
     ldflags: input.ldflags ?? [],
     static: input.static !== false,
+    environment: declaredEnvironment(context),
     fingerprintEnvironment,
   });
   const name = input.name ?? jobId.replace(/[^A-Za-z0-9_-]/gu, "-");
@@ -217,15 +227,15 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
   const includes = [...new Set([...(input.includeDirs ?? []).map((item) => path.resolve(context.project.configDir, item)), ...headers.map((item) => path.dirname(path.join(context.project.configDir, item)))])];
   const definitions = Object.entries(input.defines ?? {}).map(([name, value]) => `-D${name}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`);
   const args = ["-std=c99", "-Wall", "-Wextra", ...(input.static === false ? [] : ["-static"]), `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/posix")}`, `-I${path.join(kitRoot, "platform/linux-kernel/include")}`, `-I${path.join(kitRoot, "target/posix")}`, `-I${path.join(kitRoot, "agent/uml-guest-agent")}`, ...includes.map((item) => `-I${item}`), ...definitions, ...(input.cflags ?? []), ...tests.map((item) => path.join(context.project.configDir, item)), ...sources.map((item) => path.join(context.project.configDir, item)), registry, entry, ...kitSources, ...(input.ldflags ?? []), "-o", target];
-  const result = await runCommand({ program: compiler, args, cwd: directory, signal: context.signal, onOutput: context.output });
+  const result = await runCommand({ program: compiler, args, cwd: directory, env: environment, signal: context.signal, onOutput: context.output });
   if (result.exitCode !== 0) throw new CautestError(`Driver Guest C Test 构建失败 (exit ${result.exitCode})\n${result.stderr}`, { code: "build_error" });
   await chmod(target, 0o755);
   return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}`, cacheHit: false };
 }
 
-async function cpio(root: string, target: string, program: string, signal: AbortSignal): Promise<void> {
+async function cpio(root: string, target: string, program: string, signal: AbortSignal, environment: NodeJS.ProcessEnv): Promise<void> {
   const manifest = [".", ...(await archiveEntries(root)).map((item) => `./${item.split(path.sep).join("/")}`)].sort().join("\n") + "\n";
-  const child = spawn(program, ["--quiet", "-o", "-H", "newc", "--owner=0:0"], { cwd: root, stdio: ["pipe", "pipe", "pipe"] });
+  const child = spawn(program, ["--quiet", "-o", "-H", "newc", "--owner=0:0"], { cwd: root, env: environment, stdio: ["pipe", "pipe", "pipe"] });
   const chunks: Buffer[] = []; const errors: Buffer[] = [];
   child.stdout.on("data", (chunk: Buffer) => chunks.push(chunk)); child.stderr.on("data", (chunk: Buffer) => errors.push(chunk));
   const abort = () => child.kill("SIGTERM"); signal.addEventListener("abort", abort, { once: true });
@@ -240,7 +250,7 @@ export async function buildRootfs(options: { readonly name: string; readonly env
   const agent = await buildAgent(context);
   const overlays = options.environment.rootfs?.overlays ?? [];
   const overlayFiles = (await Promise.all(overlays.map(async (item) => (await files(path.resolve(context.project.configDir, item))).map((file) => path.join(context.project.configDir, item, file))))).flat();
-  const key = await hashFiles(overlayFiles, { schema: 3, busybox: options.busybox.buildId, agent: agent.buildId, modules: options.modules.map((item) => [item.name, item.cacheKey]), programs: options.programs?.map((item) => [item.name, item.buildId]), coverage: options.coverage === true });
+  const key = await hashFiles(overlayFiles, { schema: CAUTEST_CACHE_VERSIONS.rootfsFingerprint, busybox: options.busybox.buildId, agent: agent.buildId, modules: options.modules.map((item) => [item.name, item.cacheKey]), programs: options.programs?.map((item) => [item.name, item.buildId]), coverage: options.coverage === true, environment: declaredEnvironment(context) });
   const cacheEnabled = options.environment.rootfs?.cache?.enabled !== false;
   const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (options.environment.rootfs?.cache?.directory ?? path.join(context.project.cacheDir, "rootfs")) : context.project.workDir);
   const directory = path.join(cacheRoot, key);
@@ -265,7 +275,7 @@ export async function buildRootfs(options: { readonly name: string; readonly env
     await writeFile(path.join(root, "etc/cautest/catalog"), catalog);
     const coverage = options.coverage ? `/bin/busybox mkdir -p /sys/kernel/debug\nmount -t debugfs debugfs /sys/kernel/debug\ncoverage_dir=$(/bin/busybox sed -n 's/.*cautest.coverage_dir=\\([^ ]*\\).*/\\1/p' /proc/cmdline)\n[ -n "$coverage_dir" ] || exec /bin/sh\nmount -t hostfs none /mnt/cautest-coverage -o "$coverage_dir" || exec /bin/sh\n` : "";
     await writeFile(path.join(root, "init"), `#!/bin/sh\nmount -t devtmpfs devtmpfs /dev\nmount -t proc proc /proc\nmount -t sysfs sysfs /sys\n${coverage}for module in /opt/cautest/modules/*.ko; do insmod "$module" || exec /bin/sh; done\necho "cautest: modules loaded" >/dev/console\nexec /opt/cautest/bin/agent /dev/ttyS0 /etc/cautest/catalog\n`); await chmod(path.join(root, "init"), 0o755);
-    await cpio(root, path.join(temporary, "rootfs.cpio"), options.environment.rootfs?.cpio ?? "cpio", context.signal);
+    await cpio(root, path.join(temporary, "rootfs.cpio"), options.environment.rootfs?.cpio ?? "cpio", context.signal, effectiveEnvironment(context));
     await mkdir(path.dirname(directory), { recursive: true });
     try { await rename(temporary, directory); } catch (cause) { try { await lstat(archive); } catch { throw cause; } }
   } finally { await rm(temporary, { recursive: true, force: true }); }
@@ -276,7 +286,7 @@ export async function buildRootfs(options: { readonly name: string; readonly env
 export async function startUml(name: string, image: UmlImageArtifact, environment: UmlKernelEnvironmentInput, context: StepExecutionContext, coverageDir?: string): Promise<UmlRuntimeResource> {
   if (coverageDir !== undefined) { if (/\s/u.test(coverageDir)) throw new CautestError("Kernel Coverage 路径不能含空白", { code: "config_error" }); await mkdir(coverageDir, { recursive: true }); }
   const args = [`mem=${environment.machine?.memory ?? "256M"}`, `initrd=${image.rootfsPath}`, "root=/dev/ram0", "rw", "init=/init", "con=null", "con0=fd:0,fd:1", "ssl=null", "ssl0=fd:3,fd:3", ...(coverageDir === undefined ? [] : [`cautest.coverage_dir=${coverageDir}`]), ...(environment.machine?.kernelArgs ?? [])];
-  const child = spawn(image.kernelPath, args, { cwd: context.project.configDir, env: { ...process.env, ...context.job.env }, stdio: ["ignore", "pipe", "pipe", "pipe"] });
+  const child = spawn(image.kernelPath, args, { cwd: context.project.configDir, env: effectiveEnvironment(context), stdio: ["ignore", "pipe", "pipe", "pipe"] });
   const stdout: Buffer[] = []; const stderr: Buffer[] = [];
   child.stdout?.on("data", (chunk: Buffer) => { stdout.push(chunk); context.output("stdout", chunk.toString("utf8")); }); child.stderr?.on("data", (chunk: Buffer) => { stderr.push(chunk); context.output("stderr", chunk.toString("utf8")); });
   const channel = child.stdio[3];
@@ -303,12 +313,28 @@ export async function startUml(name: string, image: UmlImageArtifact, environmen
   return resource;
 }
 
-export async function runUmlEndpoint(name: string, endpoint: string, image: UmlImageArtifact, run: CTestRunInput, context: StepExecutionContext): Promise<ReturnType<typeof runCtpSession>> {
+export async function runUmlEndpoint(name: string, endpoint: string, image: UmlImageArtifact, run: CTestRunInput, context: StepExecutionContext): ReturnType<typeof runCtpSession> {
   const resource = context.state.get(`uml:${name}`) as UmlRuntimeResource | undefined;
   if (resource === undefined) throw new CautestError(`UML Resource 不存在: ${name}`, { code: "transport_error" });
   const target = image.endpoints.get(endpoint);
   if (target === undefined) throw new CautestError(`UML Catalog 不存在 Endpoint: ${endpoint}`, { code: "config_error" });
-  return runCtpSession({ transport: resource.control.openEndpoint(endpoint), expectedBuildId: run.expectedBuildId ?? target.buildId, run, signal: context.signal });
+  const artifactName = `${name}-${endpoint.replace(/[^A-Za-z0-9_-]/gu, "-")}-target`;
+  const targetFile = path.join(context.project.resultDir, name, `${artifactName}.log`);
+  const targetLogs: string[] = [];
+  await mkdir(path.dirname(targetFile), { recursive: true });
+  try {
+    return await runCtpSession({
+      transport: resource.control.openEndpoint(endpoint),
+      expectedBuildId: run.expectedBuildId ?? target.buildId,
+      run,
+      signal: context.signal,
+      onEvent: workflowSessionEventSink(context.events, context.job.id),
+      onLog(log) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },
+    });
+  } finally {
+    await writeFile(targetFile, `${targetLogs.join("\n")}${targetLogs.length === 0 ? "" : "\n"}`);
+    if (!context.artifacts.has("log", artifactName)) context.artifacts.publish({ kind: "log", name: artifactName, path: targetFile, metadata: { source: "ctp-target", endpoint } });
+  }
 }
 
 /** 尽力关闭 Agent/UML，并将 Console 与 Host stderr 持久化到结果目录。 */

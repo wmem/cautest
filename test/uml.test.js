@@ -32,8 +32,9 @@ test("UML Control Channel 将 Agent Endpoint 复用为统一 CTP3 Transport", as
   const control = new UmlControlChannel(stream);
   queueMicrotask(() => stream.push("CAUTEST_AGENT_READY 1 image-1 boot-1\n"));
   assert.deepEqual(await control.waitReady(1000), { buildId: "image-1", bootId: "boot-1" });
-  const results = await runCtpSession({ transport: control.openEndpoint("kernel"), expectedBuildId: "build-1", run: {}, signal: new AbortController().signal });
-  assert.equal(results[0].cases[0].status, "PASS");
+  const session = await runCtpSession({ transport: control.openEndpoint("kernel"), expectedBuildId: "build-1", run: {}, signal: new AbortController().signal });
+  assert.equal(session.groups[0].cases[0].status, "PASS");
+  assert.equal(session.catalog.length, 1);
   await control.close();
 });
 

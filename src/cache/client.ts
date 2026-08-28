@@ -2,11 +2,12 @@ import { randomUUID } from "node:crypto";
 import { copyFile, mkdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { CautestError } from "../model/error.js";
+import { CAUTEST_VERSIONS } from "../config/versions.js";
 import { hashFile, stableSerialize } from "./fingerprint.js";
 
 export interface CacheOutput { readonly name: string; readonly path: string }
 interface CacheRecord { readonly name: string; readonly size: number; readonly sha256: string; readonly cachePath: string }
-interface CacheManifest { readonly schemaVersion: 1; readonly fingerprint: string; readonly outputs: readonly CacheRecord[]; readonly metadata: Readonly<Record<string, unknown>> }
+interface CacheManifest { readonly schemaVersion: typeof CAUTEST_VERSIONS.schemas.cacheManifest; readonly fingerprint: string; readonly outputs: readonly CacheRecord[]; readonly metadata: Readonly<Record<string, unknown>> }
 export interface CacheInspection { readonly hit: boolean; readonly reason: string; readonly entry?: string; readonly manifest?: CacheManifest; readonly cause?: unknown; readonly output?: string }
 
 function validate(value: string): void { if (!/^[a-f0-9]{64}$/u.test(value)) throw new CautestError("Cache Fingerprint 必须是 SHA-256", { code: "cache_error" }); }
@@ -21,7 +22,7 @@ export class CacheClient {
     validate(fingerprint); const entry = path.join(this.root, fingerprint); let manifest: CacheManifest;
     try { manifest = JSON.parse(await readFile(path.join(entry, "manifest.json"), "utf8")) as CacheManifest; }
     catch (cause) { return { hit: false, reason: typeof cause === "object" && cause !== null && "code" in cause && cause.code === "ENOENT" ? "missing" : "corrupt", cause }; }
-    if (manifest.schemaVersion !== 1 || manifest.fingerprint !== fingerprint || !Array.isArray(manifest.outputs)) return { hit: false, reason: "corrupt" };
+    if (manifest.schemaVersion !== CAUTEST_VERSIONS.schemas.cacheManifest || manifest.fingerprint !== fingerprint || !Array.isArray(manifest.outputs)) return { hit: false, reason: "corrupt" };
     try { for (const output of manifest.outputs) { const file = path.join(entry, output.cachePath); const info = await stat(file); if (!info.isFile() || info.size !== output.size || await hashFile(file) !== output.sha256) return { hit: false, reason: "corrupt" }; } }
     catch (cause) { return { hit: false, reason: typeof cause === "object" && cause !== null && "code" in cause && cause.code === "ENOENT" ? "missing-output" : "corrupt", cause }; }
     return { hit: true, reason: "hit", entry, manifest };
@@ -45,7 +46,7 @@ export class CacheClient {
         const source = path.resolve(output.path); const info = await stat(source); if (!info.isFile()) throw new CautestError(`Cache 只存储普通文件: ${source}`, { code: "cache_error" });
         const record = { name: output.name, size: info.size, sha256: await hashFile(source), cachePath: path.join("files", output.name) }; await copyFile(source, path.join(temporary, record.cachePath)); records.push(record);
       }
-      const manifest: CacheManifest = { schemaVersion: 1, fingerprint, outputs: Object.freeze(records), metadata: Object.freeze({ ...metadata }) }; await writeFile(path.join(temporary, "manifest.json"), `${stableSerialize(manifest)}\n`, { flag: "wx" });
+      const manifest: CacheManifest = { schemaVersion: CAUTEST_VERSIONS.schemas.cacheManifest, fingerprint, outputs: Object.freeze(records), metadata: Object.freeze({ ...metadata }) }; await writeFile(path.join(temporary, "manifest.json"), `${stableSerialize(manifest)}\n`, { flag: "wx" });
       try { await rename(temporary, entry); }
       catch (cause) { if (!(typeof cause === "object" && cause !== null && "code" in cause && (cause.code === "EEXIST" || cause.code === "ENOTEMPTY"))) throw cause; const existing = await this.inspect(fingerprint); if (!existing.hit) throw new CautestError("并发 Cache 条目无效", { code: "cache_error", cause }); await rm(temporary, { recursive: true, force: true }); return { stored: false, reason: "already-exists", ...(existing.manifest === undefined ? {} : { manifest: existing.manifest }) }; }
       return { stored: true, reason: "stored", manifest };

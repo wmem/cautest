@@ -3,6 +3,8 @@ import { pathToFileURL } from "node:url";
 import type { ScriptSystemTestDefinition, ScriptSystemTestJobInput, TestCaseResult, TestJob } from "../config/schema/index.js";
 import { testJob } from "../config/define.js";
 import { CautestError } from "../model/error.js";
+import { effectiveEnvironment } from "../runtime/environment.js";
+import { runCommand } from "../runtime/process.js";
 import { defineStep } from "../workflow/step.js";
 import { executeScriptTest, isScriptTest } from "../system/script-test.js";
 
@@ -26,7 +28,24 @@ export function scriptSystemTestJob(input: ScriptSystemTestJobInput): TestJob {
     const file = path.resolve(context.project.configDir, input.file);
     const loaded = await import(`${pathToFileURL(file).href}?cautest=${Date.now()}`) as { default?: unknown };
     if (isScriptTest(loaded.default)) {
-      const group = await executeScriptTest(loaded.default, { name, caseTimeoutMs: input.caseTimeoutMs ?? 30_000, env: context.job.env, signal: context.signal });
+      const group = await executeScriptTest(loaded.default, {
+        name,
+        caseTimeoutMs: input.caseTimeoutMs ?? 30_000,
+        env: context.job.env,
+        signal: context.signal,
+        onEvent(type, payload) { context.events.emit(type, { jobId: context.job.id, step: name, ...payload }); },
+        async exec(request) {
+          if (typeof request?.program !== "string" || request.program.length === 0) throw new CautestError("Script exec.program 必须是非空字符串", { code: "config_error" });
+          return await runCommand({
+            program: request.program,
+            args: request.args ?? [],
+            cwd: path.resolve(context.project.configDir, request.cwd ?? "."),
+            env: effectiveEnvironment(context, request.env),
+            signal: context.signal,
+            onOutput: context.output,
+          });
+        },
+      });
       return { outcome: group.cases.some((item) => item.status === "FAIL" || item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: [group] };
     }
     const definition = loaded.default as Partial<ScriptSystemTestDefinition> | undefined;
@@ -37,8 +56,9 @@ export function scriptSystemTestJob(input: ScriptSystemTestJobInput): TestJob {
       if (typeof candidate?.name !== "string" || candidate.name.length === 0 || typeof candidate.run !== "function") throw new CautestError(`Script Test ${input.file} Case Schema 无效`, { code: "config_error" });
       if (names.has(candidate.name)) throw new CautestError(`Script Case 名称重复: ${candidate.name}`, { code: "config_error" });
       names.add(candidate.name);
-      try { await withTimeout((signal) => candidate.run({ signal, env: context.job.env }), input.caseTimeoutMs ?? 30_000, context.signal); cases.push(Object.freeze({ name: candidate.name, status: "PASS", assertions: [], diagnostics: [] })); }
-      catch (error) { cases.push(Object.freeze({ name: candidate.name, status: "ERROR", assertions: [], diagnostics: [{ code: "script_error", message: error instanceof Error ? error.message : String(error) }] })); }
+      context.events.emit("CASE_START", { jobId: context.job.id, step: name, case: candidate.name });
+      try { await withTimeout((signal) => candidate.run({ signal, env: context.job.env }), input.caseTimeoutMs ?? 30_000, context.signal); cases.push(Object.freeze({ name: candidate.name, status: "PASS", assertions: [], diagnostics: [] })); context.events.emit("CASE_END", { jobId: context.job.id, step: name, case: candidate.name, status: "PASS" }); }
+      catch (error) { cases.push(Object.freeze({ name: candidate.name, status: "ERROR", assertions: [], diagnostics: [{ code: "script_error", message: error instanceof Error ? error.message : String(error) }] })); context.events.emit("CASE_END", { jobId: context.job.id, step: name, case: candidate.name, status: "ERROR" }); }
     }
     return { outcome: cases.some((item) => item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: [Object.freeze({ name, cases: Object.freeze(cases) })] };
   } });

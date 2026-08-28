@@ -1,9 +1,10 @@
 import { createWriteStream, mkdirSync, type WriteStream } from "node:fs";
 import { once } from "node:events";
 import path from "node:path";
+import { CAUTEST_EVENT_SCHEMA_VERSION } from "../config/versions.js";
 
 export interface WorkflowEvent {
-  readonly version: 1;
+  readonly version: typeof CAUTEST_EVENT_SCHEMA_VERSION;
   readonly sequence: number;
   readonly timestamp: string;
   readonly type: string;
@@ -26,14 +27,14 @@ export class EventRecorder {
   }
 
   emit(type: string, payload: Readonly<Record<string, unknown>> = {}): WorkflowEvent {
-    const event = Object.freeze({ version: 1 as const, sequence: ++this.#sequence, timestamp: new Date().toISOString(), type, ...payload });
+    const event = Object.freeze({ version: CAUTEST_EVENT_SCHEMA_VERSION, sequence: ++this.#sequence, timestamp: new Date().toISOString(), type, ...payload });
     this.#events.push(event);
     this.#stream?.write(`${JSON.stringify(event)}\n`);
     return event;
   }
 
   async emitTransient(type: string, payload: Readonly<Record<string, unknown>> = {}): Promise<WorkflowEvent> {
-    const event = Object.freeze({ version: 1 as const, sequence: ++this.#sequence, timestamp: new Date().toISOString(), type, ...payload });
+    const event = Object.freeze({ version: CAUTEST_EVENT_SCHEMA_VERSION, sequence: ++this.#sequence, timestamp: new Date().toISOString(), type, ...payload });
     if (this.#stream !== undefined && !this.#stream.write(`${JSON.stringify(event)}\n`)) await once(this.#stream, "drain");
     if (this.#streamError !== undefined) throw this.#streamError;
     return event;

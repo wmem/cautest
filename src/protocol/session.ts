@@ -76,17 +76,24 @@ export interface CTestSessionOptions extends CTestSelection {
   readonly timeouts?: Readonly<Partial<Record<"connect" | "handshake" | "discovery" | "run" | "close", number>>>;
   readonly signal?: AbortSignal;
   readonly suitePolicy?: SuitePolicy;
+  readonly caseTimeoutMs?: number;
   readonly runTimeoutMs?: number;
   readonly onEvent?: (event: SessionEvent) => unknown | Promise<unknown>;
   readonly onLog?: (log: TargetLog) => string | void | Promise<string | void>;
 }
 
-export interface CTestSessionResult {
+interface CTestExecutionResult {
   readonly groups: readonly TestSuiteResult[];
   readonly executionCount: number;
   readonly eventCount: number;
   readonly groupDiagnostics: readonly Readonly<Record<string, unknown>>[];
   readonly executionErrors: readonly Readonly<Record<string, unknown>>[];
+}
+
+export interface CTestSessionResult extends CTestExecutionResult {
+  readonly hello: Readonly<Record<string, unknown>>;
+  readonly catalog: readonly TestDescriptor[];
+  readonly selection: readonly TestDescriptor[];
 }
 
 function u32(value: string | undefined, field: string): number {
@@ -221,7 +228,7 @@ export class CTestSession {
     let execEnded = false;
     const caseStatuses: TestCaseResult["status"][] = [];
     for (;;) {
-      const line = await this.#next(this.#options.runTimeoutMs ?? this.#timeout("run", 60_000));
+      const line = await this.#next((unit.kind === "CASE" ? this.#options.caseTimeoutMs : undefined) ?? this.#options.runTimeoutMs ?? this.#timeout("run", 60_000));
       if (line.kind === "error") throw targetError(line);
       if (line.kind === "ok") {
         if (line.name !== unit.kind || !execEnded || current !== undefined || u32(line.fields[0], "Final.executionId") !== executionId) throw new CautestError(`Execution Final Response 不完整: ${line.raw}`, { code: "protocol_error" });
@@ -238,6 +245,7 @@ export class CTestSession {
       } else if (line.name === "SUITE-START") {
         if (execStart === undefined || suiteStarted || fields.length !== 2 || u32(fields[0], "executionId") !== executionId || u32(fields[1], "suiteId") !== execStart.suiteId) throw new CautestError("SUITE-START 身份错误", { code: "protocol_error" });
         suiteStarted = true;
+        await this.#emit("SUITE_START", { executionId, suiteId: execStart.suiteId });
       } else if (line.name === "CASE-START") {
         if (!suiteStarted || suiteEnded || current !== undefined || fields.length !== 4 || u32(fields[0], "executionId") !== executionId) throw new CautestError("CASE-START 身份错误", { code: "protocol_error" });
         const ids = { suiteId: u32(fields[1], "suiteId"), caseId: u32(fields[2], "caseId"), paramId: u32(fields[3], "paramId") };
@@ -245,29 +253,42 @@ export class CTestSession {
         if (descriptor === undefined || execStart === undefined || descriptor.suiteId !== execStart.suiteId || (unit.kind === "CASE" && !same(descriptor, unit.descriptor))) throw new CautestError("CASE-START 引用了无效目录项", { code: "protocol_error" });
         current = { ...descriptor, status: "ERROR", assertions: [], diagnostics: [], executionId };
         cases.push(current);
+        await this.#emit("CASE_START", { executionId, ...descriptor });
       } else if (line.name === "ASSERT" || line.name === "ASSERT2") {
         const typed = line.name === "ASSERT2";
         if (current === undefined || fields.length !== (typed ? 13 : 11) || u32(fields[0], "executionId") !== executionId) throw new CautestError(`${line.name} 上下文错误`, { code: "protocol_error" });
         const ids = { suiteId: u32(fields[1], "suiteId"), caseId: u32(fields[2], "caseId"), paramId: u32(fields[3], "paramId") };
         if (!same(ids, current)) throw new CautestError(`${line.name} Case ID 错误`, { code: "protocol_error" });
         const base = { status: status(fields[5]), file: fields[6]!, line: u32(fields[7], "line"), expression: fields[8]! };
+        let assertion: TestAssertionResult;
         if (typed) {
           const type = fields[9] as "u64" | "pointer" | "string" | "bytes";
           if (!["u64", "pointer", "string", "bytes"].includes(type)) throw new CautestError("ASSERT2 value type 错误", { code: "protocol_error" });
           const flags = u32(fields[10], "valueFlags");
-          current.assertions.push(Object.freeze({ ...base, expected: { type, value: flags & 1 ? null : fields[11]! }, actual: { type, value: flags & 2 ? null : fields[12]! } }));
+          if ((flags & ~3) !== 0) throw new CautestError("ASSERT2 value flags 错误", { code: "protocol_error" });
+          assertion = Object.freeze({ ...base, expected: { type, value: flags & 1 ? null : fields[11]! }, actual: { type, value: flags & 2 ? null : fields[12]! } });
         } else {
-          const assertion: TestAssertionResult = { ...base, expected: { type: "integer", value: fields[9]! }, actual: { type: "integer", value: fields[10]! } };
-          current.assertions.push(Object.freeze(assertion));
+          assertion = Object.freeze({ ...base, expected: { type: "integer" as const, value: fields[9]! }, actual: { type: "integer" as const, value: fields[10]! } });
         }
+        current.assertions.push(assertion);
+        await this.#emit("ASSERTION", { executionId, suiteId: current.suiteId, caseId: current.caseId, paramId: current.paramId, assertionId: u32(fields[4], "assertionId"), ...assertion });
       } else if (line.name === "SKIP") {
         if (current === undefined || fields.length !== 5 || u32(fields[0], "executionId") !== executionId) throw new CautestError("SKIP 上下文错误", { code: "protocol_error" });
+        const ids = { suiteId: u32(fields[1], "suiteId"), caseId: u32(fields[2], "caseId"), paramId: u32(fields[3], "paramId") };
+        if (!same(ids, current)) throw new CautestError("SKIP Case ID 错误", { code: "protocol_error" });
         current.assertions.push({ status: "SKIP", expression: fields[4]! });
+        await this.#emit("SKIP", { executionId, ...ids, reason: fields[4]! });
       } else if (line.name === "FAULT") {
         if (fields.length !== 7 || u32(fields[0], "executionId") !== executionId || execStart === undefined) throw new CautestError("FAULT 身份错误", { code: "protocol_error" });
         const fault = Object.freeze({ executionId, scope: fields[1]!, suiteId: u32(fields[2], "suiteId"), caseId: u32(fields[3], "caseId"), paramId: u32(fields[4], "paramId"), code: fields[5]!, message: fields[6]! });
+        if (!["EXEC", "SUITE", "CASE"].includes(fault.scope)) throw new CautestError("FAULT Scope 错误", { code: "protocol_error" });
         if (fault.scope === "CASE") { if (current === undefined || !same(fault, current)) throw new CautestError("FAULT Case ID 错误", { code: "protocol_error" }); current.diagnostics.push({ code: fault.code, message: fault.message }); }
-        else groupDiagnostics.push(fault);
+        else {
+          if (fault.scope === "SUITE" && (execStart === undefined || fault.suiteId !== execStart.suiteId || fault.caseId !== 0 || fault.paramId !== 0)) throw new CautestError("FAULT Suite ID 错误", { code: "protocol_error" });
+          if (fault.scope === "EXEC" && (fault.suiteId !== 0 || fault.caseId !== 0 || fault.paramId !== 0)) throw new CautestError("FAULT Execution ID 错误", { code: "protocol_error" });
+          groupDiagnostics.push(fault);
+        }
+        await this.#emit("FAULT", fault);
       } else if (line.name === "LOG" || line.name === "LOG-TRUNC") {
         const log = decodeLog(line);
         if (log.executionId !== executionId || (log.scope === "CASE" && (current === undefined || !same(log, current)))) throw new CautestError("LOG Scope ID 或上下文错误", { code: "protocol_error" });
@@ -279,10 +300,14 @@ export class CTestSession {
         if (!same(ids, current)) throw new CautestError("CASE-END Case ID 错误", { code: "protocol_error" });
         current.status = status(fields[4]);
         caseStatuses.push(current.status);
+        await this.#emit("CASE_END", { executionId, ...ids, status: current.status });
         current = undefined;
       } else if (line.name === "SUITE-END") {
         if (!suiteStarted || suiteEnded || current !== undefined || fields.length !== 3 || u32(fields[0], "executionId") !== executionId) throw new CautestError("SUITE-END 身份错误", { code: "protocol_error" });
+        if (execStart === undefined || u32(fields[1], "suiteId") !== execStart.suiteId) throw new CautestError("SUITE-END Suite ID 错误", { code: "protocol_error" });
+        const suiteStatus = status(fields[2]);
         suiteEnded = true;
+        await this.#emit("SUITE_END", { executionId, suiteId: execStart.suiteId, status: suiteStatus });
       } else if (line.name === "EXEC-END") {
         if (!suiteEnded || current !== undefined || fields.length !== 6 || u32(fields[0], "executionId") !== executionId) throw new CautestError("EXEC-END 身份错误", { code: "protocol_error" });
         const ending = { status: status(fields[1]), passed: u32(fields[2], "passed"), failed: u32(fields[3], "failed"), skipped: u32(fields[4], "skipped"), errors: u32(fields[5], "errors") };
@@ -290,11 +315,12 @@ export class CTestSession {
         if (total !== (unit.kind === "CASE" && ending.errors === 1 && caseStatuses.length === 0 ? 1 : caseStatuses.length)) throw new CautestError("EXEC-END 计数与 Case Event 不一致", { code: "protocol_error" });
         if (ending.status === "ERROR" && caseStatuses.length === 0 && !(unit.kind === "CASE" && ending.errors === 1)) executionErrors.push({ executionId, code: "suite_execution_error", message: `Suite ${unit.kind === "SUITE" ? unit.suite : unit.descriptor.suite} 运行错误` });
         execEnded = true;
+        await this.#emit("EXEC_END", { executionId, ...ending });
       } else throw new CautestError(`Execution 收到未知 Data Line: ${line.raw}`, { code: "protocol_error" });
     }
     this.#state = "READY";
   }
-  async run(catalog: readonly TestDescriptor[], selection: readonly TestDescriptor[]): Promise<CTestSessionResult> {
+  async run(catalog: readonly TestDescriptor[], selection: readonly TestDescriptor[]): Promise<CTestExecutionResult> {
     if (this.#state !== "READY") throw new CautestError(`执行状态无效: ${this.#state}`, { code: "protocol_error" });
     const units = planCTestExecutions(catalog, selection, this.#options);
     const byId = new Map(catalog.map((item) => [`${item.suiteId}/${item.caseId}/${item.paramId}`, item]));
@@ -321,8 +347,10 @@ export class CTestSession {
 export async function runCTestSession(options: CTestSessionOptions): Promise<CTestSessionResult> {
   const session = new CTestSession(options);
   try {
-    await session.open();
+    const hello = await session.open();
     const catalog = await session.list();
-    return await session.run(catalog, filterTestDescriptors(catalog, options));
+    const selection = filterTestDescriptors(catalog, options);
+    const result = await session.run(catalog, selection);
+    return Object.freeze({ hello, catalog, selection, ...result });
   } finally { await session.close(); }
 }

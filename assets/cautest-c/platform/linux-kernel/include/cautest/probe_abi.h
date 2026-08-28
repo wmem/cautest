@@ -3,15 +3,12 @@
 
 #include <linux/ioctl.h>
 #include <linux/types.h>
+#include <cautest/version.h>
 
 /*
  * /dev/cautest-probe 是 Test Build 内的本地观察 ABI。结构中没有用户指针，
  * 因此 32/64 位 guest 共用同一布局。
  */
-#define CAUTEST_PROBE_ABI_MAJOR 1U
-#define CAUTEST_PROBE_ABI_MINOR 0U
-#define CAUTEST_PROBE_ABI_MAGIC 0xca7e50U
-
 #define CAUTEST_PROBE_NAME_MAX 64U
 #define CAUTEST_PROBE_PAYLOAD_MAX 128U
 

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, mkdtemp, writeFile } from "node:fs/promises";
+import { access, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -14,6 +14,13 @@ test("Driver ABI Job 使用唯一 Schema 展开 Driver、Guest 和 UML Workflow"
   assert.deepEqual(planConfig(testConfig({ jobs: [job] }))[0].workflow.map((step) => step.kind), ["kernelBuild", "busyboxBuild", "kernelModuleBuild", "driverGuestCTestBuild", "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs"]);
 });
 
+test("Linux Driver 示例同时引入公共版本与 Kernel Probe Header", async () => {
+  const project = path.resolve(new URL("..", import.meta.url).pathname);
+  const makefile = await readFile(path.join(project, "examples/linux-driver/driver/Makefile"), "utf8");
+  assert.match(makefile, /-I\$\(CAUTEST_C_ROOT\)\/include/u);
+  assert.match(makefile, /-I\$\(CAUTEST_C_ROOT\)\/platform\/linux-kernel\/include/u);
+});
+
 test("Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3", async () => {
   const project = path.resolve(new URL("..", import.meta.url).pathname);
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-driver-guest-"));
@@ -22,8 +29,9 @@ test("Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3", asy
     job: { id: "integration.driver.smoke", env: {} }, signal, state: new Map(), output() {},
     project: { configDir: project, resultDir: path.join(temporary, "results"), cacheDir: path.join(temporary, "cache"), generatedDir: path.join(temporary, "generated"), workDir: path.join(temporary, "work") },
   });
-  const results = await runNativeSession({ program: artifact.path, cwd: project, env: process.env, expectedBuildId: artifact.buildId, run: { include: ["smoke/passes"] }, signal });
-  assert.equal(results[0].cases[0].status, "PASS");
+  const session = await runNativeSession({ program: artifact.path, cwd: project, env: process.env, expectedBuildId: artifact.buildId, run: { include: ["smoke/passes"] }, signal });
+  assert.equal(session.groups[0].cases[0].status, "PASS");
+  assert.equal(session.selection[0].name, "smoke/passes");
 });
 
 test("Driver Guest 构建兑现自定义缓存目录、禁用缓存和 fingerprintEnv", async () => {
@@ -48,6 +56,11 @@ test("Driver Guest 构建兑现自定义缓存目录、禁用缓存和 fingerpri
       cache: { directory: path.join(temporary, "custom"), fingerprintEnv: [environmentName] },
     }, context);
     assert.notEqual(first.buildId, second.buildId);
+
+    const profileInput = { tests: ["test/fixtures/native/smoke_test.c"], suites: ["smoke"] };
+    const profileOne = await buildDriverGuestCTest("integration.driver.profile", profileInput, { ...context, job: { ...context.job, env: { CAUTEST_PROFILE_ENV: "profile-one" } } });
+    const profileTwo = await buildDriverGuestCTest("integration.driver.profile", profileInput, { ...context, job: { ...context.job, env: { CAUTEST_PROFILE_ENV: "profile-two" } } });
+    assert.notEqual(profileOne.buildId, profileTwo.buildId);
 
     const disabledInput = { tests: ["test/fixtures/native/smoke_test.c"], suites: ["smoke"], cache: { enabled: false } };
     const disabled = await buildDriverGuestCTest("integration.driver.no-cache", disabledInput, context);

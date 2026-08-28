@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { CautestError } from "../model/error.js";
+import { CAUTEST_VERSIONS } from "../config/versions.js";
 
 type Json = null | boolean | number | string | readonly Json[] | Readonly<{ readonly [key: string]: Json }>;
 
@@ -38,5 +39,5 @@ export async function createFingerprint(input: FingerprintInput = {}, options: {
     if (!info.isFile()) throw new CautestError(`Fingerprint 输入不是普通文件: ${file}`, { code: "cache_error" });
     fileInputs.push({ path: path.relative(baseDir, file).split(path.sep).join("/"), sha256: await hashFile(file) });
   }
-  return hashBytes(stableSerialize({ schemaVersion: 1, namespace: input.namespace ?? "cautest", files: fileInputs, generated: input.generated ?? {}, tool: input.tool ?? {}, args: input.args ?? [], env: input.env ?? {}, values: input.values ?? {} }));
+  return hashBytes(stableSerialize({ schemaVersion: CAUTEST_VERSIONS.schemas.fingerprint, namespace: input.namespace ?? "cautest", files: fileInputs, generated: input.generated ?? {}, tool: input.tool ?? {}, args: input.args ?? [], env: input.env ?? {}, values: input.values ?? {} }));
 }

@@ -1,5 +1,7 @@
 import {
   defineStep,
+  defineFragment,
+  standardJobFragment,
   defineScriptTest,
   externalTest,
   jobNamespace,
@@ -33,6 +35,7 @@ const fixture: TestJobFactory<FixtureInput> = (input) => testJob({
 const configured = withJobDefaults(fixture, { level: "unit", workflow: [run] });
 
 configured({ id: "unit.direct", source: "direct.c" });
+testJob({ id: "unit.fragment", level: "unit", workflow: [standardJobFragment(nativeCTestJob({ id: "unit.fragment.source", tests: ["source.c"] }), { phases: ["build"] }), defineFragment(run)] });
 jobNamespace({
   namespace: "unit.utils",
   source: import.meta.url,
@@ -49,13 +52,18 @@ nativeCTestJobFactory({ defaults: { build: { compiler: "clang" } } })({
 const uml = umlKernelEnvironment({ kernel: { sourceDir: "vendor/linux" }, busybox: { sourceDir: "vendor/busybox" } });
 kernelCTestJobFactory({ environment: uml })({ id: "unit.kernel.queue", tests: ["test/queue_test.c"] });
 driverAbiCTestJobFactory({ environment: uml })({ id: "integration.driver", drivers: [{ name: "driver", sourceDir: "driver", output: "driver.ko" }], guest: { tests: ["test/driver.c"] } });
-mcuCTestJob({ id: "component.mcu", firmware: { kind: "existing", file: "build/firmware" } });
+mcuCTestJob({ id: "component.mcu", firmware: { kind: "existing", file: "build/firmware" }, board: { kind: "simulated", maxReadSize: 3, maxWriteSize: 2, disconnectOnce: 20 }, reconnects: 1, recoverTimeouts: true });
 scriptSystemTestJob({ id: "system.api", file: "test/api.test.mjs" });
-defineScriptTest(async ({ test, env }) => {
+defineScriptTest(async ({ test, exec, signal, env }) => {
+  await exec({ program: "true" });
+  signal.throwIfAborted();
   await test.case("typed", async (context) => {
     context.expectEqual(env.VALUE, "expected");
+    context.assertEqual({ value: 1 }, { value: 1 });
+    context.fail("typed failure");
+    context.attach("evidence", { value: 1 });
     await context.wait(1);
-  });
+  }, { timeoutMs: 100 });
 });
 processStart({ program: "node", args: ["server.mjs"], ready: { kind: "http", url: "http://127.0.0.1:3000/health" } });
 externalTest({ program: "tool", resultAdapter: "junit" });

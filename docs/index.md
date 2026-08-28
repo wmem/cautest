@@ -13,6 +13,7 @@ Cautest 用 JavaScript 配置和有序 Workflow 组织本地工程测试，并�
 - [MCU C Test](jobs/mcu.md)
 - [Script System Test](jobs/system.md)
 - [C Assertion API](c-assertions.md)
+- [C Kit 构建与消费](c-kit.md)
 - [CLI、Doctor 与结果](cli.md)
 - [结果目录与 Reporter](results.md)
 

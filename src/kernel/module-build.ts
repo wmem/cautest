@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { copyFile, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { EnvironmentVariables, KernelModuleInput } from "../config/schema/index.js";
+import { CAUTEST_CACHE_VERSIONS } from "../config/versions.js";
 import { expandFilePatterns } from "../config/file-pattern.js";
 import { CautestError } from "../model/error.js";
 import { runCommand } from "../runtime/process.js";
@@ -75,7 +76,7 @@ async function outputRecord(root: string, name: OutputRecord["name"], relative: 
 async function validCache(root: string, key: string): Promise<readonly OutputRecord[] | undefined> {
   try {
     const manifest = JSON.parse(await readFile(path.join(root, "manifest.json"), "utf8")) as { schema?: number; key?: string; outputs?: OutputRecord[] };
-    if (manifest.schema !== 4 || manifest.key !== key || !Array.isArray(manifest.outputs) || manifest.outputs.length < 3) return undefined;
+    if (manifest.schema !== CAUTEST_CACHE_VERSIONS.moduleManifest || manifest.key !== key || !Array.isArray(manifest.outputs) || manifest.outputs.length < 3) return undefined;
     if (!["module", "symbols", "modulesOrder"].every((name) => manifest.outputs!.some((output) => output.name === name))) return undefined;
     for (const output of manifest.outputs) {
       const current = await outputRecord(root, output.name, output.path);
@@ -148,9 +149,9 @@ export async function buildIsolatedKernelModule(input: IsolatedKernelModuleBuild
   if (makeVersion.exitCode !== 0 || compilerVersion.exitCode !== 0) throw new CautestError("无法识别 Kbuild Make/Compiler", { code: "tooling_error" });
   const environmentKeys = new Set(["ARCH", "CROSS_COMPILE", "CC", "HOSTCC", "LD", "AR", "NM", "OBJCOPY", "OBJDUMP", "READELF", "STRIP", "LLVM", "LLVM_IAS", "KCFLAGS", "KCPPFLAGS", "KAFLAGS", ...(input.fingerprintEnv ?? []), ...(module.cache?.fingerprintEnv ?? [])]);
   const metadata = {
-    schema: 2, name: module.name, output: module.output, sourceDir: path.relative(sandboxRoot, sourceDir).split(path.sep).join("/"),
+    schema: CAUTEST_CACHE_VERSIONS.moduleFingerprint, name: module.name, output: module.output, sourceDir: path.relative(sandboxRoot, sourceDir).split(path.sep).join("/"),
     arch: input.arch ?? environment.ARCH ?? "", crossCompile, make: makeVersion.stdout.trim(), compiler: compilerVersion.stdout.trim(), compilerTarget: compilerTarget.stdout.trim(),
-    makeVariables: module.makeVariables ?? {}, makeArgs: module.makeArgs ?? [], environment: Object.fromEntries([...environmentKeys].sort().map((key) => [key, environment[key] ?? null])),
+    makeVariables: module.makeVariables ?? {}, makeArgs: module.makeArgs ?? [], declaredEnvironment: input.env ?? {}, environment: Object.fromEntries([...environmentKeys].sort().map((key) => [key, environment[key] ?? null])),
   };
   const hash = createHash("sha256").update(JSON.stringify(metadata));
   for (const file of sourceFiles.sort((left, right) => left.identity.localeCompare(right.identity))) { hash.update(`\0${file.identity}\0`); hash.update(await readFile(file.path)); }
@@ -193,7 +194,7 @@ export async function buildIsolatedKernelModule(input: IsolatedKernelModuleBuild
         ...await Promise.all(notes.map((note) => outputRecord(publish, "coverage", path.join("coverage", note)))),
         ...await Promise.all(coverageSources.map(async (source) => ({ ...await outputRecord(publish, "coverageSource", path.join("coverage-sources", source)), originalPath: path.join(sandboxModule, source) }))),
       ]);
-      await writeFile(path.join(publish, "manifest.json"), `${JSON.stringify({ schema: 4, key, outputs }, null, 2)}\n`);
+      await writeFile(path.join(publish, "manifest.json"), `${JSON.stringify({ schema: CAUTEST_CACHE_VERSIONS.moduleManifest, key, outputs }, null, 2)}\n`);
       try { await rename(publish, cachePath); }
       catch (cause) { const existing = await validCache(cachePath, key); if (existing === undefined) throw cause; outputs = existing; await rm(publish, { recursive: true, force: true }); }
     } finally {

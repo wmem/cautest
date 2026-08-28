@@ -54,8 +54,20 @@ test("结构化测试失败保持 FAIL，并执行失败路径 Collect", async (
   assert.deepEqual(events, ["collect"]);
 });
 
+test("Step 返回 ERROR 时保留已取得测试结果和诊断", async () => {
+  const groups = [{ name: "suite", cases: [{ name: "before-error", status: "PASS", assertions: [], diagnostics: [] }] }];
+  const step = defineStep({ kind: "partialTargetError", phase: "run", execute() { return { outcome: "ERROR", error: new Error("suite setup failed"), diagnostics: [{ code: "FIXTURE" }], testResults: groups }; } });
+  const result = await executeWorkflow(testJob({ id: "unit.partial-error", level: "unit", workflow: [step] }));
+  assert.equal(result.status, "ERROR");
+  assert.equal(result.groups[0].cases[0].name, "before-error");
+  assert.equal(result.steps[0].status, "ERROR");
+  assert.equal(result.steps[0].testResults[0].name, "suite");
+  assert.equal(result.steps[0].diagnostics[0].code, "FIXTURE");
+  assert.equal(result.errors[0].code, "target_error");
+});
+
 function failedSuite() {
-  return [{ name: "suite", cases: [{ name: "bad", status: "FAIL", assertions: [], diagnostics: [] }] }];
+  return [{ name: "suite", cases: [{ name: "bad", status: "FAIL", assertions: [{ status: "FAIL", expression: "actual == expected", file: "case.c", line: 42, expected: { type: "integer", value: "1" }, actual: { type: "integer", value: "2" } }], diagnostics: [{ code: "ASSERT", message: "values differ" }] }] }];
 }
 
 test("Case FAIL 默认不阻断后续 Step，stopOnTestFailure 可显式停止", async () => {
@@ -106,7 +118,13 @@ test("executeRun 和结果目录保留事件、Job 快照及失败索引", async
   const directory = await writeRunDirectory(run, path.join(root, "results"));
   assert.equal(run.status, "FAIL");
   assert.match(await readFile(path.join(root, "events/run-fixed/events.jsonl"), "utf8"), /RUN_END/u);
-  assert.equal(JSON.parse(await readFile(path.join(directory, "summary.json"), "utf8")).counts.failureRecords, 1);
-  assert.match(await readFile(path.join(directory, "failures.jsonl"), "utf8"), /unit\.failure-index/u);
+  const summary = JSON.parse(await readFile(path.join(directory, "summary.json"), "utf8"));
+  assert.equal(summary.counts.failureRecords, 1);
+  assert.deepEqual(summary.failedJobs, [{ jobId: "unit.failure-index", status: "FAIL", detailRef: "jobs/unit.failure-index/job.json" }]);
+  const failure = JSON.parse((await readFile(path.join(directory, "failures.jsonl"), "utf8")).trim());
+  assert.deepEqual({ status: failure.status, suite: failure.suite, case: failure.case, location: failure.location }, { status: "FAIL", suite: "suite", case: "bad", location: { file: "case.c", line: 42 } });
+  assert.equal(failure.assertion.expression, "actual == expected");
+  assert.equal(failure.diagnostic.code, "ASSERT");
+  assert.equal(failure.detailRef, "jobs/unit.failure-index/job.json#/groups/0/cases/0");
   assert.equal(JSON.parse(await readFile(path.join(directory, "jobs/unit.failure-index/job.json"), "utf8")).status, "FAIL");
 });

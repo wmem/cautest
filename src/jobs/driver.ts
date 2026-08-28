@@ -4,6 +4,7 @@ import type { DriverAbiCTestJobFactoryInput, DriverAbiCTestJobInput, TestJob } f
 import { testJob } from "../config/define.js";
 import { buildIsolatedKernelModule, type KernelModuleArtifact } from "../kernel/module-build.js";
 import { CautestError } from "../model/error.js";
+import { effectiveWorkflowCTestRun, workflowSessionResult } from "../protocol/workflow-session.js";
 import { defineStep } from "../workflow/step.js";
 import { buildKernel, environmentValue } from "./kernel.js";
 import { buildBusyBox, buildDriverGuestCTest, buildRootfs, collectUml, runUmlEndpoint, startUml, type BusyBoxArtifact, type GuestProgramArtifact, type UmlImageArtifact } from "../uml/runtime.js";
@@ -46,7 +47,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
     kind: "kernelModuleBuild", name: "cautest_probe", phase: "build", details: { builtIn: true, sourceDir: "assets/cautest-c/kernel/cautest-probe", output: "cautest_probe.ko" },
     async execute(context) {
       const kernelOutput = context.state.get("kernelOutput"); if (typeof kernelOutput !== "string") throw new CautestError("Driver Kernel Output 不存在", { code: "build_error" });
-      const artifact = await buildIsolatedKernelModule({ module: { name: "cautest_probe", sourceDir: "kernel/cautest-probe", sandboxRoot: ".", output: "cautest_probe.ko", makeVariables: { CONFIG_CAUTEST: "y" } }, kernelOutput, configDir: kitRoot, cacheDir: path.join(context.project.cacheDir, "kernel-modules"), workDir: path.join(context.project.workDir, "kernel-modules"), arch: environment.kernel.arch ?? "um", ...(environment.kernel.crossCompile === undefined ? {} : { crossCompile: environment.kernel.crossCompile }), signal: context.signal, output: context.output });
+      const artifact = await buildIsolatedKernelModule({ module: { name: "cautest_probe", sourceDir: "kernel/cautest-probe", sandboxRoot: ".", output: "cautest_probe.ko", makeVariables: { CONFIG_CAUTEST: "y" } }, kernelOutput, configDir: kitRoot, cacheDir: path.join(context.project.cacheDir, "kernel-modules"), workDir: path.join(context.project.workDir, "kernel-modules"), arch: environment.kernel.arch ?? "um", ...(environment.kernel.crossCompile === undefined ? {} : { crossCompile: environment.kernel.crossCompile }), env: context.job.env, signal: context.signal, output: context.output });
       context.state.set("module:cautest_probe", artifact); publishModule(context, artifact); return { diagnostics: [{ code: artifact.cacheHit ? "cache_hit" : "cache_miss", message: artifact.module }] };
     },
   })];
@@ -60,7 +61,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
         module: { ...driver, makeVariables: { ...(input.probe === undefined ? {} : { CONFIG_CAUTEST: "y", CAUTEST_C_ROOT: kitRoot }), ...driver.makeVariables, ...input.probe?.makeVariables } }, kernelOutput,
         configDir: context.project.configDir, cacheDir: path.join(context.project.cacheDir, "kernel-modules"), workDir: path.join(context.project.workDir, "kernel-modules"),
         arch: environment.kernel.arch ?? "um", ...(environment.kernel.crossCompile === undefined ? {} : { crossCompile: environment.kernel.crossCompile }),
-        ...(input.env === undefined ? {} : { env: input.env }), dependencySymbols: dependencies, signal: context.signal, output: context.output,
+        env: context.job.env, dependencySymbols: dependencies, signal: context.signal, output: context.output,
       });
       context.state.set(`module:${driver.name}`, artifact);
       publishModule(context, artifact);
@@ -73,7 +74,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
     async execute(context) { const artifact = await buildDriverGuestCTest(input.id, input.guest, context); context.state.set(`guest:${guestName}`, artifact); context.artifacts.publish({ kind: "guest-program", name: artifact.name, path: artifact.path, fingerprint: artifact.buildId, buildId: artifact.buildId, metadata: { cacheHit: artifact.cacheHit, endpoint: artifact.endpoint, installPath: artifact.installPath } }); return { diagnostics: [{ code: artifact.cacheHit ? "cache_hit" : "cache_miss", message: artifact.path }] }; },
   });
   const rootfs = defineStep({
-    kind: "umlRootfsBuild", name, phase: "build", details: { drivers: [...driverNames], guest: guestName, overlays: environment.rootfs?.overlays ?? [] }, ...(environment.rootfs?.timeoutMs === undefined ? {} : { timeoutMs: environment.rootfs.timeoutMs }),
+    kind: "umlRootfsBuild", name, phase: "build", details: { ...environment.rootfs, drivers: [...driverNames], guest: guestName, overlays: environment.rootfs?.overlays ?? [] }, ...(environment.rootfs?.timeoutMs === undefined ? {} : { timeoutMs: environment.rootfs.timeoutMs }),
     async execute(context) {
       const kernelOutput = context.state.get("kernelOutput"); const busybox = context.state.get("busybox") as BusyBoxArtifact | undefined; const program = context.state.get(`guest:${guestName}`) as GuestProgramArtifact | undefined;
       if (typeof kernelOutput !== "string" || busybox === undefined || program === undefined) throw new CautestError("Driver Rootfs 输入 Artifact 不完整", { code: "build_error" });
@@ -84,7 +85,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
     },
   });
   const start = defineStep({ kind: "umlStart", name, phase: "provision", details: { ...environment.machine }, ...(environment.machine?.startTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.startTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("Driver UML Image 不存在", { code: "provision_error" }); const resource = await startUml(name, image, environment, context); return { diagnostics: [{ code: "uml_ready", message: `pid=${resource.child.pid}` }] }; } });
-  const run = defineStep({ kind: "cTestRun", name, phase: "run", details: { endpoint: input.guest.endpoint ?? guestName, selection: input.run ?? {} }, ...(input.run?.stepTimeoutMs === undefined ? {} : { timeoutMs: input.run.stepTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("Driver UML Image 不存在", { code: "transport_error" }); const results = await runUmlEndpoint(name, input.guest.endpoint ?? guestName, image, input.run ?? {}, context); const cases = results.flatMap((suite) => suite.cases); if (cases.length === 0 && input.policy?.allowEmpty !== true) throw new CautestError("Driver Guest C Test 没有选中 Case", { code: "selection_error" }); return { outcome: cases.some((item) => item.status === "FAIL" || item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: results }; } });
+  const run = defineStep({ kind: "cTestRun", name, phase: "run", details: { endpoint: input.guest.endpoint ?? guestName, selection: input.run ?? {} }, ...(input.run?.stepTimeoutMs === undefined ? {} : { timeoutMs: input.run.stepTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("Driver UML Image 不存在", { code: "transport_error" }); const effectiveRun = effectiveWorkflowCTestRun(context, input.run ?? {}, name); const session = await runUmlEndpoint(name, input.guest.endpoint ?? guestName, image, effectiveRun, context); return workflowSessionResult(session, { label: "Driver Guest C Test", allowEmpty: input.policy?.allowEmpty === true }); } });
   const collect = defineStep({ kind: "umlLogs", name, phase: "collect", runWhen: "always", details: {}, ...(environment.machine?.collectTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.collectTimeoutMs }), async execute(context) { return { diagnostics: await collectUml(name, context) }; } });
   return testJob({ id: input.id, level: input.level ?? "integration", tags: input.tags ?? ["integration", "driver", "uml"], workflow: [kernelBuild, busyboxBuild, ...probe, ...modules, guest, rootfs, start, run, collect], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }

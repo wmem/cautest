@@ -1,12 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { CAUTEST_RESULT_SCHEMA_VERSION } from "../config/versions.js";
 import type { TestConfig, TestJob } from "../config/schema/common.js";
 import { EventRecorder, type WorkflowEvent } from "../workflow/events.js";
 import { executeWorkflow, type ExecutedWorkflow, type WorkflowExecutionOptions, type WorkflowStatus } from "../workflow/engine.js";
 
 export interface ExecutedRun {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: typeof CAUTEST_RESULT_SCHEMA_VERSION;
   readonly id: string;
   readonly status: WorkflowStatus;
   readonly startedAt: string;
@@ -24,6 +25,7 @@ export interface RunExecutionOptions extends Omit<WorkflowExecutionOptions, "pro
   readonly failFast?: boolean;
   readonly configHash?: string;
   readonly configPath?: string;
+  readonly resultDir?: string;
   readonly onJob?: (event: { readonly type: "START" | "END"; readonly jobId: string; readonly status?: WorkflowStatus; readonly durationMs?: number }) => void;
 }
 
@@ -40,7 +42,7 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
   const started = performance.now();
   const id = options.runId ?? randomUUID();
   const configDir = path.resolve(options.configDir ?? process.cwd());
-  const resultDir = path.resolve(configDir, config.defaults.resultDir, id);
+  const resultDir = path.resolve(configDir, options.resultDir ?? config.defaults.resultDir, id);
   const events = new EventRecorder({ file: path.join(resultDir, "events.jsonl") });
   const jobs: ExecutedWorkflow[] = [];
   events.emit("RUN_START", { runId: id });
@@ -61,13 +63,14 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
     });
     jobs.push(result);
     options.onJob?.({ type: "END", jobId: job.id, status: result.status, durationMs: result.durationMs });
+    if (options.signal?.aborted === true) break;
     if (options.failFast === true && (result.status === "FAIL" || result.status === "ERROR")) break;
   }
   const status = aggregateRun(jobs);
   events.emit("RUN_END", { runId: id, status });
   const endedAt = new Date();
   const run = Object.freeze({
-    schemaVersion: 1 as const,
+    schemaVersion: CAUTEST_RESULT_SCHEMA_VERSION,
     id,
     status,
     startedAt: startedAt.toISOString(),
@@ -84,7 +87,14 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
 interface FailureRecord {
   readonly sequence: number;
   readonly kind: "step" | "cleanup" | "case";
+  readonly status: "FAIL" | "ERROR";
   readonly jobId: string;
+  readonly stepId?: string;
+  readonly suite?: string;
+  readonly case?: string;
+  readonly location?: Readonly<{ readonly file: string; readonly line?: number }>;
+  readonly assertion?: Readonly<Record<string, unknown>>;
+  readonly diagnostic?: unknown;
   readonly message: string;
   readonly code?: string;
   readonly detailRef: string;
@@ -94,18 +104,25 @@ function failures(run: ExecutedRun): readonly FailureRecord[] {
   const records: Omit<FailureRecord, "sequence">[] = [];
   for (const job of run.jobs) {
     for (const [index, step] of job.steps.entries()) if (step.status === "ERROR") records.push({
-      kind: "step", jobId: job.jobId, message: step.error?.message ?? "Step Error", ...(step.error?.code === undefined ? {} : { code: step.error.code }), detailRef: `jobs/${job.jobId}/job.json#/steps/${index}`,
+      kind: "step", status: "ERROR", jobId: job.jobId, stepId: step.id, message: step.error?.message ?? "Step Error", ...(step.error?.code === undefined ? {} : { code: step.error.code }), diagnostic: step.diagnostics[0], detailRef: `jobs/${job.jobId}/job.json#/steps/${index}`,
     });
     for (const [index, cleanup] of job.cleanup.entries()) if (cleanup.status === "ERROR") records.push({
-      kind: "cleanup", jobId: job.jobId, message: cleanup.error?.message ?? "Cleanup Error", ...(cleanup.error?.code === undefined ? {} : { code: cleanup.error.code }), detailRef: `jobs/${job.jobId}/job.json#/cleanup/${index}`,
+      kind: "cleanup", status: "ERROR", jobId: job.jobId, message: cleanup.error?.message ?? "Cleanup Error", ...(cleanup.error?.code === undefined ? {} : { code: cleanup.error.code }), detailRef: `jobs/${job.jobId}/job.json#/cleanup/${index}`,
     });
     for (const [groupIndex, group] of job.groups.entries()) for (const [caseIndex, item] of group.cases.entries()) {
       if (item.status !== "FAIL" && item.status !== "ERROR") continue;
       const diagnostic = item.diagnostics.find((value) => typeof value === "object" && value !== null && "message" in value) as { readonly message?: unknown; readonly code?: unknown } | undefined;
+      const assertion = item.assertions.find((value) => value.status === "FAIL" || value.status === "ERROR");
+      const scriptFailure = item.failures?.[0];
       records.push({
-        kind: "case",
+        kind: "case", status: item.status,
         jobId: job.jobId,
-        message: typeof diagnostic?.message === "string" ? diagnostic.message : `${group.name}/${item.name} ${item.status}`,
+        suite: group.name,
+        case: item.name,
+        ...(assertion?.file === undefined ? {} : { location: { file: assertion.file, ...(assertion.line === undefined ? {} : { line: assertion.line }) } }),
+        ...(assertion === undefined && scriptFailure === undefined ? {} : { assertion: assertion === undefined ? { status: "FAIL", expression: scriptFailure!.message, ...(scriptFailure!.expected === undefined ? {} : { expected: scriptFailure!.expected }), ...(scriptFailure!.actual === undefined ? {} : { actual: scriptFailure!.actual }) } : { status: assertion.status, expression: assertion.expression, ...(assertion.expected === undefined ? {} : { expected: assertion.expected }), ...(assertion.actual === undefined ? {} : { actual: assertion.actual }) } }),
+        ...(diagnostic === undefined ? {} : { diagnostic }),
+        message: typeof diagnostic?.message === "string" ? diagnostic.message : assertion?.expression ?? scriptFailure?.message ?? `${group.name}/${item.name} ${item.status}`,
         ...(typeof diagnostic?.code === "string" ? { code: diagnostic.code } : {}),
         detailRef: `jobs/${job.jobId}/job.json#/groups/${groupIndex}/cases/${caseIndex}`,
       });
@@ -136,6 +153,7 @@ export async function writeRunDirectory(run: ExecutedRun, directory: string): Pr
       cases: { total: caseStatuses.length, pass: caseStatuses.filter((status) => status === "PASS").length, fail: caseStatuses.filter((status) => status === "FAIL").length, error: caseStatuses.filter((status) => status === "ERROR").length, skip: caseStatuses.filter((status) => status === "SKIP").length },
       failureRecords: failureRecords.length,
     },
+    failedJobs: run.jobs.filter((job) => job.status === "FAIL" || job.status === "ERROR").map((job) => ({ jobId: job.jobId, status: job.status, detailRef: `jobs/${job.jobId}/job.json` })),
     failuresRef: "failures.jsonl",
     resultRef: "result.json",
   });

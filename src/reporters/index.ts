@@ -10,12 +10,33 @@ function caseCount(run: ExecutedRun, status: string): number {
   return run.jobs.flatMap((job) => job.groups).flatMap((group) => group.cases).filter((item) => item.status === status).length;
 }
 
+function bounded(value: unknown, limit = 500): string {
+  const text = typeof value === "string" ? value : JSON.stringify(value);
+  return (text ?? String(value)).length <= limit ? (text ?? String(value)) : `${(text ?? String(value)).slice(0, limit)}…`;
+}
+
+function caseEvidence(item: ExecutedRun["jobs"][number]["groups"][number]["cases"][number]): string {
+  const assertion = item.assertions.find((value) => value.status === "FAIL" || value.status === "ERROR");
+  if (assertion !== undefined) {
+    const location = assertion.file === undefined ? "" : ` at ${assertion.file}${assertion.line === undefined ? "" : `:${assertion.line}`}`;
+    const values = assertion.expected === undefined && assertion.actual === undefined ? "" : ` expected=${bounded(assertion.expected)} actual=${bounded(assertion.actual)}`;
+    return `${assertion.expression}${location}${values}`;
+  }
+  const diagnostic = item.diagnostics[0] ?? item.error;
+  const scriptFailure = item.failures?.[0];
+  if (scriptFailure !== undefined) return `${scriptFailure.message}${scriptFailure.expected === undefined && scriptFailure.actual === undefined ? "" : ` expected=${bounded(scriptFailure.expected)} actual=${bounded(scriptFailure.actual)}`}`;
+  return diagnostic === undefined ? `${item.status}` : bounded(diagnostic);
+}
+
 /** 生成适合终端和纯文本 Artifact 的 Run 摘要。 */
 export function formatConsoleReport(run: ExecutedRun): string {
   const lines = [`Run ${run.id}: ${run.status} (${Math.round(run.durationMs)}ms)`];
   for (const job of run.jobs) {
     lines.push(`${job.status} ${job.jobId} (${Math.round(job.durationMs)}ms)`);
-    for (const group of job.groups) for (const item of group.cases) lines.push(`  ${item.status} ${group.name}/${item.name}`);
+    for (const group of job.groups) for (const item of group.cases) {
+      lines.push(`  ${item.status} ${group.name}/${item.name}`);
+      if (item.status === "FAIL" || item.status === "ERROR") lines.push(`    ${caseEvidence(item)}`);
+    }
     for (const error of job.errors) lines.push(`  ERROR [${error.code}] ${error.message}`);
   }
   lines.push(`Cases: PASS ${caseCount(run, "PASS")}, FAIL ${caseCount(run, "FAIL")}, ERROR ${caseCount(run, "ERROR")}, SKIP ${caseCount(run, "SKIP")}`);
@@ -26,8 +47,9 @@ export function formatConsoleReport(run: ExecutedRun): string {
 export function formatJUnitReport(run: ExecutedRun): string {
   const suites = run.jobs.map((job) => {
     const cases = job.groups.flatMap((group) => group.cases.map((item) => {
-      const body = item.status === "FAIL" ? `<failure message="${escapeXml(`${group.name}/${item.name} FAIL`)}"/>`
-        : item.status === "ERROR" ? `<error message="${escapeXml(`${group.name}/${item.name} ERROR`)}"/>`
+      const evidence = caseEvidence(item);
+      const body = item.status === "FAIL" ? `<failure message="${escapeXml(`${group.name}/${item.name} FAIL`)}">${escapeXml(evidence)}</failure>`
+        : item.status === "ERROR" ? `<error message="${escapeXml(`${group.name}/${item.name} ERROR`)}">${escapeXml(evidence)}</error>`
           : item.status === "SKIP" ? "<skipped/>" : "";
       return `<testcase classname="${escapeXml(group.name)}" name="${escapeXml(item.name)}" time="${((item.durationMs ?? 0) / 1000).toFixed(6)}">${body}</testcase>`;
     }));

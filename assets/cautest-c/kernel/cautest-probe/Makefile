@@ -4,3 +4,4 @@ ccflags-y += -DCONFIG_CAUTEST=1
 endif
 
 ccflags-y += -I$(src)/../../platform/linux-kernel/include
+ccflags-y += -I$(src)/../../include

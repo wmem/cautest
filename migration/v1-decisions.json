@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "decisions": [
+    {
+      "id": "DEC-001-V2-PUBLIC-SURFACE",
+      "status": "approved",
+      "summary": "V2 不承诺 V1 符号级兼容；公共能力收敛为 TestJob、强类型 Schema、Workflow Fragment 和统一运行链。",
+      "evidence": ["test/types/config.mts", "test/factory.test.js", "test/workflow.test.js"]
+    },
+    {
+      "id": "DEC-002-CONSOLIDATED-TESTS",
+      "status": "approved",
+      "summary": "V1 的脚本和单文件测试可以合并，但对应行为必须进入 V2 默认门禁。",
+      "evidence": ["package.json", "test/parity.test.js", "scripts/test-c-runtime.sh"]
+    },
+    {
+      "id": "DEC-003-DOCUMENT-CONSOLIDATION",
+      "status": "approved",
+      "summary": "V1 阶段性设计/缺陷文档不原样复制；仍有效的使用与设计知识合并进 V2 权威文档，来源由固定 Commit 清单保留。",
+      "evidence": ["docs/index.md", "docs/architecture.md", "test/docs.test.js"]
+    },
+    {
+      "id": "DEC-004-EXAMPLE-CONSOLIDATION",
+      "status": "approved",
+      "summary": "示例按 V2 五类 Job 重新组织，不要求保留 V1 目录和文件一一对应。",
+      "evidence": ["examples", "test/docs.test.js", "test/install.test.js"]
+    }
+  ]
+}

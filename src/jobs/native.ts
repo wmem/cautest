@@ -3,16 +3,19 @@ import { chmod, copyFile, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, w
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CDefineValue, NativeCTestJobFactoryInput, NativeCTestJobInput, TestJob } from "../config/schema/index.js";
+import { CAUTEST_CACHE_VERSIONS } from "../config/versions.js";
 import { expandFilePatterns } from "../config/file-pattern.js";
 import { testJob } from "../config/define.js";
 import { CautestError } from "../model/error.js";
 import { runNativeSession } from "../protocol/native-session.js";
+import { effectiveWorkflowCTestRun, workflowSessionEventSink, workflowSessionResult } from "../protocol/workflow-session.js";
+import { declaredEnvironment, effectiveEnvironment } from "../runtime/environment.js";
 import { runCommand } from "../runtime/process.js";
 import { defineStep } from "../workflow/step.js";
 
 const kitRoot = fileURLToPath(new URL("../../assets/cautest-c", import.meta.url));
 const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c"];
-const kitInputs = [...kitSources, "include/cautest/cautest.h", "include/cautest/ctp3.h", "platform/posix/posix_platform.h", "target/posix/posix_target.h", "templates/native-entry.c.tmpl", "templates/native-registry.c.tmpl"];
+const kitInputs = [...kitSources, "include/cautest/version.h", "include/cautest/cautest.h", "include/cautest/ctp3.h", "platform/posix/posix_platform.h", "target/posix/posix_target.h", "templates/native-entry.c.tmpl", "templates/native-registry.c.tmpl"];
 const inputFields = new Set(["id", "level", "description", "tags", "enabled", "timeoutMs", "env", "policy", "tests", "sources", "headers", "suites", "artifactName", "build", "run", "coverage"]);
 const buildFields = new Set(["compiler", "includeDirs", "defines", "cflags", "ldflags", "workspaceSize", "generatedDir", "timeoutMs", "cache"]);
 const runFields = new Set(["include", "exclude", "suite", "case", "parameter", "caseTimeoutMs", "runTimeoutMs", "session", "suitePolicy", "expectedBuildId", "stepTimeoutMs"]);
@@ -65,7 +68,7 @@ async function fingerprint(files: readonly string[], metadata: unknown, configDi
 async function cacheValid(directory: string, target: string, key: string): Promise<boolean> {
   try {
     const manifest = JSON.parse(await readFile(path.join(directory, "manifest.json"), "utf8")) as { schema?: number; key?: string; outputs?: Array<{ path: string; size: number; sha256: string }> };
-    if (manifest.schema !== 2 || manifest.key !== key || !Array.isArray(manifest.outputs)) return false;
+    if (manifest.schema !== CAUTEST_CACHE_VERSIONS.nativeManifest || manifest.key !== key || !Array.isArray(manifest.outputs)) return false;
     const actual = (await readdir(directory)).filter((name) => name !== "manifest.json").sort();
     if (actual.length !== manifest.outputs.length || actual.some((name, index) => name !== manifest.outputs?.[index]?.path)) return false;
     for (const output of manifest.outputs) {
@@ -137,6 +140,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
     kind: "nativeCompile", name: artifactName, phase: "build", ...(build.timeoutMs === undefined ? {} : { timeoutMs: build.timeoutMs }),
     details: { tests, sources, headers, compiler: build.compiler ?? "cc", artifactName },
     async execute(context) {
+      const effectiveRun = effectiveWorkflowCTestRun(context, run, artifactName);
       const project = context.project.configDir;
       const expandedTests = await expandFilePatterns(tests, { baseDir: project, label: `jobs.${input.id}.tests` });
       const expandedSources = sources.length === 0 ? [] : await expandFilePatterns(sources, { baseDir: project, label: `jobs.${input.id}.sources` });
@@ -147,16 +151,17 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
         ...expandedHeaders.map((header) => path.dirname(path.join(project, header))),
       ])].sort();
       const compiler = build.compiler ?? "cc";
-      const environment = { ...process.env, ...input.env };
+      const environment = effectiveEnvironment(context);
       const [version, target] = await Promise.all([
         runCommand({ program: compiler, args: ["--version"], cwd: project, env: environment, signal: context.signal }),
         runCommand({ program: compiler, args: ["-dumpmachine"], cwd: project, env: environment, signal: context.signal }),
       ]);
       if (version.exitCode !== 0 || version.stdout.trim().length === 0) throw new CautestError(`无法识别 Compiler: ${compiler}`, { code: "tooling_error" });
       const metadata = {
-        schema: 1, compiler: version.stdout.trim(), target: target.stdout.trim(), suites, includeDirs: build.includeDirs ?? [],
+        schema: CAUTEST_CACHE_VERSIONS.nativeFingerprint, compiler: version.stdout.trim(), target: target.stdout.trim(), suites, includeDirs: build.includeDirs ?? [],
         defines: build.defines ?? {}, cflags: build.cflags ?? [], ldflags: build.ldflags ?? [], coverage: input.coverage !== undefined,
-        workspaceSize: build.workspaceSize ?? 65_536, caseTimeoutMs: run.caseTimeoutMs ?? 1_000,
+        workspaceSize: build.workspaceSize ?? 65_536, caseTimeoutMs: effectiveRun.caseTimeoutMs ?? 1_000,
+        environment: declaredEnvironment(context),
         fingerprintEnv: Object.fromEntries((build.cache?.fingerprintEnv ?? []).map((key) => [key, environment[key] ?? null])),
       };
       const key = await fingerprint([...productFiles, ...kitInputs.map((file) => path.join(kitRoot, file))], metadata, project);
@@ -165,7 +170,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       const registry = path.join(generatedDir, "registry.c");
       const entry = path.join(generatedDir, "entry.c");
       await writeFile(registry, registrySource(suites));
-      await writeFile(entry, entrySource(key, build.workspaceSize ?? 65_536, run.caseTimeoutMs ?? 1_000));
+      await writeFile(entry, entrySource(key, build.workspaceSize ?? 65_536, effectiveRun.caseTimeoutMs ?? 1_000));
       const cacheEnabled = build.cache?.enabled !== false;
       validateConfiguredCacheRoot(project, build.cache?.directory);
       const cacheRoot = path.resolve(project, cacheEnabled ? (build.cache?.directory ?? path.join(context.project.cacheDir, "native")) : path.join(context.project.workDir, "native"));
@@ -183,7 +188,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
           const result = await runCommand({ program: compiler, args, cwd: temporary, env: environment, signal: context.signal, onOutput: context.output });
           if (result.exitCode !== 0) throw new CautestError(`Native 编译失败 (exit ${result.exitCode})\n${result.stderr}`, { code: "build_error" });
           await chmod(temporaryTarget, 0o755);
-          await writeFile(path.join(temporary, "manifest.json"), `${JSON.stringify({ schema: 2, key, outputs: await outputManifest(temporary) }, null, 2)}\n`);
+          await writeFile(path.join(temporary, "manifest.json"), `${JSON.stringify({ schema: CAUTEST_CACHE_VERSIONS.nativeManifest, key, outputs: await outputManifest(temporary) }, null, 2)}\n`);
           try { await rename(temporary, cacheDir); }
           catch (cause) { if (!await cacheValid(cacheDir, targetPath, key)) throw cause; await rm(temporary, { recursive: true, force: true }); }
         } catch (cause) { await rm(temporary, { recursive: true, force: true }); throw cause; }
@@ -199,6 +204,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
     kind: "cTestRun", name: artifactName, phase: "run", ...(run.stepTimeoutMs === undefined ? {} : { timeoutMs: run.stepTimeoutMs }),
     details: { transport: "process", artifactName, selection: run },
     async execute(context) {
+      const effectiveRun = effectiveWorkflowCTestRun(context, run, artifactName);
       const artifact = context.state.get(`native:${artifactName}`) as NativeArtifact | undefined;
       if (artifact === undefined) throw new CautestError(`Native Artifact 不存在: ${artifactName}`, { code: "build_error" });
       const coverageRaw = path.join(context.project.resultDir, "coverage", artifactName, "raw");
@@ -209,22 +215,21 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       const targetFile = path.join(logDir, `${artifactName}.target.log`);
       const targetLogs: string[] = [];
       await mkdir(logDir, { recursive: true });
-      const results = await runNativeSession({
+      const session = await runNativeSession({
         program: artifact.path,
         cwd: context.project.configDir,
-        env: { ...process.env, ...input.env, ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: "100" } : {}) },
+        env: { ...effectiveEnvironment(context), ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: "100" } : {}) },
         expectedBuildId: artifact.buildId,
-        run,
+        run: effectiveRun,
         signal: context.signal,
+        onEvent: workflowSessionEventSink(context.events, context.job.id),
         onLog(log) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },
         async onComplete(output) { await Promise.all([writeFile(stdoutFile, output.stdout), writeFile(stderrFile, output.stderr), writeFile(targetFile, `${targetLogs.join("\n")}${targetLogs.length === 0 ? "" : "\n"}`)]); },
       });
       context.artifacts.publish({ kind: "log", name: `${artifactName}-stdout`, path: stdoutFile });
       context.artifacts.publish({ kind: "log", name: `${artifactName}-stderr`, path: stderrFile });
       context.artifacts.publish({ kind: "log", name: `${artifactName}-target`, path: targetFile });
-      const cases = results.flatMap((suite) => suite.cases);
-      if (cases.length === 0 && input.policy?.allowEmpty !== true) throw new CautestError("Native C Test 没有选中任何 Case", { code: "selection_error" });
-      return { outcome: cases.some((item) => item.status === "FAIL" || item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: results, diagnostics: [{ code: "native_session", message: `cases=${cases.length}` }] };
+      return workflowSessionResult(session, { label: "Native C Test", allowEmpty: input.policy?.allowEmpty === true });
     },
   });
   const coverage = input.coverage === undefined ? [] : [defineStep({
@@ -242,7 +247,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       for (const file of [...notes, ...data]) await copyFile(file, path.join(objects, path.basename(file)));
       if (notes.length === 0) throw new CautestError("GCOV Cache 缺少 .gcno Artifact", { code: "cache_error" });
       for (const note of notes) {
-        const result = await runCommand({ program: input.coverage?.tool ?? "gcov", args: ["-o", objects, path.join(objects, path.basename(note))], cwd: output, env: { ...process.env, ...input.env }, signal: context.signal, onOutput: context.output });
+        const result = await runCommand({ program: input.coverage?.tool ?? "gcov", args: ["-o", objects, path.join(objects, path.basename(note))], cwd: output, env: effectiveEnvironment(context), signal: context.signal, onOutput: context.output });
         if (result.exitCode !== 0) throw new CautestError(`GCOV 收集失败 (exit ${result.exitCode})`, { code: "build_error" });
       }
       const reports = await collectByExtension(output, ".gcov");

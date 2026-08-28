@@ -68,6 +68,9 @@ test("Kernel Module 只在 Sandbox 构建，完整校验发布 Artifact 并支�
     buildIsolatedKernelModule({ ...base, kernelOutput: kernelB, arch: "arm64" }),
   ]);
   assert.notEqual(archA.cacheKey, archB.cacheKey);
+  const profileOne = await buildIsolatedKernelModule({ ...base, kernelOutput: kernelA, arch: "um", env: { CAUTEST_PROFILE_ENV: "profile-one" } });
+  const profileTwo = await buildIsolatedKernelModule({ ...base, kernelOutput: kernelA, arch: "um", env: { CAUTEST_PROFILE_ENV: "profile-two" } });
+  assert.notEqual(profileOne.cacheKey, profileTwo.cacheKey);
   assert.deepEqual(await names(path.join(project, "module")), ["Makefile", "driver.c"]);
   assert.deepEqual(await names(path.join(project, "product")), ["product.c"]);
 });

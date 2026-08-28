@@ -90,13 +90,13 @@ export interface CTestSelectionInput {
   readonly exclude?: readonly string[];
 
   /** 发现阶段只保留指定 Suite。 */
-  readonly suite?: string;
+  readonly suite?: string | readonly string[];
 
   /** 发现阶段只保留指定 Case。 */
-  readonly case?: string;
+  readonly case?: string | readonly string[];
 
   /** 发现阶段只保留指定参数化 Case 参数。 */
-  readonly parameter?: string;
+  readonly parameter?: string | readonly string[];
 }
 
 /** C Test Session 的超时参数。 */
@@ -124,6 +124,11 @@ export interface CTestRunInput extends CTestSelectionInput, CTestTimeoutInput {
 
   /** 整个 Run Step 超时，单位毫秒。 */
   readonly stepTimeoutMs?: number;
+}
+
+/** CLI 对标准 C Test Run Step 的临时覆盖；`step` 用于只匹配一个 Step Name。 */
+export interface CTestRunOverrides extends CTestRunInput {
+  readonly step?: string;
 }
 
 /** 可缓存构建的公共参数。 */
@@ -174,6 +179,8 @@ export interface StepExecutionContext {
   readonly results: ResultRecorder;
   /** Run/Job/Step 生命周期事件记录器。 */
   readonly events: EventRecorder;
+  /** 本次 Run 注入的 C Test 选择和超时覆盖，不修改长期 Job 定义。 */
+  readonly cTestRun?: CTestRunOverrides;
   /** 注册 Job 结束时逆序执行的清理函数。 */
   readonly defer: (callback: () => unknown | Promise<unknown>, name?: string) => void;
 }
@@ -181,8 +188,10 @@ export interface StepExecutionContext {
 /** Step Executor 返回的诊断信息。 */
 export interface StepExecutionResult {
   readonly diagnostics?: readonly unknown[];
-  readonly outcome?: "SUCCESS" | "FAIL";
+  readonly outcome?: "SUCCESS" | "FAIL" | "ERROR";
   readonly testResults?: readonly TestSuiteResult[];
+  /** Step 已取得部分结果，但最终因 Target/Transport 等基础设施错误结束。 */
+  readonly error?: unknown;
 }
 
 /** Workflow 执行时可写目录和配置根。所有路径均为绝对路径。 */
@@ -219,6 +228,7 @@ export interface TestCaseResult {
   readonly durationMs?: number;
   readonly failures?: readonly Readonly<{ readonly message: string; readonly expected?: unknown; readonly actual?: unknown }>[];
   readonly logs?: readonly string[];
+  readonly attachments?: readonly Readonly<{ readonly name: string; readonly value: unknown }>[];
   readonly error?: Readonly<{ readonly code?: string; readonly message: string }>;
 }
 
@@ -266,6 +276,17 @@ export interface WorkflowStep {
   readonly details: Readonly<Record<string, unknown>>;
 }
 
+declare const WORKFLOW_FRAGMENT_TYPE: unique symbol;
+
+/** 由 `defineFragment()` 创建、可递归嵌套的 Workflow 片段。 */
+export interface WorkflowFragment {
+  readonly [WORKFLOW_FRAGMENT_TYPE]: true;
+  readonly entries: readonly WorkflowInput[];
+}
+
+/** `testJob.workflow` 支持的 Step、Fragment 或嵌套数组。 */
+export type WorkflowInput = WorkflowStep | WorkflowFragment | readonly WorkflowInput[];
+
 declare const TEST_JOB_TYPE: unique symbol;
 
 /**
@@ -289,7 +310,7 @@ export interface TestJob {
 /** 通用 `testJob()` 的参数 Schema。 */
 export interface TestJobInput extends TestJobCommonInput {
   readonly level: TestLevel;
-  readonly workflow: readonly WorkflowStep[];
+  readonly workflow: readonly WorkflowInput[];
 }
 
 /** Profile 的 Reporter 和环境变量覆盖。 */
@@ -300,7 +321,7 @@ export interface TestProfileInput {
   /** Reporter 名称。 */
   readonly reporters?: readonly string[];
 
-  /** 运行该 Profile 时注入的环境变量。 */
+  /** 运行该 Profile 时注入的环境变量；覆盖 Job 同名值，并进入标准构建/运行进程和构建指纹。 */
   readonly env?: EnvironmentVariables;
 }
 

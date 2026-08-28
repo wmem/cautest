@@ -53,11 +53,15 @@ test("Session 生成 Case 结果并将 Target Log 外置", async () => {
   const events = [];
   const result = await runCTestSession({ transport, expectedBuildId: "build", include: ["alpha/plain"], onLog: (log) => { logs.push(log); return "target.log:1"; }, onEvent: (event) => events.push(event) });
   assert.equal(result.groups[0].cases[0].status, "PASS");
+  assert.equal(result.hello.buildId, "build");
+  assert.deepEqual(result.catalog.map((item) => item.name), ["alpha/plain"]);
+  assert.deepEqual(result.selection.map((item) => item.name), ["alpha/plain"]);
   assert.equal(result.executionCount, 1);
   assert.equal("targetEvents" in result, false);
   assert.equal(logs[0].message, "diagnostic");
   assert.equal(events.find((event) => event.type === "TARGET_LOG").message, undefined);
   assert.equal(events.find((event) => event.type === "TARGET_LOG").logRef, "target.log:1");
+  assert.deepEqual(events.map((event) => event.type), ["EXEC_START", "SUITE_START", "CASE_START", "TARGET_LOG", "CASE_END", "SUITE_END", "EXEC_END"]);
   assert(transport.commands.includes("AT+CASE=1,0,0,0"));
 });
 
@@ -69,10 +73,12 @@ test("Execution Timeout 关闭连接且不发送 CANCEL", async () => {
 });
 
 test("ASSERT2 保留字符串 expected/actual 结构化类型", async () => {
-  const result = await runCTestSession({ transport: new ScriptedTransport({ typedAssertion: true }), expectedBuildId: "build", include: ["alpha/plain"] });
+  const events = [];
+  const result = await runCTestSession({ transport: new ScriptedTransport({ typedAssertion: true }), expectedBuildId: "build", include: ["alpha/plain"], onEvent: (event) => events.push(event) });
   const assertion = result.groups[0].cases[0].assertions[0];
   assert.deepEqual(assertion.expected, { type: "string", value: "expected,value" });
   assert.deepEqual(assertion.actual, { type: "string", value: "actual" });
+  assert.equal(events.find((event) => event.type === "ASSERTION").expression, "string equality");
 });
 
 test("Suite Fixture 错误形成执行错误且不伪造 Case", async () => {

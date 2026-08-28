@@ -21,9 +21,9 @@ function inside(parent, child) {
   return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
 }
 
-function context(project) {
+function context(project, env = {}) {
   return {
-    job: { id: "integration.out-of-tree", env: {} }, signal: new AbortController().signal, state: new Map(), output() {},
+    job: { id: "integration.out-of-tree", env }, signal: new AbortController().signal, state: new Map(), output() {},
     project: { configDir: project, resultDir: path.join(project, "results"), cacheDir: path.join(project, ".cautest/cache"), generatedDir: path.join(project, ".cautest/generated"), workDir: path.join(project, ".cautest/work") },
   };
 }
@@ -51,7 +51,7 @@ const source = args[args.indexOf("-C") + 1];
 const output = args.find((item) => item.startsWith("O=")).slice(2);
 const target = args.at(-1);
 mkdirSync(output, { recursive: true });
-appendFileSync(process.env.CAUTEST_FAKE_MAKE_LOG, JSON.stringify({ source, output, target }) + "\\n");
+appendFileSync(process.env.CAUTEST_FAKE_MAKE_LOG, JSON.stringify({ source, output, target, profile: process.env.CAUTEST_PROFILE_ENV ?? null }) + "\\n");
 if (target.endsWith("defconfig") && target !== "olddefconfig") writeFileSync(path.join(output, ".config"), "CONFIG_FAKE=y\\n");
 if (target === "linux") writeFileSync(path.join(output, "linux"), readFileSync(path.join(source, "source.c")));
 if (target === "modules") writeFileSync(path.join(output, "Module.symvers"), "symbols\\n");
@@ -61,9 +61,10 @@ if (target === "busybox") writeFileSync(path.join(output, "busybox"), readFileSy
   const linuxBefore = await tree(linux);
   const busyboxBefore = await tree(busybox);
 
-  async function build(project) {
+  async function build(project, profile) {
     const log = path.join(project, "make.log");
-    const ctx = context(project);
+    await writeFile(log, "");
+    const ctx = context(project, profile === undefined ? {} : { CAUTEST_PROFILE_ENV: profile });
     const environment = { kernel: { sourceDir: linux, make, env: { CAUTEST_FAKE_MAKE_LOG: log } }, busybox: { sourceDir: busybox, make, env: { CAUTEST_FAKE_MAKE_LOG: log } } };
     const [kernelArtifact, busyboxArtifact] = await Promise.all([buildKernel(environment, ctx, "fixture"), buildBusyBox(environment.busybox, ctx)]);
     return { kernelArtifact, busyboxArtifact, calls: (await readFile(log, "utf8")).trim().split("\n").map(JSON.parse) };
@@ -82,4 +83,11 @@ if (target === "busybox") writeFileSync(path.join(output, "busybox"), readFileSy
   await writeFile(path.join(linux, "source.c"), "int changed_kernel_source;\n");
   const changed = await build(projectA);
   assert.notEqual(changed.kernelArtifact.path, first.kernelArtifact.path);
+
+  const profiled = await build(projectA, "profile-one");
+  const reprofiled = await build(projectA, "profile-two");
+  assert.notEqual(profiled.kernelArtifact.path, reprofiled.kernelArtifact.path);
+  assert.notEqual(profiled.busyboxArtifact.path, reprofiled.busyboxArtifact.path);
+  assert.equal(profiled.calls.filter((call) => call.profile !== null).every((call) => call.profile === "profile-one"), true);
+  assert.equal(reprofiled.calls.filter((call) => call.profile !== null).every((call) => call.profile === "profile-two"), true);
 });

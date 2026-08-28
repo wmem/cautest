@@ -3,12 +3,14 @@ import { cp, chmod, mkdir, readFile, readdir, writeFile } from "node:fs/promises
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { CAUTEST_VERSIONS } from "./config/versions.js";
 
 export interface BuildInfo {
   readonly schemaVersion: number;
   readonly version: string;
   readonly commit: string;
   readonly dirty: boolean;
+  readonly versions: typeof CAUTEST_VERSIONS;
 }
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -24,10 +26,14 @@ export async function readBuildInfo(): Promise<BuildInfo> {
     || !("version" in value)
     || !("commit" in value)
     || !("dirty" in value)
+    || !("versions" in value)
     || typeof value.schemaVersion !== "number"
     || typeof value.version !== "string"
     || typeof value.commit !== "string"
     || typeof value.dirty !== "boolean"
+    || JSON.stringify(value.versions) !== JSON.stringify(CAUTEST_VERSIONS)
+    || value.schemaVersion !== CAUTEST_VERSIONS.schemas.buildInfo
+    || value.version !== CAUTEST_VERSIONS.release
   ) {
     throw new Error("dist/build-info.json 无效，请先执行 build-info");
   }
@@ -51,7 +57,7 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true });
   }
   await mkdir(path.join(root, "lib/runtime"));
-  for (const file of ["cli.js", "cli.js.map", "cli.d.ts", "cli.d.ts.map", "process.js", "process.js.map", "process.d.ts", "process.d.ts.map"]) {
+  for (const file of ["cli.js", "cli.js.map", "cli.d.ts", "cli.d.ts.map", "direct-session.js", "direct-session.js.map", "direct-session.d.ts", "direct-session.d.ts.map", "environment.js", "environment.js.map", "environment.d.ts", "environment.d.ts.map", "interrupt.js", "interrupt.js.map", "interrupt.d.ts", "interrupt.d.ts.map", "process.js", "process.js.map", "process.d.ts", "process.d.ts.map"]) {
     await cp(path.join(packageRoot, `dist/runtime/${file}`), path.join(root, `lib/runtime/${file}`));
   }
   await mkdir(path.join(root, "lib/vendor/picomatch"), { recursive: true });
@@ -62,6 +68,7 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
   await cp(path.join(packageRoot, "dist/runtime/loader.js"), path.join(root, "loader.mjs"));
   await cp(path.join(packageRoot, "assets/portable/README.md"), path.join(root, "README.md"));
+  await cp(path.join(packageRoot, "versions.json"), path.join(root, "versions.json"));
   await cp(path.join(packageRoot, "docs"), path.join(root, "docs"), { recursive: true });
   await cp(path.join(packageRoot, "usage"), path.join(root, "usage"), { recursive: true });
   await cp(path.join(packageRoot, "examples"), path.join(root, "examples"), { recursive: true });
@@ -83,7 +90,7 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
     entries.push({ path: relative, size: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") });
   }
   await writeFile(path.join(root, "manifest.json"), `${JSON.stringify({
-    schemaVersion: 1,
+    schemaVersion: CAUTEST_VERSIONS.schemas.portableManifest,
     product: "cautest-portable",
     version: build.version,
     build: { commit: build.commit, dirty: build.dirty },

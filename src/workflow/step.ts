@@ -1,5 +1,6 @@
 import type { StepExecutionContext, StepExecutionResult, WorkflowPhase, WorkflowStep, WorkflowStepInput } from "../config/schema/common.js";
 import { CautestError } from "../model/error.js";
+import { flattenWorkflow } from "./fragment.js";
 
 const STEP = Symbol.for("@cautest/config/workflow-step");
 const EXECUTOR = Symbol.for("@cautest/config/workflow-executor");
@@ -63,12 +64,13 @@ export function stepExecutor(step: WorkflowStep): InternalStep[typeof EXECUTOR] 
 }
 
 export function normalizeWorkflow(value: unknown): readonly WorkflowStep[] {
-  if (!Array.isArray(value) || value.length === 0) {
+  if (!Array.isArray(value)) {
     throw new CautestError("Test Job workflow 必须是非空 Step 数组", { code: "config_error" });
   }
+  const flattened = flattenWorkflow(value);
+  if (flattened.length === 0) throw new CautestError("Test Job workflow 必须是非空 Step 数组", { code: "config_error" });
   let previous = -1;
-  const output = value.map((step, index) => {
-    if (!isWorkflowStep(step)) throw new CautestError(`workflow[${index}] 不是 Step Descriptor`, { code: "config_error" });
+  const output = flattened.map((step, index) => {
     const current = phases.indexOf(step.phase);
     if (current < previous) throw new CautestError(`workflow[${index}] 的 phase ${step.phase} 发生逆序`, { code: "config_error" });
     previous = current;

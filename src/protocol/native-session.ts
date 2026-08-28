@@ -1,5 +1,5 @@
-import type { CTestRunInput, TestSuiteResult } from "../config/schema/common.js";
-import { runCTestSession, type TargetLog } from "./session.js";
+import type { CTestRunInput } from "../config/schema/common.js";
+import { runCTestSession, type CTestSessionResult, type SessionEvent, type TargetLog } from "./session.js";
 import { ProcessTransport, type CtpTransport as StrictCtpTransport } from "./transport.js";
 
 /** 兼容项目自定义 Adapter 的行式 CTP3 Transport。 */
@@ -10,10 +10,10 @@ export interface CtpTransport {
   close?(): void | Promise<void>;
 }
 
-export interface CtpSessionRequest { readonly transport: CtpTransport; readonly expectedBuildId: string; readonly expectedBootId?: string; readonly run: CTestRunInput; readonly signal: AbortSignal; readonly onLog?: (log: TargetLog) => string | void | Promise<string | void> }
+export interface CtpSessionRequest { readonly transport: CtpTransport; readonly expectedBuildId: string; readonly expectedBootId?: string; readonly run: CTestRunInput; readonly signal: AbortSignal; readonly onEvent?: (event: SessionEvent) => unknown | Promise<unknown>; readonly onLog?: (log: TargetLog) => string | void | Promise<string | void> }
 
 /** 将项目 Adapter 统一接入严格 CTestSession。 */
-export async function runCtpSession(request: CtpSessionRequest): Promise<readonly TestSuiteResult[]> {
+export async function runCtpSession(request: CtpSessionRequest): Promise<CTestSessionResult> {
   const decoder = new TextDecoder();
   const transport: StrictCtpTransport = {
     async open(options) { await request.transport.open?.(options); },
@@ -32,11 +32,13 @@ export async function runCtpSession(request: CtpSessionRequest): Promise<readonl
     ...(request.run.case === undefined ? {} : { case: request.run.case }),
     ...(request.run.parameter === undefined ? {} : { parameter: request.run.parameter }),
     ...(request.run.suitePolicy === undefined ? {} : { suitePolicy: request.run.suitePolicy }),
+    ...(request.run.caseTimeoutMs === undefined ? {} : { caseTimeoutMs: request.run.caseTimeoutMs }),
     ...(request.run.runTimeoutMs === undefined ? {} : { runTimeoutMs: request.run.runTimeoutMs }),
     ...(request.run.session === undefined ? {} : { timeouts: request.run.session }),
+    ...(request.onEvent === undefined ? {} : { onEvent: request.onEvent }),
     ...(request.onLog === undefined ? {} : { onLog: request.onLog }),
   });
-  return result.groups;
+  return result;
 }
 
 export interface NativeSessionRequest {
@@ -48,12 +50,13 @@ export interface NativeSessionRequest {
   readonly expectedBootId?: string;
   readonly run: CTestRunInput;
   readonly signal: AbortSignal;
+  readonly onEvent?: (event: SessionEvent) => unknown | Promise<unknown>;
   readonly onLog?: (log: TargetLog) => string | void | Promise<string | void>;
   readonly onComplete?: (output: { readonly stdout: string; readonly stderr: string }) => void | Promise<void>;
 }
 
 /** 通过 POSIX Target 的 FD3/FD4 执行严格 CTP3 Native Session。 */
-export async function runNativeSession(request: NativeSessionRequest): Promise<readonly TestSuiteResult[]> {
+export async function runNativeSession(request: NativeSessionRequest): Promise<CTestSessionResult> {
   const transport = new ProcessTransport({ program: request.program, ...(request.args === undefined ? {} : { args: request.args }), cwd: request.cwd, env: request.env });
   try {
     const result = await runCTestSession({
@@ -67,10 +70,12 @@ export async function runNativeSession(request: NativeSessionRequest): Promise<r
       ...(request.run.case === undefined ? {} : { case: request.run.case }),
       ...(request.run.parameter === undefined ? {} : { parameter: request.run.parameter }),
       ...(request.run.suitePolicy === undefined ? {} : { suitePolicy: request.run.suitePolicy }),
+      ...(request.run.caseTimeoutMs === undefined ? {} : { caseTimeoutMs: request.run.caseTimeoutMs }),
       ...(request.run.runTimeoutMs === undefined ? {} : { runTimeoutMs: request.run.runTimeoutMs }),
       ...(request.run.session === undefined ? {} : { timeouts: request.run.session }),
+      ...(request.onEvent === undefined ? {} : { onEvent: request.onEvent }),
       ...(request.onLog === undefined ? {} : { onLog: request.onLog }),
     });
-    return result.groups;
+    return result;
   } finally { await request.onComplete?.({ stdout: transport.stdout, stderr: transport.stderr }); }
 }

@@ -3,15 +3,12 @@
 
 #include <linux/ioctl.h>
 #include <linux/types.h>
+#include <cautest/version.h>
 
 /*
  * /dev/cautest 的本地 ABI。所有结构只包含定宽整数和内嵌数组，
  * 不包含用户指针，因此 32/64 位 guest 可以使用同一布局。
  */
-#define CAUTEST_KERNEL_ABI_MAJOR 3U
-#define CAUTEST_KERNEL_ABI_MINOR 0U
-#define CAUTEST_KERNEL_ABI_MAGIC 0xca7e57U
-
 #define CAUTEST_KERNEL_NAME_MAX 64U
 #define CAUTEST_KERNEL_EXPRESSION_MAX 96U
 #define CAUTEST_KERNEL_FILE_MAX 96U

@@ -66,7 +66,8 @@ done
 
 # Kernel ABI、Selection Model 与 Probe Model 均可在 Host 侧独立验证。
 # shellcheck disable=SC2086
-$cc $strict -I"$project_dir/assets/cautest-c/platform/linux-kernel/include" \
+$cc $strict -I"$project_dir/assets/cautest-c/include" \
+  -I"$project_dir/assets/cautest-c/platform/linux-kernel/include" \
   "$project_dir/test/c-runtime/kernel_abi_smoke.c" -o "$build_dir/kernel-abi-test"
 "$build_dir/kernel-abi-test"
 # shellcheck disable=SC2086
@@ -77,7 +78,8 @@ $cc $strict -I"$project_dir/assets/cautest-c/include" -I"$project_dir/assets/cau
   -o "$build_dir/kernel-selection-test"
 "$build_dir/kernel-selection-test"
 # shellcheck disable=SC2086
-$cc $strict -I"$project_dir/assets/cautest-c/platform/linux-kernel/include" \
+$cc $strict -I"$project_dir/assets/cautest-c/include" \
+  -I"$project_dir/assets/cautest-c/platform/linux-kernel/include" \
   "$project_dir/test/c-runtime/probe_model_test.c" -o "$build_dir/probe-model-test"
 "$build_dir/probe-model-test"
 

@@ -1,7 +1,8 @@
 import { CautestError } from "../model/error.js";
+import { CAUTEST_VERSIONS } from "../config/versions.js";
 
-export const CTP_PROTOCOL_MAJOR = 3;
-export const CTP_PROTOCOL_MINOR = 1;
+export const CTP_PROTOCOL_MAJOR = CAUTEST_VERSIONS.ctp.major;
+export const CTP_PROTOCOL_MINOR = CAUTEST_VERSIONS.ctp.minor;
 export const TARGET_RX_LINE_MAX = 64;
 export const TARGET_TX_LINE_MAX = 512;
 
