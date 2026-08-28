@@ -24,14 +24,17 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   assert.ok(rootEntries.includes("cautest.js"));
   assert.ok(rootEntries.includes("lib"));
   assert.ok(rootEntries.includes("docs"));
-  assert.ok(rootEntries.includes("usage"));
+  assert.ok(!rootEntries.includes("usage"));
   assert.ok(rootEntries.includes("examples"));
   assert.ok(!rootEntries.includes("node_modules"));
   assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map", "direct-session.d.ts", "direct-session.d.ts.map", "direct-session.js", "direct-session.js.map", "environment.d.ts", "environment.d.ts.map", "environment.js", "environment.js.map", "interrupt.d.ts", "interrupt.d.ts.map", "interrupt.js", "interrupt.js.map", "process.d.ts", "process.d.ts.map", "process.js", "process.js.map"]);
   await assert.rejects(lstat(path.join(destination, "lib/vendor")));
   assert.equal((await readFile(path.join(destination, "lib/pattern/glob.js"), "utf8")).includes("globMatcher"), true);
-  assert.match(await readFile(path.join(destination, "docs/configuration.md"), "utf8"), /唯一顶层模型/u);
-  assert.match(await readFile(path.join(destination, "usage/linux-driver/unit.md"), "utf8"), /不要求测试作者手写/u);
+  assert.match(await readFile(path.join(destination, "README.md"), "utf8"), /docs\/usage\/index\.md/u);
+  assert.match(await readFile(path.join(destination, "docs/usage/index.md"), "utf8"), /doctor.*list.*plan.*run/su);
+  assert.match(await readFile(path.join(destination, "docs/usage/linux-driver-unit.md"), "utf8"), /kernelCTestJobFactory/u);
+  await assert.rejects(lstat(path.join(destination, "docs/index.md")));
+  await assert.rejects(lstat(path.join(destination, "docs/specifications")));
 
   const cBuild = path.join(temporary, "c-kit-build");
   const cPrefix = path.join(temporary, "c-kit-prefix");
@@ -75,10 +78,18 @@ export default testConfig({ jobs: [
 
   const allInOne = path.join(destination, "examples/all-in-one/cautest.config.mjs");
   const allPlan = await exec(path.join(destination, "cautest.js"), ["--config", allInOne, "plan"], { cwd: temporary });
-  for (const id of ["unit.example-math", "component.kernel-counter", "integration.example-driver", "component.mcu-sim", "system.example-api"]) assert.match(allPlan.stdout, new RegExp(id, "u"));
+  for (const id of ["unit.example-math", "component.kernel-counter", "unit.example-driver-core", "integration.example-driver", "component.mcu-sim", "system.example-api"]) assert.match(allPlan.stdout, new RegExp(id, "u"));
 
-  for (const example of ["c-lib", "mcu-sim", "system-script"]) {
+  for (const [example, jobId] of [
+    ["c-lib", "unit.example-math"],
+    ["mcu-sim", "component.mcu-sim"],
+    ["system-script", "system.example-api"],
+    ["workflow", "system.composed-local"],
+  ]) {
     const exampleConfig = path.join(destination, `examples/${example}/cautest.config.mjs`);
+    await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "doctor"], { cwd: temporary });
+    assert.match((await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "list"], { cwd: temporary })).stdout, new RegExp(jobId, "u"));
+    assert.match((await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "plan", jobId], { cwd: temporary })).stdout, new RegExp(jobId, "u"));
     const executed = await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "run", "--json"], { cwd: temporary });
     assert.equal(JSON.parse(executed.stdout).status, "SUCCESS", `${example}: ${executed.stderr}`);
   }

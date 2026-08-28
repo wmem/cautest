@@ -51,12 +51,15 @@ test("UML 前置检查验证 Kernel UML 与 BusyBox 源码树结构", async () =
 
 test("真实入口展开 Kernel 与 Driver/Probe/Guest ABI UML Workflow", () => {
   const prerequisites = { kernelSource: "/kernel", busyboxSource: "/busybox" };
-  const kernel = planConfig(kernelUmlSmokeConfig(prerequisites))[0];
-  assert.equal(kernel.id, "integration.uml.smoke");
+  const [kernel, driverUnit] = planConfig(kernelUmlSmokeConfig(prerequisites));
+  assert.equal(kernel.id, "component.kernel-counter");
   assert.deepEqual(kernel.workflow.map((step) => step.kind), [
     "kernelBuild", "busyboxBuild", "kernelModuleBuild", "generatedKernelTestModule",
     "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs",
   ]);
+  assert.equal(driverUnit.id, "unit.example-driver-core");
+  assert.deepEqual(driverUnit.workflow.map((step) => step.kind), kernel.workflow.map((step) => step.kind));
+  assert.deepEqual(driverUnit.workflow[3].details.tests, ["examples/linux-driver-unit/test/example_driver_core_test.c"]);
 
   const driver = planConfig(driverUmlSmokeConfig(prerequisites))[0];
   assert.equal(driver.id, "integration.uml.driver-probe-smoke");

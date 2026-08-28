@@ -26,7 +26,10 @@ test("便携包可解压、校验并直接运行", async (t) => {
   const entries = (await exec("tar", ["-tzf", output])).stdout.trim().split("\n");
   assert.ok(entries.includes("cautest/cautest.js"));
   assert.ok(entries.includes("cautest/assets/cautest-c/include/cautest/cautest.h"));
+  assert.ok(entries.includes("cautest/docs/usage/index.md"));
   assert.ok(entries.includes("cautest/lib/config/index.d.ts"));
+  assert.ok(!entries.includes("cautest/docs/index.md"));
+  assert.ok(!entries.some((entry) => entry.startsWith("cautest/usage/")));
   assert.ok(entries.every((entry) => entry === "cautest/" || entry.startsWith("cautest/")));
 
   const extracted = path.join(temporary, "extracted");

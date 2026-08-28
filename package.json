@@ -8,11 +8,10 @@
   },
   "files": [
     "assets",
-    "docs",
+    "docs/usage",
     "examples",
     "dist",
-    "README.md",
-    "usage"
+    "README.md"
   ],
   "scripts": {
     "versions:sync": "node scripts/sync-versions.mjs --write",

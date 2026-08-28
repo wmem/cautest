@@ -1,26 +1,23 @@
-# Cautest 项目知识入口
+# Cautest 开发者文档
 
-Cautest 用 JavaScript 配置和有序 Workflow 组织本地工程测试，并让同一套结构化 C Test 语义运行在 Native POSIX、Linux Kernel/UML、Driver Guest 和 MCU 环境中。V2 将所有测试统一为 `TestJob`，公共配置和具体 Job 声明可以分离，但最终执行对象始终是一条可由 `plan` 查看、由 Workflow Engine 顺序执行的工作流。
+Cautest 把不同目标环境的准备、构建、运行和收集过程统一为 `TestJob → Workflow → Result`。本入口面向开发、维护和诊断 Cautest 本身的读者；如果目标只是安装和运行测试，请从[使用指南](usage/index.md)开始，不需要预读内部实现。
 
-项目由配置与 CLI、Workflow 执行、C Runtime 与 CTP3、目标环境构建和结果收集几部分组成。第一次使用时先阅读[配置模型](configuration.md)，再按目标环境进入 Native、Kernel、Driver、MCU 或 System 使用说明；维护实现时从[执行架构](architecture.md)继续，排查 Target 交互时查阅 [CTP3](protocol-ctp3.md)。
+先阅读[项目背景与边界](context.md)，了解 Cautest 负责与不负责的部分。需要理解一个目标环境如何形成系统行为时，再进入 Capability：
 
-## 使用 Cautest
+- [Native C](capabilities/native.md)
+- [Kernel UML](capabilities/kernel.md)
+- [Linux Driver ABI/Probe](capabilities/driver.md)
+- [MCU](capabilities/mcu.md)
+- [Script System Test](capabilities/system.md)
 
-- [配置模型与分层组织](configuration.md)
-- [Native C Test](jobs/native.md)
-- [Kernel/UML C Test](jobs/kernel.md)
-- [Linux Driver ABI Test](jobs/driver.md)
-- [MCU C Test](jobs/mcu.md)
-- [Script System Test](jobs/system.md)
-- [C Assertion API](c-assertions.md)
-- [C Kit 构建与消费](c-kit.md)
-- [CLI、Doctor 与结果](cli.md)
-- [结果目录与 Reporter](results.md)
+需要精确查阅公共规则时进入 Specification：
 
-## 理解和维护实现
+- [配置模型](specifications/configuration.md)
+- [CLI、Doctor 与退出码](specifications/cli.md)
+- [结果目录与 Reporter](specifications/results.md)
+- [C Test API](specifications/c-test-api.md)
+- [CTP3 协议](specifications/ctp3.md)
 
-- [执行架构与责任边界](architecture.md)
-- [CTP3 行协议](protocol-ctp3.md)
-- [测试策略与验证入口](testing.md)
+修改多个实现责任之间的协作时阅读[执行架构](architecture/overview.md)；维护独立 C Runtime 交付时阅读 [C Kit](architecture/c-kit.md)。准备验证变更或特殊环境时阅读[测试策略](tests/testing.md)。V1 迁移审计只保留在 `migration/` 领域，不参与正常阅读路径。
 
-当前文档只把 V2 已实现的行为描述为现状。V1 中仍有效的配置、协议、架构、测试和使用知识已合并到上述权威入口；V1 的阶段性 Requirement 与 Defect 由迁移审计保留来源，不再作为当前使用说明重复维护。
+这些文档按 Project Docs V2 组织：Capability 描述面向场景的系统行为，Specification 保存需要精确查阅的规则，Architecture 解释实现责任如何协作，Test 保存长期验证知识。同一事实只在一个位置精确定义，其他页面通过上下文和自然链接连接。

@@ -17,7 +17,7 @@
       "id": "DEC-003-DOCUMENT-CONSOLIDATION",
       "status": "approved",
       "summary": "V1 阶段性设计/缺陷文档不原样复制；仍有效的使用与设计知识合并进 V2 权威文档，来源由固定 Commit 清单保留。",
-      "evidence": ["docs/index.md", "docs/architecture.md", "test/docs.test.js"]
+      "evidence": ["docs/index.md", "docs/architecture/overview.md", "test/docs.test.js"]
     },
     {
       "id": "DEC-004-EXAMPLE-CONSOLIDATION",

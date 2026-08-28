@@ -12,7 +12,7 @@ Workflow Engine 为每个 Job 建立五类共享状态：Artifact Store 保存�
 
 ## Target 与 Host 的分工
 
-C Runtime 负责 Suite/Case 生命周期、Assertion、Fixture、选择结果和事件。Host 负责源码选择、构建、Target 启停、Timeout、结果持久化与恢复。两者通过 [CTP3](protocol-ctp3.md) 交换目录和执行事件；Native Pipe、UML Endpoint 和 MCU Adapter 只是不同 Transport。
+C Runtime 负责 Suite/Case 生命周期、Assertion、Fixture、选择结果和事件。Host 负责源码选择、构建、Target 启停、Timeout、结果持久化与恢复。两者通过 [CTP3](../specifications/ctp3.md) 交换目录和执行事件；Native Pipe、UML Endpoint 和 MCU Adapter 只是不同 Transport。
 
 Kernel/UML 还包含一个 Guest Agent。Rootfs 中的 Catalog 把 `kernel` 或 Guest Process Endpoint 映射到 Build ID；Host 在 Ready、HELLO 和执行阶段持续校验 Image、Build 与 Boot 身份，避免把旧 Target 的结果记到当前 Run。
 
@@ -26,4 +26,4 @@ Kernel/UML 还包含一个 Guest Agent。Rootfs 中的 Catalog 把 `kernel` 或 
 - UML/Rootfs/Guest Agent：`src/uml/`
 - 结果和 Reporter：`src/result/`、`src/reporters/`
 
-修改这些责任时，先看[测试策略](testing.md)中的对应验证层级。
+修改这些责任时，先看[测试策略](../tests/testing.md)中的对应验证层级。

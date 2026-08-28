@@ -7,7 +7,7 @@ Cautest 同时测试 Host 编排和真实 C Target 行为。只通过 TypeScript
 | `pnpm typecheck` | TypeScript 实现与公开 `.d.ts` 一致性 |
 | `pnpm test:c` | C Core、Assertion、CTP3、Freestanding、Kernel ABI/选择和 Probe 模型 |
 | `pnpm test` | 以上 C 门禁加 Node Workflow、Cache、Native、UML 组件、Driver、MCU、CLI、Reporter 和安装测试 |
-| `pnpm test:uml` | 真实 Linux UML、自动 Kernel Test Module、Rootfs、Guest Agent 和 CTP3 Case |
+| `pnpm test:uml` | 真实 Linux UML、`examples/kernel-lib`、`examples/linux-driver-unit`、自动 Test Module、Rootfs、Guest Agent 和 CTP3 Case |
 | `pnpm test:driver:uml` | 真实 Linux UML、Driver Module、test-only Probe、Guest ABI Test 和 CTP3 Case |
 | `pnpm test:e2e` | 从固定 Git Commit 使用 npx 与 pnpm dlx 编译、安装和执行便携版本 |
 | `pnpm audit:v1` | V1 的 103 个 API、46 个测试文件、6 组 Example 和 89 篇文档均有迁移结论 |
@@ -22,7 +22,7 @@ KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:uml
 KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:driver:uml
 ```
 
-前者执行 Kernel Test Module 闭环；后者执行 `examples/linux-driver` 的 Driver、可选 Probe 和 Guest ABI 闭环。源码树缺失或结构不正确时，入口输出 `status: "BLOCKED"`、`code: "uml_prerequisites_missing"` 并以 77 结束；该结果表示外部环境未就绪，不表示测试通过。
+前者在一次共享环境中执行 `examples/kernel-lib` 与 `examples/linux-driver-unit` 的 Kernel Test Module 闭环；后者执行 `examples/linux-driver` 的 Driver、可选 Probe 和 Guest ABI 闭环。源码树缺失或结构不正确时，入口输出 `status: "BLOCKED"`、`code: "uml_prerequisites_missing"` 并以 77 结束；该结果表示外部环境未就绪，不表示测试通过。
 
 `doctor` 的 Host/Toolchain Probe 会在系统临时目录编译最小程序，不写入项目源码树；Kernel 污染检查只读 `.config`、`include/config/auto.conf` 和 `include/generated/autoconf.h`，不会自动清理源码。
 

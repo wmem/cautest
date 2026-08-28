@@ -35,4 +35,6 @@ Cautest 自动生成 Kbuild/Makefile、Registry、`module_init/module_exit`、`M
 
 调用链：`kernelCTestJob` → `kernelBuild` → `busyboxBuild` → Runtime/额外/自动 Test Module → 可选 `umlGuestProgramBuild` → `umlRootfsBuild` → `umlStart` → `cTestRun(kernel)` → 可选 `kernelCoverage` → `umlLogs`。所有节点都在执行前由 `plan` 展开。
 
+仓库维护者可设置 `KERNEL_SRC`、`BUSYBOX_SRC` 后执行 `pnpm test:uml`。该入口实际运行 `examples/kernel-lib` 和 `examples/linux-driver-unit`，而不是用伪 Module 替代目标行为。
+
 权威 Schema：`UmlKernelEnvironmentInput`、`LinuxKernelBuildInput`、`BusyBoxBuildInput`、`KernelModuleDefaultsInput`、`KernelCTestJobInput`，见源码 `src/config/schema/kernel.ts` 或安装后的 `lib/config/schema/kernel.d.ts`。

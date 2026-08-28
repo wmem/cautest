@@ -59,10 +59,10 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   }
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
   await cp(path.join(packageRoot, "dist/runtime/loader.js"), path.join(root, "loader.mjs"));
-  await cp(path.join(packageRoot, "assets/portable/README.md"), path.join(root, "README.md"));
+  await cp(path.join(packageRoot, "docs/usage/installed.md"), path.join(root, "README.md"));
   await cp(path.join(packageRoot, "versions.json"), path.join(root, "versions.json"));
-  await cp(path.join(packageRoot, "docs"), path.join(root, "docs"), { recursive: true });
-  await cp(path.join(packageRoot, "usage"), path.join(root, "usage"), { recursive: true });
+  await mkdir(path.join(root, "docs"));
+  await cp(path.join(packageRoot, "docs/usage"), path.join(root, "docs/usage"), { recursive: true });
   await cp(path.join(packageRoot, "examples"), path.join(root, "examples"), { recursive: true });
   await mkdir(path.join(root, "assets"));
   await cp(path.join(packageRoot, "assets/cautest-c"), path.join(root, "assets/cautest-c"), { recursive: true });

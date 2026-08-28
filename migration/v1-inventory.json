@@ -1967,7 +1967,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -1978,7 +1978,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -1989,7 +1989,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2000,7 +2000,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2011,7 +2011,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2022,7 +2022,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2033,7 +2033,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2044,7 +2044,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2055,7 +2055,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2066,7 +2066,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2077,7 +2077,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "migration/v1-gap-remediation.md",
+        "docs/migration/v1-gap-remediation.md",
         "test/parity.test.js"
       ]
     },
@@ -2088,7 +2088,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2099,7 +2099,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2110,7 +2110,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2121,7 +2121,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2132,7 +2132,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2143,7 +2143,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2154,7 +2154,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2165,7 +2165,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2176,7 +2176,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2187,7 +2187,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2198,7 +2198,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2209,7 +2209,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2220,7 +2220,7 @@
       "status": "implemented",
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
-        "docs/architecture.md",
+        "docs/architecture/overview.md",
         "test/docs.test.js"
       ]
     },
@@ -2320,7 +2320,7 @@
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
         "test/parity.test.js",
-        "docs/testing.md"
+        "docs/tests/testing.md"
       ]
     },
     {
@@ -2331,7 +2331,7 @@
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
         "test/parity.test.js",
-        "docs/testing.md"
+        "docs/tests/testing.md"
       ]
     },
     {
@@ -2342,7 +2342,7 @@
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
         "test/parity.test.js",
-        "docs/testing.md"
+        "docs/tests/testing.md"
       ]
     },
     {
@@ -2353,7 +2353,7 @@
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
         "test/parity.test.js",
-        "docs/testing.md"
+        "docs/tests/testing.md"
       ]
     },
     {
@@ -2364,7 +2364,7 @@
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
         "test/parity.test.js",
-        "docs/testing.md"
+        "docs/tests/testing.md"
       ]
     },
     {
@@ -2375,7 +2375,7 @@
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
         "test/parity.test.js",
-        "docs/testing.md"
+        "docs/tests/testing.md"
       ]
     },
     {
@@ -2386,7 +2386,7 @@
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
         "test/parity.test.js",
-        "docs/testing.md"
+        "docs/tests/testing.md"
       ]
     },
     {
@@ -2397,7 +2397,7 @@
       "note": "有效内容已按 Project Docs V2 合并到 V2 根索引、配置、架构、协议、Job、结果或测试权威文档",
       "evidence": [
         "test/parity.test.js",
-        "docs/testing.md"
+        "docs/tests/testing.md"
       ]
     },
     {

@@ -1,4 +1,4 @@
-import { driverAbiCTestJob, kernelCTestJob, testConfig, umlKernelEnvironment } from "../../dist/config/index.js";
+import { driverAbiCTestJob, kernelCTestJob, kernelCTestJobFactory, testConfig, umlKernelEnvironment } from "../../dist/config/index.js";
 
 function realEnvironment(prerequisites) {
   return umlKernelEnvironment({
@@ -10,12 +10,24 @@ function realEnvironment(prerequisites) {
 }
 
 export function kernelUmlSmokeConfig(prerequisites) {
+  const environment = realEnvironment(prerequisites);
+  const driverUnitTest = kernelCTestJobFactory({ environment, defaults: { level: "unit", tags: ["unit", "driver"] } });
   return testConfig({ jobs: [kernelCTestJob({
-    id: "integration.uml.smoke",
-    environment: realEnvironment(prerequisites),
-    tests: ["test/fixtures/kernel/smoke_test.c"],
-    suites: ["kernel_smoke"],
-    run: { include: ["kernel_smoke/passes"], caseTimeoutMs: 2_000, runTimeoutMs: 20_000, stepTimeoutMs: 60_000 },
+    id: "component.kernel-counter",
+    environment,
+    tests: ["examples/kernel-lib/test/kernel_counter_test.c"],
+    sources: ["examples/kernel-lib/src/kernel_counter.c"],
+    headers: ["examples/kernel-lib/include/kernel_counter.h"],
+    suites: ["kernel_counter"],
+    run: { include: ["kernel_counter/increments"], caseTimeoutMs: 2_000, runTimeoutMs: 20_000, stepTimeoutMs: 60_000 },
+    timeoutMs: 30 * 60_000,
+  }), driverUnitTest({
+    id: "unit.example-driver-core",
+    tests: ["examples/linux-driver-unit/test/example_driver_core_test.c"],
+    sources: ["examples/linux-driver-unit/driver/example_driver_core.c"],
+    headers: ["examples/linux-driver-unit/include/example_driver_core.h"],
+    suites: ["example_driver_core"],
+    run: { include: ["example_driver_core/clamps_to_driver_limits"], caseTimeoutMs: 2_000, runTimeoutMs: 20_000, stepTimeoutMs: 60_000 },
     timeoutMs: 30 * 60_000,
   })] });
 }
