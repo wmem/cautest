@@ -1,5 +1,6 @@
-import type { TestConfig, TestJob, WorkflowStep } from "./schema/common.js";
+import type { TestConfig, TestJob, TestJobOrigin, WorkflowStep } from "./schema/common.js";
 import { CautestError } from "../model/error.js";
+import { getJobOrigin } from "./provenance.js";
 
 export interface PlannedStep {
   readonly id: string;
@@ -17,6 +18,7 @@ export interface PlannedJob {
   readonly description: string;
   readonly tags: readonly string[];
   readonly enabled: boolean;
+  readonly origin?: TestJobOrigin;
   readonly workflow: readonly PlannedStep[];
 }
 
@@ -42,12 +44,16 @@ export function planConfig(config: TestConfig, selectors: readonly string[] = []
     const missing = selectors.filter((id) => !found.has(id));
     if (missing.length > 0) throw new CautestError(`未找到 Test Job: ${missing.join(", ")}`, { code: "selection_error" });
   }
-  return Object.freeze(selected.map((job) => Object.freeze({
-    id: job.id,
-    level: job.level,
-    description: job.description,
-    tags: job.tags,
-    enabled: job.enabled,
-    workflow: Object.freeze(job.workflow.map(plannedStep)),
-  })));
+  return Object.freeze(selected.map((job) => {
+    const origin = getJobOrigin(job);
+    return Object.freeze({
+      id: job.id,
+      level: job.level,
+      description: job.description,
+      tags: job.tags,
+      enabled: job.enabled,
+      ...(origin === undefined ? {} : { origin }),
+      workflow: Object.freeze(job.workflow.map(plannedStep)),
+    });
+  }));
 }

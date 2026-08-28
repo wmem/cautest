@@ -70,6 +70,7 @@ export async function runCli(
       const loaded = await loadConfig(configPath);
       for (const job of planConfig(loaded.config, mutable)) {
         streams.stdout.write(`Job ${job.id} (${job.level})${job.enabled ? "" : " [disabled]"}\n`);
+        if (job.origin !== undefined) streams.stdout.write(`  Source ${job.origin.source} ${job.origin.configPath}\n`);
         for (const step of job.workflow) {
           streams.stdout.write(`  ${step.id}\t${step.runWhen}\n`);
         }

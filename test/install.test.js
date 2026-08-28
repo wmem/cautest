@@ -24,6 +24,7 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   assert.ok(rootEntries.includes("lib"));
   assert.ok(!rootEntries.includes("node_modules"));
   assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map"]);
+  assert.equal((await readFile(path.join(destination, "lib/vendor/picomatch/LICENSE"), "utf8")).includes("MIT License"), true);
 
   async function visit(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -35,7 +36,7 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   await visit(destination);
 
   const config = path.join(temporary, "cautest.config.mjs");
-  await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config';
+  await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config.js';
 
 const prepare = defineStep({ kind: 'prepareFixture', phase: 'prepare', execute() {} });
 const run = defineStep({ kind: 'runFixture', phase: 'run', execute() {} });

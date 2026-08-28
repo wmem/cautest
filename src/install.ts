@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, rmdir, writeFile, chmod } from "node:fs/promises";
 import path from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 type DestinationState = "missing" | "empty";
@@ -15,6 +16,8 @@ interface BuildInfo {
 }
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const require = createRequire(import.meta.url);
+const picomatchRoot = path.dirname(require.resolve("picomatch/package.json"));
 const usage = `用法: cautest-install <目标目录>
 
 目标目录必须不存在或为空。安装器不会覆盖文件、符号链接或非空目录。
@@ -66,6 +69,11 @@ async function createPortableTree(root: string, build: BuildInfo): Promise<void>
   for (const file of ["cli.js", "cli.js.map", "cli.d.ts", "cli.d.ts.map"]) {
     await cp(path.join(packageRoot, `dist/runtime/${file}`), path.join(root, `lib/runtime/${file}`));
   }
+  await mkdir(path.join(root, "lib/vendor/picomatch"), { recursive: true });
+  for (const file of ["index.js", "LICENSE", "package.json"]) {
+    await cp(path.join(picomatchRoot, file), path.join(root, `lib/vendor/picomatch/${file}`));
+  }
+  await cp(path.join(picomatchRoot, "lib"), path.join(root, "lib/vendor/picomatch/lib"), { recursive: true });
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
   await cp(path.join(packageRoot, "dist/runtime/loader.js"), path.join(root, "loader.mjs"));
   await cp(path.join(packageRoot, "assets/portable/README.md"), path.join(root, "README.md"));

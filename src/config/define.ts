@@ -1,17 +1,21 @@
 import type {
   EnvironmentVariables,
+  JobInputWithDefaults,
   TestConfig,
   TestConfigDefaultsInput,
   TestConfigInput,
   ResolvedTestConfigDefaults,
   TestJob,
+  TestJobCommonInput,
   TestJobInput,
+  TestJobFactory,
   TestJobPolicyInput,
   TestLevel,
   TestProfileInput,
 } from "./schema/common.js";
 import { CautestError } from "../model/error.js";
 import { normalizeWorkflow } from "../workflow/step.js";
+import { jobOriginText } from "./provenance.js";
 
 const TEST_JOB = Symbol.for("@cautest/config/test-job");
 const TEST_CONFIG = Symbol.for("@cautest/config/test-config");
@@ -100,6 +104,26 @@ export function testJob(input: TestJobInput): TestJob {
   }) as InternalTestJob;
 }
 
+/**
+ * 为任意单 Job 工厂绑定公共默认项。合并是浅层的；嵌套对象由对应 Job Schema
+ * 自己定义合并规则，避免通用层猜测工具链、Target 或 Runtime 的语义。
+ */
+export function withJobDefaults<
+  TInput extends TestJobCommonInput,
+  const TDefaults extends Partial<Omit<TInput, "id">>,
+>(factory: TestJobFactory<TInput>, defaults: TDefaults): (
+  input: JobInputWithDefaults<TInput, TDefaults>,
+) => TestJob {
+  if (typeof factory !== "function") throw new CautestError("withJobDefaults() factory 必须是函数", { code: "config_error" });
+  object(defaults, "withJobDefaults() defaults");
+  if ("id" in defaults) throw new CautestError("withJobDefaults() 不能设置公共 Job ID", { code: "config_error" });
+  const frozenDefaults = Object.freeze({ ...defaults });
+  return (input) => {
+    object(input, "绑定默认项后的 Job 参数");
+    return factory({ ...frozenDefaults, ...input } as unknown as TInput);
+  };
+}
+
 export function isTestJob(value: unknown): value is TestJob {
   return typeof value === "object" && value !== null && (value as Partial<InternalTestJob>)[TEST_JOB] === true;
 }
@@ -150,11 +174,17 @@ export function testConfig(input: TestConfigInput): TestConfig {
   object(input, "testConfig() 参数");
   rejectUnknown(input, configFields, "Test Config");
   if (!Array.isArray(input.jobs)) throw new CautestError("config.jobs 必须是 TestJob 数组", { code: "config_error" });
-  const ids = new Set<string>();
+  const jobsById = new Map<string, TestJob>();
   const jobs = input.jobs.map((job, index) => {
     if (!isTestJob(job)) throw new CautestError(`jobs[${index}] 必须由 Test Job 构造函数创建`, { code: "config_error" });
-    if (ids.has(job.id)) throw new CautestError(`Test Job ID 重复: ${job.id}`, { code: "config_error" });
-    ids.add(job.id);
+    const first = jobsById.get(job.id);
+    if (first !== undefined) {
+      throw new CautestError(
+        `Test Job ID 重复: ${job.id} (${jobOriginText(first)} 与 ${jobOriginText(job)})`,
+        { code: "config_error" },
+      );
+    }
+    jobsById.set(job.id, job);
     return job;
   });
   return Object.freeze({

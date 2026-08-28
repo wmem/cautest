@@ -285,6 +285,21 @@ export interface TestConfig {
 /** 一个输入 Schema 明确、每次只产生一个 Test Job 的构造函数。 */
 export type TestJobFactory<TInput extends TestJobCommonInput> = (input: TInput) => TestJob;
 
+/** 把工厂公共默认项对应的字段变为可选，同时保留完整输入 Schema。 */
+export type JobInputWithDefaults<
+  TInput extends TestJobCommonInput,
+  TDefaults extends Partial<Omit<TInput, "id">>,
+> = Omit<TInput, keyof TDefaults> & Partial<Pick<TInput, Extract<keyof TInput, keyof TDefaults>>>;
+
+/** Test Job 在配置文件中的来源，用于诊断、plan 和 configHash。 */
+export interface TestJobOrigin {
+  /** 定义该 Job 的配置片段文件。 */
+  readonly source: string;
+
+  /** 从根配置定位到 Job 的稳定逻辑路径。@example "jobs.unit.utils.cm_queue" */
+  readonly configPath: string;
+}
+
 /** `jobNamespace()` 中每个声明项必须具有的稳定短名称。 */
 export interface NamedJobDefinition {
   readonly name: string;
@@ -313,4 +328,16 @@ export interface JobNamespaceInput<TDefinition extends NamedJobDefinition> {
 
   /** Schema 完全一致的声明项。 */
   readonly definitions: readonly TDefinition[];
+}
+
+/** `expandFilePatterns()` 的参数。 */
+export interface FilePatternExpansionInput {
+  /** 解析相对 Pattern 的绝对基准目录。 */
+  readonly baseDir: string;
+
+  /** 用于错误信息的字段路径。 */
+  readonly label: string;
+
+  /** 是否允许正向 Pattern 没有匹配文件。@defaultValue false */
+  readonly allowEmpty?: boolean;
 }

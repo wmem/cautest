@@ -4,6 +4,8 @@ import { pathToFileURL } from "node:url";
 import type { TestConfig } from "./schema/common.js";
 import { isTestConfig } from "./define.js";
 import { CautestError } from "../model/error.js";
+import { calculateConfigHash } from "./hash.js";
+import { getJobOrigin, setJobOrigin } from "./provenance.js";
 
 const configNames = ["cautest.config.js", "cautest.config.mjs", "cautest.config.cjs"] as const;
 
@@ -11,6 +13,8 @@ export interface LoadedConfig {
   readonly config: TestConfig;
   readonly path: string;
   readonly dir: string;
+  readonly hash: string;
+  readonly sources: readonly string[];
 }
 
 export async function findConfig(startDirectory = process.cwd()): Promise<string> {
@@ -46,5 +50,17 @@ export async function loadConfig(configPath?: string): Promise<LoadedConfig> {
   if (!isTestConfig(loaded.default)) {
     throw new CautestError(`配置 ${resolved} 的 default export 必须由 testConfig() 创建`, { code: "config_error" });
   }
-  return { config: loaded.default, path: resolved, dir: path.dirname(resolved) };
+  for (const job of loaded.default.jobs) {
+    if (getJobOrigin(job) === undefined) {
+      setJobOrigin(job, { source: pathToFileURL(resolved).href, configPath: `jobs.${job.id}` });
+    }
+  }
+  const fingerprint = await calculateConfigHash(loaded.default, resolved);
+  return {
+    config: loaded.default,
+    path: resolved,
+    dir: path.dirname(resolved),
+    hash: fingerprint.hash,
+    sources: fingerprint.sources,
+  };
 }

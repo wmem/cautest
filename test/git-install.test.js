@@ -30,7 +30,7 @@ async function verifyPortable(destination) {
   assert.ok(names.includes("cautest.js"));
   assert.ok(!names.includes("node_modules"));
   const config = path.join(path.dirname(path.dirname(destination)), `${path.basename(destination)}.config.mjs`);
-  await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config';
+    await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config.js';
 const step = defineStep({ kind: 'gitFixture', phase: 'run', execute() {} });
 export default testConfig({ jobs: [testJob({ id: 'system.git', level: 'system', workflow: [step] })] });
 `);
