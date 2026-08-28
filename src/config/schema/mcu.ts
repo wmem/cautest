@@ -41,21 +41,9 @@ export interface CommandFirmwareInput extends CommandInput {
  */
 export type McuFirmwareInput = ExistingFirmwareInput | HostSimulatedFirmwareInput | CommandFirmwareInput;
 
-/** Cautest 内置模拟 Board 的故障注入参数。 */
+/** 使用 Cautest 内置 Host Process 模拟 Board。 */
 export interface SimulatedMcuBoardInput {
   readonly kind: "simulated";
-
-  /** 单次读取最大字节数。@defaultValue 7 */
-  readonly maxReadSize?: number;
-
-  /** 单次写入最大字节数。@defaultValue 5 */
-  readonly maxWriteSize?: number;
-
-  /** 第几个 Read Chunk 后模拟一次断线。 */
-  readonly disconnectOnce?: number;
-
-  /** 是否破坏第一次写入并触发协议恢复。@defaultValue false */
-  readonly corruptWriteOnce?: boolean;
 }
 
 /** 外部 Board Adapter 必须实现的最小接口。 */
@@ -106,12 +94,6 @@ export interface McuCTestJobInput extends TestJobCommonInput {
 
   /** Case 选择、Session 策略和超时。 */
   readonly run?: CTestRunInput;
-
-  /** 传输断开后的最大重连次数。@defaultValue 1 */
-  readonly reconnects?: number;
-
-  /** Timeout Error 是否允许进入重连恢复。@defaultValue false */
-  readonly recoverTimeouts?: boolean;
 
   /** 串口或模拟进程参数。 */
   readonly serial?: McuSerialInput;

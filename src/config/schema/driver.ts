@@ -48,9 +48,6 @@ export interface DriverGuestCTestInput {
 
 /** Cautest Test-only Driver Probe 配置。 */
 export interface DriverProbeInput {
-  /** Target Driver 必须报告的 Build ID。 */
-  readonly expectedBuildId?: string;
-
   /** 追加到 Driver Module Make 的变量。 */
   readonly makeVariables?: Readonly<Record<string, string | number | boolean>>;
 }
@@ -66,7 +63,7 @@ export interface DriverAbiCTestJobInput extends TestJobCommonInput {
   /** 在 UML Guest Userspace 执行的 C Test。 */
   readonly guest: DriverGuestCTestInput;
 
-  /** Test-only Probe 和 Build ID 约束。 */
+  /** Test-only Probe 的 Module Build 参数。 */
   readonly probe?: DriverProbeInput;
 
   /** Guest C Test 的选择、策略和超时。 */

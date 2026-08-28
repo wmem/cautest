@@ -90,10 +90,13 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   ]);
   const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, ({ ...process.env, ...input.env })[key] ?? null]));
   const key = await hashFiles(fragments.map((item) => path.join(context.project.configDir, item)), { schema: 2, identity, make: version.stdout, compiler: compilerVersion.stdout, compilerTarget: compilerTarget.stdout, static: input.static !== false, makeArgs: input.makeArgs ?? [], env: input.env ?? {}, fingerprintEnvironment });
-  const cacheRoot = path.resolve(context.project.configDir, input.cache?.directory ?? context.project.cacheDir);
-  const output = path.join(input.cache?.enabled === false ? context.project.workDir : cacheRoot, "busybox", key);
+  const cacheEnabled = input.cache?.enabled !== false;
+  const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (input.cache?.directory ?? context.project.cacheDir) : context.project.workDir);
+  const output = path.join(cacheRoot, "busybox", key);
   const binary = path.join(output, "busybox");
-  try { if ((await lstat(binary)).isFile()) return { path: binary, buildId: key, cacheHit: true }; } catch { /* build */ }
+  if (cacheEnabled) {
+    try { if ((await lstat(binary)).isFile()) return { path: binary, buildId: key, cacheHit: true }; } catch { /* build */ }
+  }
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
   const base = ["-C", source, `O=${output}`];
@@ -132,12 +135,33 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
   const sources = await expandFilePatterns(input.sources, { baseDir: context.project.configDir, label: `guestPrograms.${input.name}.sources` });
   const headers = input.headers === undefined ? [] : await expandFilePatterns(input.headers, { baseDir: context.project.configDir, label: `guestPrograms.${input.name}.headers` });
   const compiler = input.compiler ?? "cc";
-  const version = await runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal });
+  const [version, targetIdentity] = await Promise.all([
+    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, signal: context.signal }),
+  ]);
   const locations = [...sources, ...headers].map((item) => path.join(context.project.configDir, item));
-  const key = await hashFiles(locations, { version: version.stdout, input });
-  const directory = path.join(context.project.cacheDir, "guest-programs", key);
+  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, process.env[key] ?? null]));
+  const key = await hashFiles(locations, {
+    schema: 2,
+    compiler: version.stdout,
+    compilerTarget: targetIdentity.stdout,
+    sources,
+    headers,
+    includeDirs: input.includeDirs ?? [],
+    defines: input.defines ?? {},
+    cflags: input.cflags ?? [],
+    ldflags: input.ldflags ?? [],
+    static: input.static !== false,
+    fingerprintEnvironment,
+  });
+  const cacheEnabled = input.cache?.enabled !== false;
+  const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (input.cache?.directory ?? context.project.cacheDir) : context.project.workDir);
+  const directory = path.join(cacheRoot, "guest-programs", key);
   const target = path.join(directory, input.name);
-  try { if ((await lstat(target)).isFile()) return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}` }; } catch { /* build */ }
+  if (cacheEnabled) {
+    try { if ((await lstat(target)).isFile()) return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}` }; } catch { /* build */ }
+  }
+  await rm(directory, { recursive: true, force: true });
   await mkdir(directory, { recursive: true });
   const includes = [...new Set([...(input.includeDirs ?? []).map((item) => path.resolve(context.project.configDir, item)), ...headers.map((item) => path.dirname(path.join(context.project.configDir, item)))])];
   const definitions = Object.entries(input.defines ?? {}).map(([name, value]) => `-D${name}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`);
@@ -157,14 +181,36 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
   const headers = input.headers === undefined ? [] : await expandFilePatterns(input.headers, { baseDir: context.project.configDir, label: `jobs.${jobId}.guest.headers` });
   const suites = input.suites ?? [jobId.split(".").at(-1)!.replace(/[^A-Za-z0-9_]/gu, "_")];
   const compiler = input.compiler ?? "cc";
-  const version = await runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal });
+  const [version, targetIdentity] = await Promise.all([
+    runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, signal: context.signal }),
+    runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, signal: context.signal }),
+  ]);
   const product = [...tests, ...sources, ...headers].map((item) => path.join(context.project.configDir, item));
   const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c", "agent/uml-guest-agent/probe_client.c"].map((item) => path.join(kitRoot, item));
-  const key = await hashFiles([...product, ...kitSources], { schema: 1, version: version.stdout, input, suites });
+  const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, process.env[key] ?? null]));
+  const key = await hashFiles([...product, ...kitSources], {
+    schema: 2,
+    compiler: version.stdout,
+    compilerTarget: targetIdentity.stdout,
+    tests,
+    sources,
+    headers,
+    suites,
+    includeDirs: input.includeDirs ?? [],
+    defines: input.defines ?? {},
+    cflags: input.cflags ?? [],
+    ldflags: input.ldflags ?? [],
+    static: input.static !== false,
+    fingerprintEnvironment,
+  });
   const name = input.name ?? jobId.replace(/[^A-Za-z0-9_-]/gu, "-");
-  const directory = path.join(context.project.cacheDir, "driver-guest", key);
+  const cacheEnabled = input.cache?.enabled !== false;
+  const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (input.cache?.directory ?? context.project.cacheDir) : context.project.workDir);
+  const directory = path.join(cacheRoot, "driver-guest", key);
   const target = path.join(directory, name);
-  try { if ((await lstat(target)).isFile()) return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}` }; } catch { /* build */ }
+  if (cacheEnabled) {
+    try { if ((await lstat(target)).isFile()) return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}` }; } catch { /* build */ }
+  }
   await rm(directory, { recursive: true, force: true }); await mkdir(directory, { recursive: true });
   const registry = path.join(directory, "registry.c"); const entry = path.join(directory, "entry.c");
   await Promise.all([writeFile(registry, registrySource(suites)), writeFile(entry, entrySource(key))]);
@@ -195,11 +241,14 @@ export async function buildRootfs(options: { readonly name: string; readonly env
   const overlays = options.environment.rootfs?.overlays ?? [];
   const overlayFiles = (await Promise.all(overlays.map(async (item) => (await files(path.resolve(context.project.configDir, item))).map((file) => path.join(context.project.configDir, item, file))))).flat();
   const key = await hashFiles(overlayFiles, { schema: 3, busybox: options.busybox.buildId, agent: agent.buildId, modules: options.modules.map((item) => [item.name, item.cacheKey]), programs: options.programs?.map((item) => [item.name, item.buildId]), coverage: options.coverage === true });
-  const cacheRoot = path.resolve(context.project.configDir, options.environment.rootfs?.cache?.directory ?? path.join(context.project.cacheDir, "rootfs"));
-  const directory = path.join(options.environment.rootfs?.cache?.enabled === false ? context.project.workDir : cacheRoot, key);
+  const cacheEnabled = options.environment.rootfs?.cache?.enabled !== false;
+  const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (options.environment.rootfs?.cache?.directory ?? path.join(context.project.cacheDir, "rootfs")) : context.project.workDir);
+  const directory = path.join(cacheRoot, key);
   const archive = path.join(directory, "rootfs.cpio");
   const endpoints = new Map<string, { type: "kernel" | "process"; buildId: string }>([["kernel", { type: "kernel", buildId: key }], ...(options.programs ?? []).map((item) => [item.endpoint, { type: "process" as const, buildId: item.buildId }] as const)]);
-  try { if ((await lstat(archive)).isFile()) return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints }; } catch { /* build */ }
+  if (cacheEnabled) {
+    try { if ((await lstat(archive)).isFile()) return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints }; } catch { /* build */ }
+  }
   await rm(directory, { recursive: true, force: true });
   await mkdir(cacheRoot, { recursive: true });
   const temporary = await mkdtemp(path.join(cacheRoot, `.${key.slice(0, 12)}-`));

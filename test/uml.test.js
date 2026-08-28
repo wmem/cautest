@@ -8,7 +8,7 @@ import { Duplex } from "node:stream";
 import test from "node:test";
 import { runCtpSession } from "../dist/protocol/native-session.js";
 import { UmlControlChannel } from "../dist/uml/control.js";
-import { buildRootfs } from "../dist/uml/runtime.js";
+import { buildGuestProgram, buildRootfs } from "../dist/uml/runtime.js";
 
 class AgentDuplex extends Duplex {
   _read() {}
@@ -66,4 +66,17 @@ test("Rootfs 真实生成 Agent、Catalog、Module 和 initramfs", async () => {
   assert.ok(entries.includes("opt/cautest/bin/agent"));
   assert.ok(entries.includes("opt/cautest/modules/00-test.ko"));
   assert.equal(image.endpoints.get("kernel").buildId, image.buildId);
+});
+
+test("UML Guest Program 使用独立可关闭的构建缓存", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-guest-program-"));
+  await writeFile(path.join(root, "main.c"), "int main(void) { return 0; }\n");
+  const context = {
+    job: { id: "integration.guest", env: {} }, signal: new AbortController().signal, state: new Map(), output() {},
+    project: { configDir: root, resultDir: path.join(root, "results"), cacheDir: path.join(root, "cache"), generatedDir: path.join(root, "generated"), workDir: path.join(root, "work") },
+  };
+  const cached = await buildGuestProgram({ name: "guest", sources: ["main.c"], cache: { directory: "custom-cache" } }, context);
+  assert.equal(cached.path.startsWith(path.join(root, "custom-cache", "guest-programs")), true);
+  const disabled = await buildGuestProgram({ name: "guest", sources: ["main.c"], cache: { enabled: false } }, context);
+  assert.equal(disabled.path.startsWith(path.join(root, "work", "guest-programs")), true);
 });

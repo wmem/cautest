@@ -1,7 +1,6 @@
 import type {
   BuildCacheInput,
   CDefines,
-  CommandInput,
   CTestRunInput,
   DirectoryPath,
   EnvironmentVariables,
@@ -322,8 +321,3 @@ export interface KernelCTestJobFactoryInput {
 export type KernelCTestJobFactory = (
   input: Omit<KernelCTestJobInput, "environment">,
 ) => TestJob;
-
-/** 自定义环境准备命令的预留 Schema；标准环境通常不需要。 */
-export interface KernelEnvironmentHookInput extends CommandInput {
-  readonly phase: "before-build" | "after-build";
-}

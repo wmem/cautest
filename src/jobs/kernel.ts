@@ -77,7 +77,9 @@ export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInpu
   const kernelRoot = path.resolve(context.project.configDir, input.cache?.enabled === false ? context.project.workDir : (input.cache?.directory ?? context.project.cacheDir));
   const output = path.join(kernelRoot, "kernel", identity);
   const marker = path.join(output, input.target ?? "linux");
-  try { await readFile(marker); if (input.prepareModules !== false) await readFile(path.join(output, "Module.symvers")); return output; } catch { /* build */ }
+  if (input.cache?.enabled !== false) {
+    try { await readFile(marker); if (input.prepareModules !== false) await readFile(path.join(output, "Module.symvers")); return output; } catch { /* build */ }
+  }
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
   const base = ["-C", source, `O=${output}`, `ARCH=${input.arch ?? "um"}`, ...(input.crossCompile === undefined ? [] : [`CROSS_COMPILE=${input.crossCompile}`])];
