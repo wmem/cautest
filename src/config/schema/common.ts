@@ -227,6 +227,9 @@ export interface WorkflowStepInput {
   /** Step 超时，单位毫秒。 */
   readonly timeoutMs?: number;
 
+  /** Doctor/plan 使用的只读静态配置，不包含 Executor 或运行时状态。 */
+  readonly details?: Readonly<Record<string, unknown>>;
+
   /** Step 的实际执行函数。 */
   readonly execute: (
     context: StepExecutionContext,
@@ -243,6 +246,7 @@ export interface WorkflowStep {
   readonly phase: WorkflowPhase;
   readonly runWhen: StepRunWhen;
   readonly timeoutMs?: number;
+  readonly details: Readonly<Record<string, unknown>>;
 }
 
 declare const TEST_JOB_TYPE: unique symbol;

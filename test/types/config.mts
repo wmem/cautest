@@ -3,6 +3,8 @@ import {
   jobNamespace,
   nativeCTestJob,
   nativeCTestJobFactory,
+  kernelCTestJobFactory,
+  umlKernelEnvironment,
   testJob,
   withJobDefaults,
   type TestJobCommonInput,
@@ -37,6 +39,9 @@ nativeCTestJobFactory({ defaults: { build: { compiler: "clang" } } })({
   id: "unit.native.clang",
   tests: ["test/clang_test.c"],
 });
+
+const uml = umlKernelEnvironment({ kernel: { sourceDir: "vendor/linux" }, busybox: { sourceDir: "vendor/busybox" } });
+kernelCTestJobFactory({ environment: uml })({ id: "unit.kernel.queue", tests: ["test/queue_test.c"] });
 
 // @ts-expect-error Native C Test 的 tests 是非空必填字段。
 nativeCTestJob({ id: "unit.native.missing" });

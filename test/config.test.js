@@ -16,8 +16,8 @@ test("testConfig 只接受 TestJob 数组并生成稳定线性计划", () => {
     tags: ["unit"],
     enabled: true,
     workflow: [
-      { id: "01-build-compile-target", index: 0, kind: "compile", name: "target", phase: "build", runWhen: "on-success" },
-      { id: "02-run-run-cases", index: 1, kind: "run", name: "cases", phase: "run", runWhen: "on-success" },
+      { id: "01-build-compile-target", index: 0, kind: "compile", name: "target", phase: "build", runWhen: "on-success", details: {} },
+      { id: "02-run-run-cases", index: 1, kind: "run", name: "cases", phase: "run", runWhen: "on-success", details: {} },
     ],
   }]);
 });

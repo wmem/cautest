@@ -5,7 +5,7 @@ const STEP = Symbol.for("@cautest/config/workflow-step");
 const EXECUTOR = Symbol.for("@cautest/config/workflow-executor");
 const phases: readonly WorkflowPhase[] = ["prepare", "build", "provision", "run", "collect"];
 const runWhenValues = ["on-success", "always", "on-failure"] as const;
-const fields = new Set(["kind", "name", "phase", "runWhen", "timeoutMs", "execute"]);
+const fields = new Set(["kind", "name", "phase", "runWhen", "timeoutMs", "details", "execute"]);
 
 type InternalStep = WorkflowStep & {
   readonly [STEP]: true;
@@ -38,6 +38,9 @@ export function defineStep(input: WorkflowStepInput): WorkflowStep {
     throw new CautestError("Step timeoutMs 必须为正数", { code: "config_error" });
   }
   if (typeof input.execute !== "function") throw new CautestError("Step execute 必须是函数", { code: "config_error" });
+  if (input.details !== undefined && (typeof input.details !== "object" || input.details === null || Array.isArray(input.details))) {
+    throw new CautestError("Step details 必须是对象", { code: "config_error" });
+  }
   return Object.freeze({
     [STEP]: true,
     [EXECUTOR]: input.execute,
@@ -45,6 +48,7 @@ export function defineStep(input: WorkflowStepInput): WorkflowStep {
     name,
     phase: input.phase,
     runWhen,
+    details: Object.freeze({ ...(input.details ?? {}) }),
     ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }),
   }) as InternalStep;
 }

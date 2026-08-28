@@ -9,6 +9,7 @@ export type CautestErrorCode =
   | "protocol_error"
   | "target_error"
   | "transport_error"
+  | "provision_error"
   | "doctor_error";
 
 /** 具有稳定机器错误码的 Cautest 错误。 */

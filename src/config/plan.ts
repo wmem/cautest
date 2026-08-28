@@ -10,6 +10,7 @@ export interface PlannedStep {
   readonly phase: WorkflowStep["phase"];
   readonly runWhen: WorkflowStep["runWhen"];
   readonly timeoutMs?: number;
+  readonly details: Readonly<Record<string, unknown>>;
 }
 
 export interface PlannedJob {
@@ -31,6 +32,7 @@ function plannedStep(step: WorkflowStep, index: number): PlannedStep {
     name: step.name,
     phase: step.phase,
     runWhen: step.runWhen,
+    details: step.details,
     ...(step.timeoutMs === undefined ? {} : { timeoutMs: step.timeoutMs }),
   });
 }

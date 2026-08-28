@@ -5,5 +5,6 @@ export { testConfig, testJob, withJobDefaults } from "./define.js";
 export { expandFilePatterns } from "./file-pattern.js";
 export { jobNamespace } from "./namespace.js";
 export { nativeCTestJob, nativeCTestJobFactory } from "../jobs/native.js";
+export { kernelCTestJob, kernelCTestJobFactory, umlKernelEnvironment } from "../jobs/kernel.js";
 export { defineStep } from "../workflow/step.js";
 export type * from "./schema/index.js";

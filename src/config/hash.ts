@@ -34,6 +34,7 @@ function resolvedJob(job: TestJob, configDir: string): unknown {
       phase: step.phase,
       runWhen: step.runWhen,
       timeoutMs: step.timeoutMs,
+      details: step.details,
     })),
     origin: origin === undefined ? undefined : {
       source: sourceIdentity(fileURLToPath(origin.source), configDir),

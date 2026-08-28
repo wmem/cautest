@@ -125,6 +125,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
   const run = Object.freeze({ ...(input.run ?? {}) });
   const compile = defineStep({
     kind: "nativeCompile", name: artifactName, phase: "build", ...(build.timeoutMs === undefined ? {} : { timeoutMs: build.timeoutMs }),
+    details: { tests, sources, headers, compiler: build.compiler ?? "cc", artifactName },
     async execute(context) {
       const project = context.project.configDir;
       const expandedTests = await expandFilePatterns(tests, { baseDir: project, label: `jobs.${input.id}.tests` });
@@ -183,6 +184,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
   });
   const execute = defineStep({
     kind: "cTestRun", name: artifactName, phase: "run", ...(run.stepTimeoutMs === undefined ? {} : { timeoutMs: run.stepTimeoutMs }),
+    details: { transport: "process", artifactName, selection: run },
     async execute(context) {
       const artifact = context.state.get(`native:${artifactName}`) as NativeArtifact | undefined;
       if (artifact === undefined) throw new CautestError(`Native Artifact 不存在: ${artifactName}`, { code: "build_error" });
@@ -196,6 +198,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
   });
   const coverage = input.coverage === undefined ? [] : [defineStep({
     kind: "nativeCoverage", name: artifactName, phase: "collect", runWhen: "always", ...(input.coverage.timeoutMs === undefined ? {} : { timeoutMs: input.coverage.timeoutMs }),
+    details: { tool: input.coverage.tool ?? "gcov", artifactName },
     async execute(context) {
       const artifact = context.state.get(`native:${artifactName}`) as NativeArtifact | undefined;
       if (artifact === undefined) return { diagnostics: [{ code: "coverage_skipped", message: "Native Artifact 不存在" }] };
