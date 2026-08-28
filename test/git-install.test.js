@@ -1,0 +1,60 @@
+import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
+import { cp, mkdtemp, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
+import { promisify } from "node:util";
+
+const exec = promisify(execFile);
+const projectRoot = path.resolve(new URL("..", import.meta.url).pathname);
+
+async function createGitSnapshot() {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-git-"));
+  const repository = path.join(temporary, "repository");
+  await mkdir(repository);
+  for (const entry of ["assets", "src", "package.json", "pnpm-lock.yaml", "README.md", "tsconfig.json"]) {
+    await cp(path.join(projectRoot, entry), path.join(repository, entry), { recursive: true });
+  }
+  await exec("git", ["init", "-b", "main"], { cwd: repository });
+  await exec("git", ["config", "user.name", "Cautest Test"], { cwd: repository });
+  await exec("git", ["config", "user.email", "cautest@example.invalid"], { cwd: repository });
+  await exec("git", ["add", "."], { cwd: repository });
+  await exec("git", ["commit", "-m", "测试快照"], { cwd: repository });
+  const commit = (await exec("git", ["rev-parse", "HEAD"], { cwd: repository })).stdout.trim();
+  return { temporary, repository, url: `git+file://${repository}#${commit}` };
+}
+
+async function verifyPortable(destination) {
+  const names = await readdir(destination);
+  assert.ok(names.includes("cautest.js"));
+  assert.ok(!names.includes("node_modules"));
+  const config = path.join(path.dirname(path.dirname(destination)), `${path.basename(destination)}.config.mjs`);
+  await writeFile(config, "import { CAUTEST_CONFIG_SCHEMA_VERSION } from '@cautest/config';\nexport default CAUTEST_CONFIG_SCHEMA_VERSION;\n");
+  const result = await exec(path.join(destination, "cautest.js"), ["config-smoke", config]);
+  assert.deepEqual(JSON.parse(result.stdout), { default: 2 });
+  const build = JSON.parse(await readFile(path.join(destination, "build-info.json"), "utf8"));
+  assert.match(build.commit, /^[0-9a-f]{40}$/u);
+}
+
+test("npx 和 pnpm dlx 都可从 Git Commit 编译并安装", { timeout: 180_000 }, async () => {
+  const snapshot = await createGitSnapshot();
+  const npxDestination = path.join(snapshot.temporary, "npx-project/tools/cautest");
+  const pnpmDestination = path.join(snapshot.temporary, "pnpm-project/tools/cautest");
+  await mkdir(path.dirname(path.dirname(npxDestination)), { recursive: true });
+  await mkdir(path.dirname(path.dirname(pnpmDestination)), { recursive: true });
+
+  await exec("npx", ["--yes", snapshot.url, npxDestination], {
+    cwd: path.join(snapshot.temporary, "npx-project"),
+    timeout: 120_000,
+    maxBuffer: 10 * 1024 * 1024,
+  });
+  await verifyPortable(npxDestination);
+
+  await exec("pnpm", ["dlx", `--allow-build=cautest@${snapshot.url}`, snapshot.url, pnpmDestination], {
+    cwd: path.join(snapshot.temporary, "pnpm-project"),
+    timeout: 120_000,
+    maxBuffer: 10 * 1024 * 1024,
+  });
+  await verifyPortable(pnpmDestination);
+});

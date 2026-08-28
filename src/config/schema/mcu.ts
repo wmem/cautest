@@ -1,0 +1,117 @@
+import type {
+  CTestRunInput,
+  CommandInput,
+  DirectoryPath,
+  EnvironmentVariables,
+  FilePattern,
+  NonEmptyReadonlyArray,
+  TestJobCommonInput,
+  TestJobFactory,
+} from "./common.js";
+
+/** 使用已经存在的 Firmware 文件。 */
+export interface ExistingFirmwareInput {
+  readonly kind: "existing";
+  readonly file: string;
+  readonly fingerprintInputs?: Readonly<Record<string, unknown>>;
+}
+
+/** 使用 Cautest 内置 Host Freestanding 模拟构建。 */
+export interface HostSimulatedFirmwareInput {
+  readonly kind: "host-simulated";
+  readonly output: string;
+  readonly sources: NonEmptyReadonlyArray<FilePattern>;
+  readonly headers?: readonly FilePattern[];
+  readonly compiler?: string;
+  readonly cflags?: readonly string[];
+  readonly env?: EnvironmentVariables;
+  readonly timeoutMs?: number;
+}
+
+/** 使用外部命令构建 Firmware。 */
+export interface CommandFirmwareInput extends CommandInput {
+  readonly kind: "command";
+  readonly output: string;
+  readonly fingerprintInputs?: Readonly<Record<string, unknown>>;
+  readonly timeoutMs?: number;
+}
+
+/**
+ * Firmware 输入始终是带 `kind` 的对象；不会根据字符串或对象形状隐式猜测。
+ */
+export type McuFirmwareInput = ExistingFirmwareInput | HostSimulatedFirmwareInput | CommandFirmwareInput;
+
+/** Cautest 内置模拟 Board 的故障注入参数。 */
+export interface SimulatedMcuBoardInput {
+  readonly kind: "simulated";
+
+  /** 单次读取最大字节数。@defaultValue 7 */
+  readonly maxReadSize?: number;
+
+  /** 单次写入最大字节数。@defaultValue 5 */
+  readonly maxWriteSize?: number;
+
+  /** 第几个 Read Chunk 后模拟一次断线。 */
+  readonly disconnectOnce?: number;
+
+  /** 是否破坏第一次写入并触发协议恢复。@defaultValue false */
+  readonly corruptWriteOnce?: boolean;
+}
+
+/** 外部 Board Adapter 必须实现的最小接口。 */
+export interface McuBoardAdapter {
+  flash(firmware: { readonly path: string; readonly buildId: string }): void | Promise<void>;
+  reset(): string | Promise<string>;
+  openTransport(options?: Readonly<Record<string, unknown>>): unknown;
+  close?(): void | Promise<void>;
+}
+
+/** 使用项目提供的外部 Board Adapter。 */
+export interface ExternalMcuBoardInput {
+  readonly kind: "external";
+  readonly adapter: McuBoardAdapter;
+  readonly ownership?: "owned" | "borrowed";
+}
+
+/** Board 输入始终是带 `kind` 的对象。 */
+export type McuBoardInput = SimulatedMcuBoardInput | ExternalMcuBoardInput;
+
+/** MCU 串口 Adapter 的运行参数。 */
+export interface McuSerialInput {
+  readonly cwd?: DirectoryPath;
+  readonly env?: EnvironmentVariables;
+  readonly options?: Readonly<Record<string, unknown>>;
+}
+
+/** `mcuCTestJob()` 的完整参数 Schema。 */
+export interface McuCTestJobInput extends TestJobCommonInput {
+  /** Firmware 来源和构建方式。 */
+  readonly firmware: McuFirmwareInput;
+
+  /** Board Adapter；省略时使用无故障注入的内置模拟 Board。 */
+  readonly board?: McuBoardInput;
+
+  /** Firmware Artifact 名称。@defaultValue "firmware" */
+  readonly firmwareName?: string;
+
+  /** Board Resource 名称。@defaultValue "board" */
+  readonly boardName?: string;
+
+  /** Case 选择、Session 策略和超时。 */
+  readonly run?: CTestRunInput;
+
+  /** 传输断开后的最大重连次数。@defaultValue 1 */
+  readonly reconnects?: number;
+
+  /** Timeout Error 是否允许进入重连恢复。@defaultValue false */
+  readonly recoverTimeouts?: boolean;
+
+  /** 串口或模拟进程参数。 */
+  readonly serial?: McuSerialInput;
+
+  /** Collect 阶段额外发布的日志文件。 */
+  readonly logFiles?: readonly FilePattern[];
+}
+
+/** `mcuCTestJob()` 的函数类型。 */
+export type McuCTestJobConstructor = TestJobFactory<McuCTestJobInput>;
