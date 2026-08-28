@@ -62,11 +62,11 @@ async function collectFiles(root: string, relative = ""): Promise<string[]> {
 
 async function createPortableTree(root: string, build: BuildInfo): Promise<void> {
   await mkdir(path.join(root, "lib"), { recursive: true });
-  for (const directory of ["config", "model", "workflow"]) {
+  for (const directory of ["config", "jobs", "model", "protocol", "workflow"]) {
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true });
   }
   await mkdir(path.join(root, "lib/runtime"));
-  for (const file of ["cli.js", "cli.js.map", "cli.d.ts", "cli.d.ts.map"]) {
+  for (const file of ["cli.js", "cli.js.map", "cli.d.ts", "cli.d.ts.map", "process.js", "process.js.map", "process.d.ts", "process.d.ts.map"]) {
     await cp(path.join(packageRoot, `dist/runtime/${file}`), path.join(root, `lib/runtime/${file}`));
   }
   await mkdir(path.join(root, "lib/vendor/picomatch"), { recursive: true });
@@ -77,6 +77,8 @@ async function createPortableTree(root: string, build: BuildInfo): Promise<void>
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
   await cp(path.join(packageRoot, "dist/runtime/loader.js"), path.join(root, "loader.mjs"));
   await cp(path.join(packageRoot, "assets/portable/README.md"), path.join(root, "README.md"));
+  await mkdir(path.join(root, "assets"));
+  await cp(path.join(packageRoot, "assets/cautest-c"), path.join(root, "assets/cautest-c"), { recursive: true });
   await chmod(path.join(root, "cautest.js"), 0o755);
   await writeFile(path.join(root, "package.json"), `${JSON.stringify({
     name: "cautest-portable",

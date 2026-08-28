@@ -1,6 +1,8 @@
 import {
   defineStep,
   jobNamespace,
+  nativeCTestJob,
+  nativeCTestJobFactory,
   testJob,
   withJobDefaults,
   type TestJobCommonInput,
@@ -29,6 +31,15 @@ jobNamespace({
   factory: configured,
   definitions: [{ name: "queue", source: "queue.c" }],
 });
+
+nativeCTestJob({ id: "unit.native.smoke", tests: ["test/**/*_test.c"] });
+nativeCTestJobFactory({ defaults: { build: { compiler: "clang" } } })({
+  id: "unit.native.clang",
+  tests: ["test/clang_test.c"],
+});
+
+// @ts-expect-error Native C Test 的 tests 是非空必填字段。
+nativeCTestJob({ id: "unit.native.missing" });
 
 // @ts-expect-error 绑定公共默认值后，未提供默认值的 source 仍然必填。
 configured({ id: "unit.missing" });

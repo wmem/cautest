@@ -23,7 +23,7 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   assert.ok(rootEntries.includes("cautest.js"));
   assert.ok(rootEntries.includes("lib"));
   assert.ok(!rootEntries.includes("node_modules"));
-  assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map"]);
+  assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map", "process.d.ts", "process.d.ts.map", "process.js", "process.js.map"]);
   assert.equal((await readFile(path.join(destination, "lib/vendor/picomatch/LICENSE"), "utf8")).includes("MIT License"), true);
 
   async function visit(directory) {

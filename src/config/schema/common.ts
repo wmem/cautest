@@ -161,11 +161,54 @@ export interface StepExecutionContext {
   readonly job: TestJob;
   readonly signal: AbortSignal;
   readonly state: Map<string, unknown>;
+  readonly project: WorkflowProjectContext;
+  readonly output: (channel: "stdout" | "stderr", text: string) => void;
 }
 
 /** Step Executor 返回的诊断信息。 */
 export interface StepExecutionResult {
   readonly diagnostics?: readonly unknown[];
+  readonly outcome?: "SUCCESS" | "FAIL";
+  readonly testResults?: readonly TestSuiteResult[];
+}
+
+/** Workflow 执行时可写目录和配置根。所有路径均为绝对路径。 */
+export interface WorkflowProjectContext {
+  readonly configDir: string;
+  readonly resultDir: string;
+  readonly cacheDir: string;
+  readonly generatedDir: string;
+  readonly workDir: string;
+}
+
+/** 结构化 Assertion 值。 */
+export interface TestAssertionValue {
+  readonly type: "integer" | "u64" | "pointer" | "string" | "bytes";
+  readonly value: string | number | null;
+}
+
+/** 结构化 Assertion 结果。 */
+export interface TestAssertionResult {
+  readonly status: "PASS" | "FAIL" | "ERROR" | "SKIP";
+  readonly expression: string;
+  readonly file?: string;
+  readonly line?: number;
+  readonly expected?: TestAssertionValue;
+  readonly actual?: TestAssertionValue;
+}
+
+/** 单个 Test Case 的最终结果。 */
+export interface TestCaseResult {
+  readonly name: string;
+  readonly status: "PASS" | "FAIL" | "ERROR" | "SKIP";
+  readonly assertions: readonly TestAssertionResult[];
+  readonly diagnostics: readonly unknown[];
+}
+
+/** Test Suite 的结构化结果。 */
+export interface TestSuiteResult {
+  readonly name: string;
+  readonly cases: readonly TestCaseResult[];
 }
 
 /** 创建自定义 Workflow Step 的参数。 */

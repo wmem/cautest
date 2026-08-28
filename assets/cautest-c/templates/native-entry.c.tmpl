@@ -1,0 +1,13 @@
+#include "posix_target.h"
+
+extern const struct cautest_registry cautest_generated_registry;
+
+int main(void)
+{
+    const struct cautest_posix_target_config config = {
+        "{{BUILD_ID}}",
+        {{WORKSPACE_SIZE}}UL,
+        {{CASE_TIMEOUT_MS}}UL
+    };
+    return cautest_posix_target_main(&cautest_generated_registry, &config);
+}

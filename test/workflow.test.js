@@ -39,3 +39,14 @@ test("Step timeout 产生 ERROR 并向 Executor 发送 Abort", async () => {
   assert.equal(result.steps[0].error.code, "timeout_error");
   assert.equal(aborted, true);
 });
+
+test("结构化测试失败保持 FAIL，并执行失败路径 Collect", async () => {
+  const events = [];
+  const run = defineStep({ kind: "testFailure", phase: "run", execute() { return { outcome: "FAIL" }; } });
+  const collect = defineStep({ kind: "failureCollect", phase: "collect", runWhen: "on-failure", execute() { events.push("collect"); } });
+  const job = testJob({ id: "unit.failure", level: "unit", workflow: [run, collect] });
+  const result = await executeWorkflow(job);
+  assert.equal(result.status, "FAIL");
+  assert.deepEqual(result.steps.map((step) => step.status), ["FAIL", "SUCCESS"]);
+  assert.deepEqual(events, ["collect"]);
+});

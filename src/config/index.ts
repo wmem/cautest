@@ -4,5 +4,6 @@ export const CAUTEST_CONFIG_SCHEMA_VERSION = 2;
 export { testConfig, testJob, withJobDefaults } from "./define.js";
 export { expandFilePatterns } from "./file-pattern.js";
 export { jobNamespace } from "./namespace.js";
+export { nativeCTestJob, nativeCTestJobFactory } from "../jobs/native.js";
 export { defineStep } from "../workflow/step.js";
 export type * from "./schema/index.js";
