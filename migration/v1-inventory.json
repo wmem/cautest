@@ -1,0 +1,1506 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "commit": "e57d6316f440a7015a21fc1d8fe46cbb4484ac61",
+    "worktree": [
+      "?? packages/cautest-js/src/config/schema/"
+    ]
+  },
+  "baselineRuns": {
+    "default": {
+      "command": "npm test",
+      "status": "PASS",
+      "nodeTests": 88,
+      "cSuites": [
+        "c-core",
+        "c-protocol",
+        "kernel",
+        "probe"
+      ]
+    },
+    "umlIntegration": {
+      "command": "npm run test:uml:integration",
+      "status": "PASS",
+      "cases": 2
+    },
+    "driverIntegration": {
+      "command": "npm run test:driver:integration",
+      "status": "FAIL",
+      "code": "build_error",
+      "reason": "cautest_probe.c 无法找到 cautest/probe.h"
+    }
+  },
+  "counts": {
+    "publicApi": 103,
+    "testFiles": 46,
+    "documents": 89,
+    "exampleFiles": 22,
+    "exampleGroups": 6
+  },
+  "items": [
+    {
+      "kind": "public-api",
+      "key": "ArtifactStore",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "CASE_STATUSES",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "CLI_SCHEMA_VERSION",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "CTP_PROTOCOL_MAJOR",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "CTP_PROTOCOL_MINOR",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "CTestSession",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "C_API_MAJOR",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "C_API_MINOR",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "CacheClient",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "CautestError",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "CleanupStack",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "EventRecorder",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "KERNEL_ABI_MAJOR",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "KERNEL_ABI_MINOR",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "LEVELS",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "PACKAGE_MANIFEST_SCHEMA_VERSION",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "PHASES",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "PROBE_ABI_MAJOR",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "PROBE_ABI_MINOR",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "ProcessTransport",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "RELEASE_VERSION",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "RESULT_EVENT_SCHEMA_VERSION",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "RUN_WHEN",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "ResourceStore",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "ResultRecorder",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "STEP_STATUSES",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "SimulatedBoard",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "StreamTransport",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "aggregateJob",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "aggregateRun",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "buildFailureRecords",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "buildRunSummary",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "busyboxBuild",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "cTestRun",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "collectCoverage",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "collectKernelCoverage",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "collectLogs",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "collectStep",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "consoleReporter",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "createFingerprint",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "createStepDescriptor",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "defineConfig",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "defineFragment",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "defineScriptTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "defineStep",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "defineTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "driverAbiCTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "execRequest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "execStep",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "executeJob",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "executeRun",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "executeScriptTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "externalTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "fakeStep",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "filterTestDescriptors",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "findConfig",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "flattenWorkflow",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "formatConsoleReport",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "formatHtmlReport",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "formatJUnitReport",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "guestExec",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "guestProgramBuild",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "hashBytes",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "hashFile",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "htmlReporter",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "jsonReporter",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "junitReporter",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "kernelBuild",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "kernelModuleBuild",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "kernelTestModule",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "loadConfig",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "mcuBoardStart",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "mcuBuild",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "mcuCTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "mcuFlash",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "mcuReset",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "mcuSessionRun",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "nativeCTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "nativeCompile",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "normalizeWorkflow",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "parseJUnit",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "parseJsonResults",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "planCTestExecutions",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "processAttach",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "processStart",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "processTransport",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "resolveCautestC",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "rootfsBuild",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "runCTestSession",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "runScriptTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "runSimulatedMcuSession",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "scriptSystemTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "serializeError",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "shellExec",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "spawnRequest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "stableSerialize",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "umlBuild",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "umlKernelCTest",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "umlStart",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "validatePhaseOrder",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "waitForReady",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "waitReady",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "public-api",
+      "key": "writeRunDirectory",
+      "area": "public-api",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/c-core/CMakeLists.txt",
+      "area": "c-runtime",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/c-core/freestanding_smoke.c",
+      "area": "c-runtime",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/c-core/run-tests.sh",
+      "area": "c-runtime",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/c-core/test_cautest.c",
+      "area": "c-runtime",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/c-protocol/CMakeLists.txt",
+      "area": "ctp3-session",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/c-protocol/run.sh",
+      "area": "ctp3-session",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/c-protocol/test_ctp3.c",
+      "area": "ctp3-session",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/cache/cache.test.js",
+      "area": "native-cache",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/cli/cli.test.js",
+      "area": "cli-report-package",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/js-protocol/protocol.test.js",
+      "area": "ctp3-session",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/js-protocol/protocol.test.mjs",
+      "area": "ctp3-session",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/js-protocol/run.sh",
+      "area": "ctp3-session",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/kernel/abi_smoke.c",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/kernel/build-module.sh",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/kernel/module/Makefile",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/kernel/module/test_cases.c",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/kernel/module/test_registry.c",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/kernel/run-tests.sh",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/kernel/selection_model.c",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/mcu-sim/firmware_cases.c",
+      "area": "mcu",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/mcu-sim/freestanding_test.c",
+      "area": "mcu",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/mcu-sim/mcu-sim.test.js",
+      "area": "mcu",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/native/fixture/native_cases.c",
+      "area": "native-cache",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/native/native.test.js",
+      "area": "native-cache",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/package/install-portable.test.js",
+      "area": "cli-report-package",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/package/package.test.js",
+      "area": "cli-report-package",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/probe/build-kernel-modules.sh",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/probe/driver-preset.test.js",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/probe/guest_entry.c",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/probe/guest_registry.c",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/probe/probe_model_test.c",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/probe/run-tests.sh",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/script-test/script-test.test.js",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/session/session.test.js",
+      "area": "ctp3-session",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/steps/fixtures/external-json.js",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/steps/fixtures/external-junit.js",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/steps/fixtures/server.js",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/steps/system-steps.test.js",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/uml/config/busybox.config",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/uml/guest-helper.c",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/uml/out-of-tree-build.test.js",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/uml/run-integration.mjs",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/uml/run.sh",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/uml/uml-workflow.test.js",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/version/version.test.js",
+      "area": "cli-report-package",
+      "status": "pending"
+    },
+    {
+      "kind": "test-file",
+      "key": "tests/workflow/workflow.test.js",
+      "area": "workflow-results",
+      "status": "pending"
+    },
+    {
+      "kind": "example",
+      "key": "examples/all-in-one",
+      "area": "cli-report-package",
+      "status": "pending"
+    },
+    {
+      "kind": "example",
+      "key": "examples/c-lib",
+      "area": "native-cache",
+      "status": "pending"
+    },
+    {
+      "kind": "example",
+      "key": "examples/kernel-lib",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "example",
+      "key": "examples/linux-driver",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "example",
+      "key": "examples/mcu-sim",
+      "area": "mcu",
+      "status": "pending"
+    },
+    {
+      "kind": "example",
+      "key": "examples/system-script",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/capabilities/CAP-001.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/capabilities/CAP-002.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/capabilities/CAP-003.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/capabilities/CAP-004.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/capabilities/CAP-005.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/capabilities/CAP-006.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/index.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/specifications/SPEC-001.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/specifications/SPEC-002.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/specifications/SPEC-004.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/definition/specifications/SPEC-005.md",
+      "area": "capabilities-specifications",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-001.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-002.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-003.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-004.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-005.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-006.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-007.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-008.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-009.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-010.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/components/CMP-011.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/ctp3-line-protocol.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/design/index.md",
+      "area": "architecture",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/index.md",
+      "area": "project",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/project/briefs/PB-001.md",
+      "area": "project",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/project/context.md",
+      "area": "project",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/project/glossary.md",
+      "area": "project",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/project/index.md",
+      "area": "project",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/project/references/REF-001.md",
+      "area": "project",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/project/references/v1-design-baseline.md",
+      "area": "project",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/project/versioning.md",
+      "area": "project",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/test/index.md",
+      "area": "testing",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/test/specifications/TEST-001.md",
+      "area": "testing",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/test/specifications/TEST-002.md",
+      "area": "testing",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/test/specifications/TEST-003.md",
+      "area": "testing",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/test/specifications/TEST-004.md",
+      "area": "testing",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/test/specifications/TEST-005.md",
+      "area": "testing",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/test/specifications/TEST-006.md",
+      "area": "testing",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/test/strategy.md",
+      "area": "testing",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/README.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/advanced/workflow.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/component/c-native.md",
+      "area": "native-cache",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/concepts.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/driver/abi-c.md",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/install-git.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/kernel/uml-c.md",
+      "area": "kernel-uml",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/linux-driver/unit.md",
+      "area": "driver-probe",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/mcu/simulated-c.md",
+      "area": "mcu",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/c-test-api.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/cli.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/config.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/probe-api.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/results.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/script-test-api.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/steps/collect-logs.md",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/steps/exec-step.md",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/steps/external-test.md",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/steps/index.md",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/steps/process-start.md",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/reference/steps/wait-ready.md",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/system/script.md",
+      "area": "system-workflow",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/troubleshooting.md",
+      "area": "usage",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/toolkit/usage/unit/c-native.md",
+      "area": "native-cache",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-001.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-002.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-003.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-004.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-005.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-006.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-007.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-008.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-009.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-010.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-011.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-012.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-013.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-014.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/defects/DEF-015.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/index.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-001.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-002.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-003.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-004.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-005.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-006.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-007.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-008.md",
+      "area": "history",
+      "status": "pending"
+    },
+    {
+      "kind": "document",
+      "key": "docs/work/requirements/REQ-009.md",
+      "area": "history",
+      "status": "pending"
+    }
+  ]
+}
