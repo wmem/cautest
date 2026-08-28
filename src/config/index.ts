@@ -22,4 +22,7 @@ export { defineScriptTest, executeScriptTest } from "../system/script-test.js";
 export { collectLogs, collectStep, execStep, externalTest, parseJsonResults, parseJUnit, processAttach, processStart, shellExec, waitForReady, waitReady } from "../steps/system.js";
 export type { ScriptCaseContext, ScriptTestApi, ScriptTestDefinition } from "../system/script-test.js";
 export type { ExternalTestInput, ProcessAttachInput, ProcessStartInput, ReadyProbe } from "../steps/system.js";
+export { CacheClient } from "../cache/client.js";
+export { createFingerprint, hashBytes, hashFile, stableSerialize } from "../cache/fingerprint.js";
+export { resolveCautestC } from "../integration/cautest-c.js";
 export type * from "./schema/index.js";

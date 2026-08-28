@@ -18,7 +18,7 @@ const buildFields = new Set(["compiler", "includeDirs", "defines", "cflags", "ld
 const runFields = new Set(["include", "exclude", "suite", "case", "parameter", "caseTimeoutMs", "runTimeoutMs", "session", "suitePolicy", "expectedBuildId", "stepTimeoutMs"]);
 const coverageFields = new Set(["tool", "timeoutMs"]);
 
-interface NativeArtifact { readonly path: string; readonly buildId: string; readonly objectDir: string; readonly sources: readonly string[]; readonly coverage: boolean }
+interface NativeArtifact { readonly path: string; readonly buildId: string; readonly objectDir: string; readonly sources: readonly string[]; readonly coverage: boolean; readonly cacheHit: boolean }
 
 function strings(value: unknown, label: string, required = false): readonly string[] {
   if (value === undefined) { if (required) throw new CautestError(`${label} 必填`, { code: "config_error" }); return []; }
@@ -107,6 +107,16 @@ function entrySource(buildId: string, workspaceSize: number, caseTimeoutMs: numb
   return `#include "posix_target.h"\n\nextern const struct cautest_registry cautest_generated_registry;\n\nint main(void)\n{\n    const struct cautest_posix_target_config config = {\n        "${buildId}",\n        ${workspaceSize}UL,\n        ${caseTimeoutMs}UL\n    };\n    return cautest_posix_target_main(&cautest_generated_registry, &config);\n}\n`;
 }
 
+function validateConfiguredCacheRoot(project: string, configured: string | undefined): void {
+  if (configured === undefined) return;
+  const root = path.resolve(project);
+  const target = path.resolve(root, configured);
+  const relative = path.relative(root, target);
+  if (relative === "" || relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new CautestError(`Native build.cache.directory 必须是项目内专用子目录: ${configured}`, { code: "cache_error" });
+  }
+}
+
 /** 把一个完整 Native C Test 声明展开为 build → run → collect Workflow。 */
 export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
   if (typeof input !== "object" || input === null || Array.isArray(input)) throw new CautestError("nativeCTestJob() 参数必须是对象", { code: "config_error" });
@@ -157,6 +167,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       await writeFile(registry, registrySource(suites));
       await writeFile(entry, entrySource(key, build.workspaceSize ?? 65_536, run.caseTimeoutMs ?? 1_000));
       const cacheEnabled = build.cache?.enabled !== false;
+      validateConfiguredCacheRoot(project, build.cache?.directory);
       const cacheRoot = path.resolve(project, cacheEnabled ? (build.cache?.directory ?? path.join(context.project.cacheDir, "native")) : path.join(context.project.workDir, "native"));
       await mkdir(cacheRoot, { recursive: true });
       const cacheDir = path.join(cacheRoot, key);
@@ -178,7 +189,9 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
         } catch (cause) { await rm(temporary, { recursive: true, force: true }); throw cause; }
         hit = false;
       }
-      context.state.set(`native:${artifactName}`, Object.freeze({ path: targetPath, buildId: key, objectDir: cacheDir, sources: [...expandedTests, ...expandedSources], coverage: input.coverage !== undefined }) satisfies NativeArtifact);
+      const artifact = Object.freeze({ path: targetPath, buildId: key, objectDir: cacheDir, sources: [...expandedTests, ...expandedSources], coverage: input.coverage !== undefined, cacheHit: hit }) satisfies NativeArtifact;
+      context.state.set(`native:${artifactName}`, artifact);
+      context.artifacts.publish({ kind: "native-test", name: artifactName, path: targetPath, fingerprint: key, buildId: key, metadata: { cacheHit: hit, objectDir: cacheDir, sources: artifact.sources, coverage: artifact.coverage } });
       return { diagnostics: [{ code: hit ? "cache_hit" : (cacheEnabled ? "cache_miss" : "cache_disabled"), message: targetPath }] };
     },
   });
@@ -190,7 +203,25 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       if (artifact === undefined) throw new CautestError(`Native Artifact 不存在: ${artifactName}`, { code: "build_error" });
       const coverageRaw = path.join(context.project.resultDir, "coverage", artifactName, "raw");
       if (artifact.coverage) await mkdir(coverageRaw, { recursive: true });
-      const results = await runNativeSession({ program: artifact.path, cwd: context.project.configDir, env: { ...process.env, ...input.env, ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: "100" } : {}) }, expectedBuildId: artifact.buildId, run, signal: context.signal });
+      const logDir = path.join(context.project.resultDir, context.job.id);
+      const stdoutFile = path.join(logDir, `${artifactName}.stdout.log`);
+      const stderrFile = path.join(logDir, `${artifactName}.stderr.log`);
+      const targetFile = path.join(logDir, `${artifactName}.target.log`);
+      const targetLogs: string[] = [];
+      await mkdir(logDir, { recursive: true });
+      const results = await runNativeSession({
+        program: artifact.path,
+        cwd: context.project.configDir,
+        env: { ...process.env, ...input.env, ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: "100" } : {}) },
+        expectedBuildId: artifact.buildId,
+        run,
+        signal: context.signal,
+        onLog(log) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },
+        async onComplete(output) { await Promise.all([writeFile(stdoutFile, output.stdout), writeFile(stderrFile, output.stderr), writeFile(targetFile, `${targetLogs.join("\n")}${targetLogs.length === 0 ? "" : "\n"}`)]); },
+      });
+      context.artifacts.publish({ kind: "log", name: `${artifactName}-stdout`, path: stdoutFile });
+      context.artifacts.publish({ kind: "log", name: `${artifactName}-stderr`, path: stderrFile });
+      context.artifacts.publish({ kind: "log", name: `${artifactName}-target`, path: targetFile });
       const cases = results.flatMap((suite) => suite.cases);
       if (cases.length === 0 && input.policy?.allowEmpty !== true) throw new CautestError("Native C Test 没有选中任何 Case", { code: "selection_error" });
       return { outcome: cases.some((item) => item.status === "FAIL" || item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: results, diagnostics: [{ code: "native_session", message: `cases=${cases.length}` }] };
@@ -214,7 +245,9 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
         const result = await runCommand({ program: input.coverage?.tool ?? "gcov", args: ["-o", objects, path.join(objects, path.basename(note))], cwd: output, env: { ...process.env, ...input.env }, signal: context.signal, onOutput: context.output });
         if (result.exitCode !== 0) throw new CautestError(`GCOV 收集失败 (exit ${result.exitCode})`, { code: "build_error" });
       }
-      return { diagnostics: [{ code: "coverage_collected", message: output }] };
+      const reports = await collectByExtension(output, ".gcov");
+      context.artifacts.publish({ kind: "coverage", name: artifactName, path: output, metadata: { adapter: "gcov", reports } });
+      return { diagnostics: [{ code: "coverage_collected", message: output, reports }] };
     },
   })];
   return testJob({

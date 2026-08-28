@@ -94,7 +94,8 @@
       "kind": "public-api",
       "key": "CacheClient",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 CacheClient 校验完整 Manifest 并原子发布"
     },
     {
       "kind": "public-api",
@@ -260,7 +261,8 @@
       "kind": "public-api",
       "key": "collectCoverage",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 Native Coverage Step 由 coverage 配置自动生成"
     },
     {
       "kind": "public-api",
@@ -292,7 +294,8 @@
       "kind": "public-api",
       "key": "createFingerprint",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 强内容指纹，键和文件顺序稳定"
     },
     {
       "kind": "public-api",
@@ -437,13 +440,15 @@
       "kind": "public-api",
       "key": "hashBytes",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 cache/fingerprint.ts"
     },
     {
       "kind": "public-api",
       "key": "hashFile",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 cache/fingerprint.ts"
     },
     {
       "kind": "public-api",
@@ -527,13 +532,15 @@
       "kind": "public-api",
       "key": "nativeCTest",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 统一命名为 nativeCTestJob"
     },
     {
       "kind": "public-api",
       "key": "nativeCompile",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 编译 Step 由 nativeCTestJob Schema 生成，避免绕过输入与缓存约束"
     },
     {
       "kind": "public-api",
@@ -587,7 +594,8 @@
       "kind": "public-api",
       "key": "resolveCautestC",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 返回同版本便携 C Kit 资产"
     },
     {
       "kind": "public-api",
@@ -646,7 +654,8 @@
       "kind": "public-api",
       "key": "stableSerialize",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 仅接受确定性 JSON 输入"
     },
     {
       "kind": "public-api",
@@ -746,7 +755,8 @@
       "kind": "test-file",
       "key": "tests/cache/cache.test.js",
       "area": "native-cache",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 test/cache.test.js 与 Native/Kernel Cache 测试分层覆盖"
     },
     {
       "kind": "test-file",
@@ -841,13 +851,15 @@
       "kind": "test-file",
       "key": "tests/native/fixture/native_cases.c",
       "area": "native-cache",
-      "status": "pending"
+      "status": "implemented",
+      "note": "原 Fixture 完整迁移为 test/fixtures/native/v1_cases.c"
     },
     {
       "kind": "test-file",
       "key": "tests/native/native.test.js",
       "area": "native-cache",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 test/native.test.js 覆盖构建、状态隔离、日志、Cache、指纹和 GCOV"
     },
     {
       "kind": "test-file",
