@@ -1895,7 +1895,7 @@
       "key": "examples/all-in-one",
       "area": "cli-report-package",
       "status": "implemented",
-      "note": "迁移为 examples/all-in-one，组合五类普通 TestJob",
+      "note": "迁移为 examples/all-in-one.config.mjs，组合五类普通 TestJob",
       "evidence": [
         "test/cli.test.js",
         "test/reporters.test.js",

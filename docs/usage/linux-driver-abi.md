@@ -18,22 +18,27 @@ examples/linux-driver/
 ```js
 import { driverAbiCTestJob, testConfig, umlKernelEnvironment } from "@cautest/config.js";
 
-const environment = umlKernelEnvironment({
-  kernel: { sourceDir: process.env.KERNEL_SRC ?? "vendor/linux" },
-  busybox: { sourceDir: process.env.BUSYBOX_SRC ?? "vendor/busybox" },
-});
+export function driverAbiJob(baseDir = ".") {
+  const fromExample = (relative) => baseDir === "." ? relative : `${baseDir}/${relative}`;
+  const environment = umlKernelEnvironment({
+    kernel: { sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux") },
+    busybox: { sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox") },
+  });
 
-export default testConfig({ jobs: [driverAbiCTestJob({
-  id: "integration.example-driver",
-  environment,
-  probe: {},
-  drivers: [{ name: "example_driver", sourceDir: "driver", sandboxRoot: ".", output: "example_driver.ko" }],
-  guest: {
-    tests: ["guest/driver_abi_test.c"],
-    headers: ["include/example_driver_abi.h"],
-    suites: ["driver_api"],
-  },
-})] });
+  return driverAbiCTestJob({
+    id: "integration.example-driver",
+    environment,
+    probe: {},
+    drivers: [{ name: "example_driver", sourceDir: fromExample("driver"), sandboxRoot: baseDir, output: "example_driver.ko" }],
+    guest: {
+      tests: [fromExample("guest/driver_abi_test.c")],
+      headers: [fromExample("include/example_driver_abi.h")],
+      suites: ["driver_api"],
+    },
+  });
+}
+
+export default testConfig({ jobs: [driverAbiJob()] });
 ```
 
 `probe: {}` 让 Cautest 构建 Probe Module，并向 Driver Kbuild 注入 `CONFIG_CAUTEST=y` 和 `CAUTEST_C_ROOT`。示例 Makefile 只在该开关启用时包含 Probe Header，因此正常产品构建不依赖 Cautest。

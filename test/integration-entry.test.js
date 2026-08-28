@@ -53,6 +53,8 @@ test("真实入口展开 Kernel 与 Driver/Probe/Guest ABI UML Workflow", () => 
   const prerequisites = { kernelSource: "/kernel", busyboxSource: "/busybox" };
   const [kernel, driverUnit] = planConfig(kernelUmlSmokeConfig(prerequisites));
   assert.equal(kernel.id, "component.kernel-counter");
+  assert.equal(kernel.level, "component");
+  assert.deepEqual(kernel.tags, ["component", "kernel", "uml"]);
   assert.deepEqual(kernel.workflow.map((step) => step.kind), [
     "kernelBuild", "busyboxBuild", "kernelModuleBuild", "generatedKernelTestModule",
     "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs",

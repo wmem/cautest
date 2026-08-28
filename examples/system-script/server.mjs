@@ -1,5 +1,16 @@
-import { mkdir, writeFile } from "node:fs/promises";
-await mkdir(".cautest", { recursive: true });
-await writeFile(".cautest/server.ready", "ready\n");
-process.stdout.write("example server ready\n");
-setInterval(() => {}, 60_000);
+import http from "node:http";
+
+const port = Number(process.env.CAUTEST_EXAMPLE_PORT ?? 18765);
+const server = http.createServer((request, response) => {
+  if (request.method === "GET" && request.url === "/health") {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end('{"status":"ok"}\n');
+    return;
+  }
+  response.writeHead(404, { "content-type": "application/json" });
+  response.end('{"status":"not-found"}\n');
+});
+
+server.listen(port, "127.0.0.1", () => {
+  process.stdout.write(`example server ready: http://127.0.0.1:${port}\n`);
+});

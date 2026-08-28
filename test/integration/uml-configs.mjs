@@ -14,6 +14,7 @@ export function kernelUmlSmokeConfig(prerequisites) {
   const driverUnitTest = kernelCTestJobFactory({ environment, defaults: { level: "unit", tags: ["unit", "driver"] } });
   return testConfig({ jobs: [kernelCTestJob({
     id: "component.kernel-counter",
+    level: "component",
     environment,
     tests: ["examples/kernel-lib/test/kernel_counter_test.c"],
     sources: ["examples/kernel-lib/src/kernel_counter.c"],

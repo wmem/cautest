@@ -108,7 +108,7 @@ CAUTEST_EXPECT_MEMEQ(expected, actual, sizeof(expected));
 
 ## 注意平台边界
 
-Native 默认 Workspace 为 65536 字节，Kernel Runtime 默认 16384 字节；Fixture 总量超过 Workspace 会产生 Framework Error。具体容量通过相应 Job 的 `workspaceSize` 调整。
+Native 默认 Workspace 为 65536 字节，通过 `nativeCTestJob({ build: { workspaceSize: 131072 } })` 调整。Kernel Runtime 默认 16384 字节，通过 `umlKernelEnvironment({ runtime: { workspaceSize: 32768 }, ... })` 调整。Fixture 总量超过对应 Workspace 会产生 Framework Error；`workspaceSize` 不是这两类 Job 共用的顶层字段。
 
 Kernel 测试代码必须满足内核构建约束，不能假设 libc。Driver Guest 运行在 UML Userspace，可以使用 Guest Toolchain 提供的 POSIX API。MCU/Freestanding 不依赖 libc 或自动注册机制，需要由 Firmware 接入 Registry、Workspace、Transport 和启动生命周期。
 

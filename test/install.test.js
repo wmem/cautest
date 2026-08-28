@@ -30,9 +30,10 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map", "direct-session.d.ts", "direct-session.d.ts.map", "direct-session.js", "direct-session.js.map", "environment.d.ts", "environment.d.ts.map", "environment.js", "environment.js.map", "interrupt.d.ts", "interrupt.d.ts.map", "interrupt.js", "interrupt.js.map", "process.d.ts", "process.d.ts.map", "process.js", "process.js.map"]);
   await assert.rejects(lstat(path.join(destination, "lib/vendor")));
   assert.equal((await readFile(path.join(destination, "lib/pattern/glob.js"), "utf8")).includes("globMatcher"), true);
-  assert.match(await readFile(path.join(destination, "README.md"), "utf8"), /docs\/usage\/index\.md/u);
+  assert.match(await readFile(path.join(destination, "README.md"), "utf8"), /\[使用指南\]\(docs\/usage\/index\.md\)/u);
   assert.match(await readFile(path.join(destination, "docs/usage/index.md"), "utf8"), /doctor.*list.*plan.*run/su);
   assert.match(await readFile(path.join(destination, "docs/usage/linux-driver-unit.md"), "utf8"), /kernelCTestJobFactory/u);
+  await assert.rejects(lstat(path.join(destination, "docs/usage/installed.md")));
   await assert.rejects(lstat(path.join(destination, "docs/index.md")));
   await assert.rejects(lstat(path.join(destination, "docs/specifications")));
 
@@ -76,22 +77,65 @@ export default testConfig({ jobs: [
   assert.equal((await lstat(path.join(destination, "cautest.js"))).mode & 0o111, 0o111);
   assert.equal(JSON.parse(await readFile(path.join(destination, "manifest.json"), "utf8")).product, "cautest-portable");
 
-  const allInOne = path.join(destination, "examples/all-in-one/cautest.config.mjs");
-  const allPlan = await exec(path.join(destination, "cautest.js"), ["--config", allInOne, "plan"], { cwd: temporary });
-  for (const id of ["unit.example-math", "component.kernel-counter", "unit.example-driver-core", "integration.example-driver", "component.mcu-sim", "system.example-api"]) assert.match(allPlan.stdout, new RegExp(id, "u"));
+  const kernelFixture = path.join(temporary, "kernel-fixture");
+  const busyboxFixture = path.join(temporary, "busybox-fixture");
+  await mkdir(path.join(kernelFixture, "arch/um"), { recursive: true });
+  await mkdir(busyboxFixture, { recursive: true });
+  await Promise.all([
+    writeFile(path.join(kernelFixture, "Makefile"), "all:\n\t@true\n"),
+    writeFile(path.join(kernelFixture, "arch/um/Kconfig"), "config UML\n\tbool\n"),
+    writeFile(path.join(busyboxFixture, "Makefile"), "all:\n\t@true\n"),
+  ]);
+  const exampleEnv = {
+    ...process.env,
+    KERNEL_SRC: kernelFixture,
+    BUSYBOX_SRC: busyboxFixture,
+    CAUTEST_EXAMPLE_PORT: String(20_000 + process.pid % 20_000),
+  };
+  const allInOne = path.join(destination, "examples/all-in-one.config.mjs");
+  await exec(path.join(destination, "cautest.js"), ["--config", allInOne, "doctor"], { cwd: temporary, env: exampleEnv });
+  const allList = JSON.parse((await exec(path.join(destination, "cautest.js"), ["--config", allInOne, "list", "--json"], { cwd: temporary, env: exampleEnv })).stdout);
+  assert.deepEqual(allList.map(({ id, level, tags, enabled }) => ({ id, level, tags, enabled })), [
+    { id: "unit.example-math", level: "unit", tags: ["unit"], enabled: true },
+    { id: "component.kernel-counter", level: "component", tags: ["component", "kernel", "uml"], enabled: true },
+    { id: "unit.example-driver-core", level: "unit", tags: ["unit", "driver"], enabled: true },
+    { id: "integration.example-driver", level: "integration", tags: ["integration", "driver", "uml"], enabled: true },
+    { id: "component.mcu-sim", level: "component", tags: ["component", "mcu"], enabled: true },
+    { id: "system.example-api", level: "system", tags: ["system", "script"], enabled: true },
+  ]);
+  const allPlan = JSON.parse((await exec(path.join(destination, "cautest.js"), ["--config", allInOne, "plan", "--json"], { cwd: temporary, env: exampleEnv })).stdout);
+  assert.deepEqual(allPlan.map((job) => job.id), allList.map((job) => job.id));
 
-  for (const [example, jobId] of [
-    ["c-lib", "unit.example-math"],
-    ["mcu-sim", "component.mcu-sim"],
-    ["system-script", "system.example-api"],
-    ["workflow", "system.composed-local"],
+  for (const [example, jobId, level, tags] of [
+    ["kernel-lib", "component.kernel-counter", "component", ["component", "kernel", "uml"]],
+    ["linux-driver-unit", "unit.example-driver-core", "unit", ["unit", "driver"]],
+    ["linux-driver", "integration.example-driver", "integration", ["integration", "driver", "uml"]],
   ]) {
     const exampleConfig = path.join(destination, `examples/${example}/cautest.config.mjs`);
-    await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "doctor"], { cwd: temporary });
-    assert.match((await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "list"], { cwd: temporary })).stdout, new RegExp(jobId, "u"));
-    assert.match((await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "plan", jobId], { cwd: temporary })).stdout, new RegExp(jobId, "u"));
-    const executed = await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "run", "--json"], { cwd: temporary });
-    assert.equal(JSON.parse(executed.stdout).status, "SUCCESS", `${example}: ${executed.stderr}`);
+    await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "doctor"], { cwd: temporary, env: exampleEnv });
+    const [listed] = JSON.parse((await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "list", "--json"], { cwd: temporary, env: exampleEnv })).stdout);
+    assert.deepEqual({ id: listed.id, level: listed.level, tags: listed.tags }, { id: jobId, level, tags });
+    const [planned] = JSON.parse((await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "plan", jobId, "--level", level, "--json"], { cwd: temporary, env: exampleEnv })).stdout);
+    assert.equal(planned.id, jobId);
+  }
+
+  for (const [example, jobId, level, tags, expectedCases] of [
+    ["c-lib", "unit.example-math", "unit", ["unit"], ["adds_two_numbers"]],
+    ["mcu-sim", "component.mcu-sim", "component", ["component", "mcu"], ["passes"]],
+    ["system-script", "system.example-api", "system", ["system", "script"], ["health endpoint returns ok"]],
+    ["workflow", "system.composed-local", "system", [], ["adds_two_numbers", "server is ready"]],
+  ]) {
+    const exampleConfig = path.join(destination, `examples/${example}/cautest.config.mjs`);
+    await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "doctor"], { cwd: temporary, env: exampleEnv });
+    const [listed] = JSON.parse((await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "list", "--json"], { cwd: temporary, env: exampleEnv })).stdout);
+    assert.deepEqual({ id: listed.id, level: listed.level, tags: listed.tags }, { id: jobId, level, tags });
+    assert.match((await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "plan", jobId], { cwd: temporary, env: exampleEnv })).stdout, new RegExp(jobId, "u"));
+    const executed = await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "run", "--json"], { cwd: temporary, env: exampleEnv });
+    const summary = JSON.parse(executed.stdout);
+    assert.equal(summary.status, "SUCCESS", `${example}: ${executed.stderr}`);
+    const result = JSON.parse(await readFile(summary.resultPath, "utf8"));
+    const cases = result.jobs.flatMap((job) => job.groups.flatMap((group) => group.cases.map((item) => item.name)));
+    for (const expected of expectedCases) assert.ok(cases.includes(expected), `${example}: 缺少 Case ${expected}`);
   }
 
   const interruptMarker = path.join(temporary, "interrupt-order.log");

@@ -1,7 +1,9 @@
 import { defineScriptTest } from "@cautest/config.js";
 
-export default defineScriptTest(async ({ test }) => {
-  await test.case("server is ready", async (t) => {
-    t.expect(true, "processStart 已完成 Ready Probe");
+export default defineScriptTest(async ({ test, signal, env }) => {
+  await test.case("health endpoint returns ok", async (t) => {
+    const response = await fetch(`${env.CAUTEST_EXAMPLE_URL}/health`, { signal });
+    t.assertEqual(200, response.status);
+    t.expectEqual('{"status":"ok"}\n', await response.text());
   });
 });

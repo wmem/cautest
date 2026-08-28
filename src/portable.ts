@@ -59,10 +59,17 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   }
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
   await cp(path.join(packageRoot, "dist/runtime/loader.js"), path.join(root, "loader.mjs"));
-  await cp(path.join(packageRoot, "docs/usage/installed.md"), path.join(root, "README.md"));
+  const installedGuide = path.join(packageRoot, "docs/usage/installed.md");
+  const installedTemplate = await readFile(installedGuide, "utf8");
+  const installedReadme = installedTemplate.replace("[使用指南](index.md)", "[使用指南](docs/usage/index.md)");
+  if (installedReadme === installedTemplate) throw new Error("安装说明缺少使用指南链接");
+  await writeFile(path.join(root, "README.md"), installedReadme);
   await cp(path.join(packageRoot, "versions.json"), path.join(root, "versions.json"));
   await mkdir(path.join(root, "docs"));
-  await cp(path.join(packageRoot, "docs/usage"), path.join(root, "docs/usage"), { recursive: true });
+  await cp(path.join(packageRoot, "docs/usage"), path.join(root, "docs/usage"), {
+    recursive: true,
+    filter: (source) => source !== installedGuide,
+  });
   await cp(path.join(packageRoot, "examples"), path.join(root, "examples"), { recursive: true });
   await mkdir(path.join(root, "assets"));
   await cp(path.join(packageRoot, "assets/cautest-c"), path.join(root, "assets/cautest-c"), { recursive: true });
