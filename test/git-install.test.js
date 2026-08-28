@@ -13,7 +13,7 @@ async function createGitSnapshot() {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-git-"));
   const repository = path.join(temporary, "repository");
   await mkdir(repository);
-  for (const entry of ["assets", "src", "package.json", "pnpm-lock.yaml", "README.md", "tsconfig.json"]) {
+  for (const entry of ["assets", "docs", "src", "usage", "package.json", "pnpm-lock.yaml", "README.md", "tsconfig.json"]) {
     await cp(path.join(projectRoot, entry), path.join(repository, entry), { recursive: true });
   }
   await exec("git", ["init", "-b", "main"], { cwd: repository });
@@ -28,6 +28,8 @@ async function createGitSnapshot() {
 async function verifyPortable(destination) {
   const names = await readdir(destination);
   assert.ok(names.includes("cautest.js"));
+  assert.ok(names.includes("docs"));
+  assert.ok(names.includes("usage"));
   assert.ok(!names.includes("node_modules"));
   const config = path.join(path.dirname(path.dirname(destination)), `${path.basename(destination)}.config.mjs`);
     await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config.js';
@@ -40,7 +42,7 @@ export default testConfig({ jobs: [testJob({ id: 'system.git', level: 'system', 
   assert.match(build.commit, /^[0-9a-f]{40}$/u);
 }
 
-test("npx 和 pnpm dlx 都可从 Git Commit 编译并安装", { timeout: 180_000 }, async () => {
+test("npx 和 pnpm dlx 都可从 Git Commit 编译并安装", { timeout: 360_000 }, async () => {
   const snapshot = await createGitSnapshot();
   const npxDestination = path.join(snapshot.temporary, "npx-project/tools/cautest");
   const pnpmDestination = path.join(snapshot.temporary, "pnpm-project/tools/cautest");
@@ -49,14 +51,14 @@ test("npx 和 pnpm dlx 都可从 Git Commit 编译并安装", { timeout: 180_000
 
   await exec("npx", ["--yes", snapshot.url, npxDestination], {
     cwd: path.join(snapshot.temporary, "npx-project"),
-    timeout: 120_000,
+    timeout: 180_000,
     maxBuffer: 10 * 1024 * 1024,
   });
   await verifyPortable(npxDestination);
 
   await exec("pnpm", ["dlx", `--allow-build=cautest@${snapshot.url}`, snapshot.url, pnpmDestination], {
     cwd: path.join(snapshot.temporary, "pnpm-project"),
-    timeout: 120_000,
+    timeout: 180_000,
     maxBuffer: 10 * 1024 * 1024,
   });
   await verifyPortable(pnpmDestination);

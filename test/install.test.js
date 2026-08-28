@@ -22,9 +22,13 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   const rootEntries = await readdir(destination);
   assert.ok(rootEntries.includes("cautest.js"));
   assert.ok(rootEntries.includes("lib"));
+  assert.ok(rootEntries.includes("docs"));
+  assert.ok(rootEntries.includes("usage"));
   assert.ok(!rootEntries.includes("node_modules"));
   assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map", "process.d.ts", "process.d.ts.map", "process.js", "process.js.map"]);
   assert.equal((await readFile(path.join(destination, "lib/vendor/picomatch/LICENSE"), "utf8")).includes("MIT License"), true);
+  assert.match(await readFile(path.join(destination, "docs/configuration.md"), "utf8"), /唯一顶层模型/u);
+  assert.match(await readFile(path.join(destination, "usage/linux-driver/unit.md"), "utf8"), /不要求测试作者手写/u);
 
   async function visit(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {

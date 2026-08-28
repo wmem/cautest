@@ -8,8 +8,10 @@
   },
   "files": [
     "assets",
+    "docs",
     "dist",
-    "README.md"
+    "README.md",
+    "usage"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
