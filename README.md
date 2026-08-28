@@ -179,5 +179,22 @@ pnpm test:e2e
 pnpm test:uml # 需要 Linux Kernel 与 BusyBox 源码
 ```
 
+`pnpm pack:portable` 会在 `release/` 下生成解压后可直接使用的 `.tar.gz` 便携包及
+其 SHA-256 校验文件。归档顶层是 `cautest/`，可以直接部署到目标项目：
+
+```bash
+pnpm pack:portable
+mkdir -p /path/to/project/tools
+tar -xzf release/cautest-<版本>-<commit>.tar.gz -C /path/to/project/tools
+/path/to/project/tools/cautest/cautest.js --version
+```
+
+自定义输出路径或覆盖已有文件：
+
+```bash
+pnpm pack:portable --output /tmp/cautest.tar.gz
+pnpm pack:portable --output /tmp/cautest.tar.gz --force
+```
+
 `./tools/cautest/cautest.js --version` 会同时输出软件版本和构建 Commit。本仓库从 V2
 Schema 和便携安装链开始独立演进，不继承 Cautest V1 的 Git 历史。
