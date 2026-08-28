@@ -1,5 +1,6 @@
 import type { SuitePolicy, TestAssertionResult, TestCaseResult, TestSuiteResult } from "../config/schema/common.js";
 import { CautestError } from "../model/error.js";
+import { globMatcher } from "../pattern/glob.js";
 import { CTP_PROTOCOL_MAJOR, encodeCommand, parseProtocolLine, type ParsedProtocolLine } from "./ctp3.js";
 import type { CtpTransport } from "./transport.js";
 
@@ -27,13 +28,7 @@ export type CTestExecution = Readonly<{ readonly kind: "CASE"; readonly descript
 
 function patterns(value: string | readonly string[] | undefined, fallback: readonly string[] = []): readonly string[] { return value === undefined ? fallback : typeof value === "string" ? [value] : value; }
 
-function glob(pattern: string): RegExp {
-  let expression = "^";
-  for (const character of pattern) expression += character === "*" ? ".*" : character === "?" ? "." : character.replace(/[\\^$.[\]{}()+|]/u, "\\$&");
-  return new RegExp(`${expression}$`, "u");
-}
-
-function matches(value: string, values: readonly string[]): boolean { return values.some((pattern) => glob(pattern).test(value)); }
+function matches(value: string, values: readonly string[]): boolean { return values.some((pattern) => globMatcher(pattern, { matchSlash: true })(value)); }
 
 export function filterTestDescriptors(descriptors: readonly TestDescriptor[], options: CTestSelection = {}): readonly TestDescriptor[] {
   const include = patterns(options.include, ["*"]);

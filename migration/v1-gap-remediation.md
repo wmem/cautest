@@ -68,8 +68,8 @@
   - 证据：`test/cli.test.js` 使用不可执行工具、失败静态链接/ptrace、不可创建目录和带 `.config` 的 Kernel 源码，覆盖全部稳定 Doctor Code；Doctor 定向测试 2/2 通过。
 
 - [x] GAP-012（完成）补齐 C Kit 构建交付
-  - 恢复 C Core、Protocol、Freestanding、MCU Reference 的 CMake 入口和包元数据，并加入安装包验证。
-  - 证据：`assets/cautest-c/CMakeLists.txt`、四个子项目入口和 `package.json`；`test/install.test.js` 从便携安装目录真实 configure/build/install，并用 `find_package(cautest-c)` 构建运行 Consumer；安装/版本定向测试 3/3 通过。
+  - 提供 C Core、Protocol、Freestanding、MCU Reference 的 Makefile 入口和包元数据，并加入安装包验证；C Kit 不要求 CMake。
+  - 证据：`assets/cautest-c/Makefile`、可重定位 `cautest-c.mk` 和 `package.json`；`test/install.test.js` 从便携安装目录真实执行 Make 构建/安装，并用独立 Consumer Makefile 构建运行程序。
 
 - [x] GAP-013（完成）让 V1 迁移审计验证行为证据
   - 清单项必须关联 V2 测试或明确批准的设计决策；审计不能只检查人工状态字符串。
@@ -98,7 +98,13 @@
 ## 本轮最终回归（2026-08-28）
 
 - `pnpm typecheck`：通过。
-- `pnpm test`：96/96 Node 测试通过，C Core、CTP3、Kernel ABI/Selection 与 Probe C 测试全部通过。
+- `pnpm test`：98/98 Node 测试通过，C Core、CTP3、Kernel ABI/Selection 与 Probe C 测试全部通过。
 - `pnpm audit:v1`：通过，244 个 V1 清单项均有关联证据，4 个设计决策均已批准。
 - `pnpm test:uml`：真实 UML Kernel Test 闭环通过，1/1 Case PASS。
 - `pnpm test:driver:uml`：真实 UML Driver + Probe + Guest ABI 闭环通过，1/1 Case PASS。
+
+## 依赖精简复验（2026-08-28）
+
+- C Kit 已从 CMake Package 改为 Makefile 构建/安装与 `cautest-c.mk` 消费，便携安装测试会真实构建并运行独立 Consumer。
+- `picomatch` 及其类型包已从 Manifest、Lockfile、Loader 和便携包中移除；内置 Glob 覆盖文件路径与 V1 兼容的 Suite/Case 文本过滤。
+- Kernel UML Run `af9c9e5c-405e-496e-b2e0-8bd9463e9a81` 与 Driver UML Run `df6e3b16-aeaa-47e3-ab35-aa4730a2ee8a` 均为 SUCCESS，分别 1/1 Case PASS。

@@ -1,13 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
-import picomatch from "picomatch";
 import { loadConfig } from "../config/load.js";
 import { planConfig } from "../config/plan.js";
 import type { CTestRunOverrides, SuitePolicy, TestJob } from "../config/schema/common.js";
 import { CAUTEST_CLI_SCHEMA_VERSION } from "../config/versions.js";
 import { doctorJobs } from "../doctor/index.js";
 import { CautestError } from "../model/error.js";
+import { globMatcher } from "../pattern/glob.js";
 import { executeRun, writeRunDirectory } from "../result/run.js";
 import { formatConsoleReport, writeReports } from "../reporters/index.js";
 import { executeDirectSession, type DirectSessionMode } from "./direct-session.js";
@@ -225,7 +225,7 @@ async function versionText(): Promise<string> {
 
 function selectedJobs(jobs: readonly TestJob[], parsed: ParsedArguments): readonly TestJob[] {
   for (const level of parsed.levels) if (!["unit", "component", "integration", "system"].includes(level)) throw new CautestError(`--level 无效: ${level}`, { code: "config_error" });
-  const matchers = parsed.selectors.map((selector) => picomatch(selector));
+  const matchers = parsed.selectors.map((selector) => globMatcher(selector));
   return jobs.filter((job) => (parsed.command !== "run" || job.enabled) && (matchers.length === 0 || matchers.some((match) => match(job.id))) && (parsed.levels.length === 0 || parsed.levels.includes(job.level)) && parsed.tags.every((tag) => job.tags.includes(tag)));
 }
 

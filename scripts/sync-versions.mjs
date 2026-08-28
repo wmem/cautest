@@ -25,8 +25,8 @@ for (const [name, value] of Object.entries(versions.schemas ?? {})) uint(value, 
 for (const [name, value] of Object.entries(versions.caches ?? {})) uint(value, `caches.${name}`);
 if (manifest.version !== versions.release) throw new Error(`Release 版本漂移: versions.json=${versions.release}, package.json=${String(manifest.version)}`);
 if (cManifest.version !== versions.release) throw new Error(`C Kit 版本漂移: versions.json=${versions.release}, assets/cautest-c/package.json=${String(cManifest.version)}`);
-const cmake = await readFile(path.join(root, "assets/cautest-c/CMakeLists.txt"), "utf8");
-if (!cmake.includes(`project(cautest-c VERSION ${versions.release} `)) throw new Error(`CMake Project 版本漂移: expected=${versions.release}`);
+const makefile = await readFile(path.join(root, "assets/cautest-c/Makefile"), "utf8");
+if (!makefile.includes(`CAUTEST_C_VERSION := ${versions.release}\n`)) throw new Error(`C Kit Makefile 版本漂移: expected=${versions.release}`);
 
 const ts = `/** 由 versions.json 生成；请运行 \`pnpm versions:sync\`，不要手工修改。 */
 export const CAUTEST_VERSIONS = Object.freeze({

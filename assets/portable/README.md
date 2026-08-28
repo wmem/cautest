@@ -24,8 +24,8 @@ export default testConfig({
 ```
 
 配置必须通过本目录中的 `cautest.js` 加载，不能直接使用 `node` 执行；便携 Loader
-负责把 `@cautest/config.js` 定位到本目录中的编译产物。`lib/vendor/picomatch`
-是用于文件 Glob 的 MIT 许可运行时依赖，许可证随文件一同发布。
+负责把 `@cautest/config.js` 定位到本目录中的编译产物。文件和 Job Glob 由 Cautest
+内置实现处理，便携目录不需要额外 JavaScript 运行时依赖。
 
 完整文档：
 

@@ -29,8 +29,8 @@ mcuCTestJob({
   id: "component.board.uart",
   firmware: {
     kind: "command",
-    program: "cmake",
-    args: ["--build", "build", "--target", "firmware"],
+    program: "make",
+    args: ["-C", "firmware", "all"],
     output: "build/firmware.bin",
   },
   board: {

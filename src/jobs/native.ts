@@ -14,6 +14,7 @@ import { runCommand } from "../runtime/process.js";
 import { defineStep } from "../workflow/step.js";
 
 const kitRoot = fileURLToPath(new URL("../../assets/cautest-c", import.meta.url));
+const nativeCaseTimeoutGraceMs = 250;
 const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c"];
 const kitInputs = [...kitSources, "include/cautest/version.h", "include/cautest/cautest.h", "include/cautest/ctp3.h", "platform/posix/posix_platform.h", "target/posix/posix_target.h", "templates/native-entry.c.tmpl", "templates/native-registry.c.tmpl"];
 const inputFields = new Set(["id", "level", "description", "tags", "enabled", "timeoutMs", "env", "policy", "tests", "sources", "headers", "suites", "artifactName", "build", "run", "coverage"]);
@@ -215,12 +216,17 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       const targetFile = path.join(logDir, `${artifactName}.target.log`);
       const targetLogs: string[] = [];
       await mkdir(logDir, { recursive: true });
+      const hostRun = effectiveRun.caseTimeoutMs === undefined ? effectiveRun : Object.freeze({
+        ...effectiveRun,
+        // Native Target 自己按配置终止隔离 Case；Host 只需为 FAULT/END 事件留出传输宽限。
+        caseTimeoutMs: Math.min(Number.MAX_SAFE_INTEGER, effectiveRun.caseTimeoutMs + nativeCaseTimeoutGraceMs),
+      });
       const session = await runNativeSession({
         program: artifact.path,
         cwd: context.project.configDir,
         env: { ...effectiveEnvironment(context), ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: "100" } : {}) },
         expectedBuildId: artifact.buildId,
-        run: effectiveRun,
+        run: hostRun,
         signal: context.signal,
         onEvent: workflowSessionEventSink(context.events, context.job.id),
         onLog(log) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },

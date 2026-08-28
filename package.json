@@ -20,7 +20,7 @@
     "build": "pnpm run versions:check && tsc -p tsconfig.json",
     "prepare": "pnpm run versions:check && tsc -p tsconfig.json && node dist/build-info.js",
     "pack:portable": "pnpm run build && node dist/build-info.js && node dist/archive.js",
-    "test": "pnpm run build && pnpm run test:types && pnpm run test:c && node --test test/version.test.js test/interrupt.test.js test/schema.test.js test/config.test.js test/factory.test.js test/workflow.test.js test/protocol.test.js test/session.test.js test/cache.test.js test/native.test.js test/kernel.test.js test/kernel-build.test.js test/kernel-module.test.js test/uml.test.js test/driver.test.js test/mcu.test.js test/system.test.js test/script-test.test.js test/system-steps.test.js test/reporters.test.js test/cli.test.js test/install.test.js test/archive.test.js test/docs.test.js test/parity.test.js test/integration-entry.test.js",
+    "test": "pnpm run build && pnpm run test:types && pnpm run test:c && node --test test/version.test.js test/interrupt.test.js test/schema.test.js test/config.test.js test/factory.test.js test/glob.test.js test/workflow.test.js test/protocol.test.js test/session.test.js test/cache.test.js test/native.test.js test/kernel.test.js test/kernel-build.test.js test/kernel-module.test.js test/uml.test.js test/driver.test.js test/mcu.test.js test/system.test.js test/script-test.test.js test/system-steps.test.js test/reporters.test.js test/cli.test.js test/install.test.js test/archive.test.js test/docs.test.js test/parity.test.js test/integration-entry.test.js",
     "test:e2e": "node --test test/git-install.test.js",
     "test:uml": "pnpm run build && node test/integration/uml-smoke.mjs",
     "test:driver:uml": "pnpm run build && node test/integration/uml-driver-smoke.mjs",
@@ -31,14 +31,10 @@
   },
   "devDependencies": {
     "@types/node": "24.3.0",
-    "@types/picomatch": "4.0.3",
     "typescript": "5.9.2"
   },
   "engines": {
     "node": ">=20.6"
   },
-  "packageManager": "pnpm@11.23.0",
-  "dependencies": {
-    "picomatch": "4.0.7"
-  }
+  "packageManager": "pnpm@11.23.0"
 }

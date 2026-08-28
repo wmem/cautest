@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { cp, chmod, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { CAUTEST_VERSIONS } from "./config/versions.js";
 
@@ -14,8 +13,6 @@ export interface BuildInfo {
 }
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const require = createRequire(import.meta.url);
-const picomatchRoot = path.dirname(require.resolve("picomatch/package.json"));
 
 export async function readBuildInfo(): Promise<BuildInfo> {
   const value: unknown = JSON.parse(await readFile(path.join(packageRoot, "dist/build-info.json"), "utf8"));
@@ -53,18 +50,13 @@ export async function collectPortableFiles(root: string, relative = ""): Promise
 
 export async function createPortableTree(root: string, build: BuildInfo): Promise<void> {
   await mkdir(path.join(root, "lib"), { recursive: true });
-  for (const directory of ["cache", "config", "doctor", "integration", "jobs", "kernel", "model", "protocol", "reporters", "result", "steps", "system", "uml", "workflow"]) {
+  for (const directory of ["cache", "config", "doctor", "integration", "jobs", "kernel", "model", "pattern", "protocol", "reporters", "result", "steps", "system", "uml", "workflow"]) {
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true });
   }
   await mkdir(path.join(root, "lib/runtime"));
   for (const file of ["cli.js", "cli.js.map", "cli.d.ts", "cli.d.ts.map", "direct-session.js", "direct-session.js.map", "direct-session.d.ts", "direct-session.d.ts.map", "environment.js", "environment.js.map", "environment.d.ts", "environment.d.ts.map", "interrupt.js", "interrupt.js.map", "interrupt.d.ts", "interrupt.d.ts.map", "process.js", "process.js.map", "process.d.ts", "process.d.ts.map"]) {
     await cp(path.join(packageRoot, `dist/runtime/${file}`), path.join(root, `lib/runtime/${file}`));
   }
-  await mkdir(path.join(root, "lib/vendor/picomatch"), { recursive: true });
-  for (const file of ["index.js", "LICENSE", "package.json"]) {
-    await cp(path.join(picomatchRoot, file), path.join(root, `lib/vendor/picomatch/${file}`));
-  }
-  await cp(path.join(picomatchRoot, "lib"), path.join(root, "lib/vendor/picomatch/lib"), { recursive: true });
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
   await cp(path.join(packageRoot, "dist/runtime/loader.js"), path.join(root, "loader.mjs"));
   await cp(path.join(packageRoot, "assets/portable/README.md"), path.join(root, "README.md"));

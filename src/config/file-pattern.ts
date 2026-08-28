@@ -1,8 +1,8 @@
 import { lstat, readdir } from "node:fs/promises";
 import path from "node:path";
-import picomatch from "picomatch";
 import type { FilePattern, FilePatternExpansionInput } from "./schema/common.js";
 import { CautestError } from "../model/error.js";
+import { globBase, globMatcher } from "../pattern/glob.js";
 
 interface PatternMatcher {
   readonly source: string;
@@ -42,7 +42,7 @@ async function collectFiles(root: string, relative: string, output: Set<string>)
 }
 
 function scanRoot(pattern: string): string {
-  const base = picomatch.scan(pattern).base;
+  const base = globBase(pattern);
   return base.length === 0 ? "." : base;
 }
 
@@ -75,11 +75,11 @@ export async function expandFilePatterns(
   const normalized = patterns.map(normalizePattern);
   const positive: PatternMatcher[] = normalized
     .filter((item) => !item.negative)
-    .map((item) => ({ source: item.value, match: picomatch(item.value, { dot: true }) }));
+    .map((item) => ({ source: item.value, match: globMatcher(item.value) }));
   if (positive.length === 0) throw new CautestError(`${options.label} 至少需要一个正向 Pattern`, { code: "config_error" });
   const negative = normalized
     .filter((item) => item.negative)
-    .map((item) => picomatch(item.value, { dot: true }));
+    .map((item) => globMatcher(item.value));
 
   const candidates = new Set<string>();
   for (const root of [...new Set(positive.map((item) => scanRoot(item.source)))].sort()) {
