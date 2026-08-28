@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config/load.js";
 import { planConfig } from "../config/plan.js";
 import type { TestJob } from "../config/schema/common.js";
 import { doctorJobs } from "../doctor/index.js";
 import { CautestError } from "../model/error.js";
-import { executeWorkflow, type ExecutedWorkflow } from "../workflow/engine.js";
+import { executeRun, writeRunDirectory } from "../result/run.js";
 
 interface CliStreams {
   readonly stdout: { write(text: string): unknown };
@@ -21,17 +21,6 @@ interface ParsedArguments {
   readonly verbose: boolean;
   readonly all: boolean;
   readonly help: boolean;
-}
-
-interface RunSummary {
-  readonly schemaVersion: 1;
-  readonly runId: string;
-  readonly configHash: string;
-  readonly resultDir: string;
-  readonly status: "SUCCESS" | "FAIL" | "ERROR";
-  readonly startedAt: string;
-  readonly durationMs: number;
-  readonly jobs: readonly ExecutedWorkflow[];
 }
 
 const usage = `用法: cautest [全局选项] <命令> [Job ID...]
@@ -179,58 +168,36 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams): Promise
     return 5;
   }
   const runId = `${new Date().toISOString().replace(/[-:.TZ]/gu, "")}-${randomUUID().slice(0, 8)}`;
-  const resultDir = path.resolve(loaded.dir, loaded.config.defaults.resultDir, runId);
-  await mkdir(resultDir, { recursive: true });
-  const startedAt = new Date();
-  const started = performance.now();
-  const results: ExecutedWorkflow[] = [];
+  const resultRoot = path.resolve(loaded.dir, loaded.config.defaults.resultDir);
   const heartbeatMs = Number.parseInt(process.env.CAUTEST_HEARTBEAT_MS ?? "30000", 10);
-  for (const job of jobs) {
-    line(streams, "stderr", `START Job ${job.id}`);
-    let heartbeat: ReturnType<typeof setInterval> | undefined;
-    const result = await executeWorkflow(job, {
-      defaultStepTimeoutMs: loaded.config.defaults.stepTimeoutMs,
-      ...(loaded.config.defaults.jobTimeoutMs === undefined ? {} : { defaultJobTimeoutMs: loaded.config.defaults.jobTimeoutMs }),
-      project: {
-        configDir: loaded.dir,
-        resultDir,
-        cacheDir: path.resolve(loaded.dir, loaded.config.defaults.cacheDir),
-        generatedDir: path.resolve(loaded.dir, loaded.config.defaults.generatedDir),
-        workDir: path.resolve(loaded.dir, loaded.config.defaults.workDir),
-      },
-      onOutput(event) { if (parsed.verbose) streams.stderr.write(event.text); },
-      onStep(event) {
-        if (event.type === "START") {
-          line(streams, "stderr", `START Step ${event.jobId}/${event.step.phase}/${event.step.kind}:${event.step.name}`);
-          if (Number.isFinite(heartbeatMs) && heartbeatMs > 0) heartbeat = setInterval(() => {
-            line(streams, "stderr", `HEARTBEAT Step ${event.jobId}/${event.step.kind}:${event.step.name}`);
-          }, heartbeatMs);
-        } else {
-          if (heartbeat !== undefined) clearInterval(heartbeat);
-          heartbeat = undefined;
-          const cache = event.diagnostics?.find((item) => typeof item === "object" && item !== null && "code" in item && (item.code === "cache_hit" || item.code === "cache_miss")) as { code: string } | undefined;
-          line(streams, "stderr", `END Step ${event.jobId}/${event.step.kind}:${event.step.name} ${event.status} ${Math.round(event.durationMs ?? 0)}ms${cache === undefined ? "" : ` ${cache.code === "cache_hit" ? "CACHE HIT" : "CACHE MISS"}`}`);
-        }
-      },
-    });
-    results.push(result);
-    line(streams, "stderr", `END Job ${job.id} ${result.status} ${Math.round(result.durationMs)}ms`);
-  }
-  const status = results.some((item) => item.status === "ERROR") ? "ERROR" : results.some((item) => item.status === "FAIL") ? "FAIL" : "SUCCESS";
-  const summary: RunSummary = {
-    schemaVersion: 1,
+  const run = await executeRun(loaded.config, {
     runId,
+    configDir: loaded.dir,
     configHash: loaded.hash,
-    resultDir,
-    status,
-    startedAt: startedAt.toISOString(),
-    durationMs: performance.now() - started,
-    jobs: results,
-  };
-  await writeFile(path.join(resultDir, "summary.json"), json(summary));
+    configPath: loaded.path,
+    jobs,
+    ...(Number.isFinite(heartbeatMs) && heartbeatMs > 0 ? { heartbeatMs } : {}),
+    onJob(event) {
+      if (event.type === "START") line(streams, "stderr", `START Job ${event.jobId}`);
+      else line(streams, "stderr", `END Job ${event.jobId} ${event.status} ${Math.round(event.durationMs ?? 0)}ms`);
+    },
+    onOutput(event) { if (parsed.verbose) streams.stderr.write(event.text); },
+    onStep(event) {
+      if (event.type === "START") {
+        line(streams, "stderr", `START Step ${event.jobId}/${event.step.phase}/${event.step.kind}:${event.step.name}`);
+      } else if (event.type === "HEARTBEAT") {
+        line(streams, "stderr", `HEARTBEAT Step ${event.jobId}/${event.step.kind}:${event.step.name} ${Math.round(event.durationMs ?? 0)}ms`);
+      } else {
+        const cache = event.diagnostics?.find((item) => typeof item === "object" && item !== null && "code" in item && (item.code === "cache_hit" || item.code === "cache_miss")) as { code: string } | undefined;
+        line(streams, "stderr", `END Step ${event.jobId}/${event.step.kind}:${event.step.name} ${event.status} ${Math.round(event.durationMs ?? 0)}ms${cache === undefined ? "" : ` ${cache.code === "cache_hit" ? "CACHE HIT" : "CACHE MISS"}`}`);
+      }
+    },
+  });
+  const resultDir = await writeRunDirectory(run, resultRoot);
+  const summary = { ...run, runId: run.id, configHash: loaded.hash, resultDir };
   if (parsed.json) streams.stdout.write(json(summary));
-  else line(streams, "stdout", `Run ${runId}: ${status}\n结果: ${resultDir}`);
-  return status === "SUCCESS" ? 0 : 1;
+  else line(streams, "stdout", `Run ${runId}: ${run.status}\n结果: ${resultDir}`);
+  return run.status === "SUCCESS" || run.status === "SKIP" ? 0 : 1;
 }
 
 /** Cautest CLI 可测试入口。 */

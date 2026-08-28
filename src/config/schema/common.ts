@@ -1,5 +1,8 @@
 /** Cautest 公共配置 Schema。这里的公开 JSDoc 会进入生成的 `.d.ts`。 */
 
+import type { EventRecorder } from "../../workflow/events.js";
+import type { ArtifactStore, ResourceStore, ResultRecorder } from "../../workflow/lifecycle.js";
+
 /** Test Job 的测试层级。 */
 export type TestLevel = "unit" | "component" | "integration" | "system";
 
@@ -163,6 +166,16 @@ export interface StepExecutionContext {
   readonly state: Map<string, unknown>;
   readonly project: WorkflowProjectContext;
   readonly output: (channel: "stdout" | "stderr", text: string) => void;
+  /** Job 内构建产物注册表。 */
+  readonly artifacts: ArtifactStore;
+  /** Job 内长生命周期资源注册表。 */
+  readonly resources: ResourceStore;
+  /** 跨 Step 汇总结构化测试结果的 Recorder。 */
+  readonly results: ResultRecorder;
+  /** Run/Job/Step 生命周期事件记录器。 */
+  readonly events: EventRecorder;
+  /** 注册 Job 结束时逆序执行的清理函数。 */
+  readonly defer: (callback: () => unknown | Promise<unknown>, name?: string) => void;
 }
 
 /** Step Executor 返回的诊断信息。 */

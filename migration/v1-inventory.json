@@ -42,7 +42,8 @@
       "kind": "public-api",
       "key": "ArtifactStore",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 workflow/lifecycle.ts，已接入所有 Step Context"
     },
     {
       "kind": "public-api",
@@ -102,13 +103,15 @@
       "kind": "public-api",
       "key": "CleanupStack",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 CleanupStack，LIFO 且幂等"
     },
     {
       "kind": "public-api",
       "key": "EventRecorder",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 支持内存事件和 JSONL 流式落盘"
     },
     {
       "kind": "public-api",
@@ -180,13 +183,15 @@
       "kind": "public-api",
       "key": "ResourceStore",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 ResourceStore，包含所有权和状态转换"
     },
     {
       "kind": "public-api",
       "key": "ResultRecorder",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 统一汇总跨 Step Suite Result"
     },
     {
       "kind": "public-api",
@@ -210,25 +215,29 @@
       "kind": "public-api",
       "key": "aggregateJob",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 作为 executeWorkflow 内部唯一聚合规则，不再暴露可绕过 Engine 的函数"
     },
     {
       "kind": "public-api",
       "key": "aggregateRun",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 作为 executeRun 内部唯一聚合规则"
     },
     {
       "kind": "public-api",
       "key": "buildFailureRecords",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 writeRunDirectory 自动生成 failures.jsonl，不单独暴露中间函数"
     },
     {
       "kind": "public-api",
       "key": "buildRunSummary",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 writeRunDirectory 自动生成 summary.json"
     },
     {
       "kind": "public-api",
@@ -336,13 +345,15 @@
       "kind": "public-api",
       "key": "executeJob",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 统一命名为 executeWorkflow(TestJob)，职责不变"
     },
     {
       "kind": "public-api",
       "key": "executeRun",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 顺序执行 TestJob[] 并统一记录 Run 事件"
     },
     {
       "kind": "public-api",
@@ -594,7 +605,8 @@
       "kind": "public-api",
       "key": "serializeError",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 model/error.ts"
     },
     {
       "kind": "public-api",
@@ -654,7 +666,8 @@
       "kind": "public-api",
       "key": "writeRunDirectory",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 写入 summary/result/failures 与逐 Job 快照"
     },
     {
       "kind": "test-file",
@@ -930,7 +943,8 @@
       "kind": "test-file",
       "key": "tests/workflow/workflow.test.js",
       "area": "workflow-results",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 test/workflow.test.js 覆盖顺序、失败策略、超时、生命周期、空结果和结果目录"
     },
     {
       "kind": "example",
