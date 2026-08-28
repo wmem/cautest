@@ -24,6 +24,7 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   assert.ok(rootEntries.includes("lib"));
   assert.ok(rootEntries.includes("docs"));
   assert.ok(rootEntries.includes("usage"));
+  assert.ok(rootEntries.includes("examples"));
   assert.ok(!rootEntries.includes("node_modules"));
   assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map", "process.d.ts", "process.d.ts.map", "process.js", "process.js.map"]);
   assert.equal((await readFile(path.join(destination, "lib/vendor/picomatch/LICENSE"), "utf8")).includes("MIT License"), true);
@@ -57,6 +58,16 @@ export default testConfig({ jobs: [
   assert.match((await exec(path.join(destination, "cautest.js"), ["--version"])).stdout, /^Cautest 0\.2\.0 \(commit /u);
   assert.equal((await lstat(path.join(destination, "cautest.js"))).mode & 0o111, 0o111);
   assert.equal(JSON.parse(await readFile(path.join(destination, "manifest.json"), "utf8")).product, "cautest-portable");
+
+  const allInOne = path.join(destination, "examples/all-in-one/cautest.config.mjs");
+  const allPlan = await exec(path.join(destination, "cautest.js"), ["--config", allInOne, "plan"], { cwd: temporary });
+  for (const id of ["unit.example-math", "component.kernel-counter", "integration.example-driver", "component.mcu-sim", "system.example-api"]) assert.match(allPlan.stdout, new RegExp(id, "u"));
+
+  for (const example of ["c-lib", "mcu-sim", "system-script"]) {
+    const exampleConfig = path.join(destination, `examples/${example}/cautest.config.mjs`);
+    const executed = await exec(path.join(destination, "cautest.js"), ["--config", exampleConfig, "run", "--json"], { cwd: temporary });
+    assert.equal(JSON.parse(executed.stdout).status, "SUCCESS", `${example}: ${executed.stderr}`);
+  }
 });
 
 test("安装器拒绝非空目录且不覆盖内容", async () => {

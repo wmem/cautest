@@ -62,7 +62,7 @@ async function collectFiles(root: string, relative = ""): Promise<string[]> {
 
 async function createPortableTree(root: string, build: BuildInfo): Promise<void> {
   await mkdir(path.join(root, "lib"), { recursive: true });
-  for (const directory of ["cache", "config", "doctor", "integration", "jobs", "kernel", "model", "protocol", "result", "steps", "system", "uml", "workflow"]) {
+  for (const directory of ["cache", "config", "doctor", "integration", "jobs", "kernel", "model", "protocol", "reporters", "result", "steps", "system", "uml", "workflow"]) {
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true });
   }
   await mkdir(path.join(root, "lib/runtime"));
@@ -79,6 +79,7 @@ async function createPortableTree(root: string, build: BuildInfo): Promise<void>
   await cp(path.join(packageRoot, "assets/portable/README.md"), path.join(root, "README.md"));
   await cp(path.join(packageRoot, "docs"), path.join(root, "docs"), { recursive: true });
   await cp(path.join(packageRoot, "usage"), path.join(root, "usage"), { recursive: true });
+  await cp(path.join(packageRoot, "examples"), path.join(root, "examples"), { recursive: true });
   await mkdir(path.join(root, "assets"));
   await cp(path.join(packageRoot, "assets/cautest-c"), path.join(root, "assets/cautest-c"), { recursive: true });
   await cp(path.join(packageRoot, "assets/kernel-config"), path.join(root, "assets/kernel-config"), { recursive: true });

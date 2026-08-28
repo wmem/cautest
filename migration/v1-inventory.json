@@ -47,15 +47,17 @@
     },
     {
       "kind": "public-api",
-      "key": "CASE_STATUSES",
-      "area": "public-api",
-      "status": "pending"
+     "key": "CASE_STATUSES",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "CLI_SCHEMA_VERSION",
-      "area": "public-api",
-      "status": "pending"
+     "key": "CLI_SCHEMA_VERSION",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -80,15 +82,17 @@
     },
     {
       "kind": "public-api",
-      "key": "C_API_MAJOR",
-      "area": "public-api",
-      "status": "pending"
+     "key": "C_API_MAJOR",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "C_API_MINOR",
-      "area": "public-api",
-      "status": "pending"
+     "key": "C_API_MINOR",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -99,9 +103,10 @@
     },
     {
       "kind": "public-api",
-      "key": "CautestError",
-      "area": "public-api",
-      "status": "pending"
+     "key": "CautestError",
+     "area": "public-api",
+      "status": "implemented",
+      "note": "V2 已实现并纳入公共导出或内部配置加载主链"
     },
     {
       "kind": "public-api",
@@ -119,45 +124,52 @@
     },
     {
       "kind": "public-api",
-      "key": "KERNEL_ABI_MAJOR",
-      "area": "public-api",
-      "status": "pending"
+     "key": "KERNEL_ABI_MAJOR",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "KERNEL_ABI_MINOR",
-      "area": "public-api",
-      "status": "pending"
+     "key": "KERNEL_ABI_MINOR",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "LEVELS",
-      "area": "public-api",
-      "status": "pending"
+     "key": "LEVELS",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "PACKAGE_MANIFEST_SCHEMA_VERSION",
-      "area": "public-api",
-      "status": "pending"
+     "key": "PACKAGE_MANIFEST_SCHEMA_VERSION",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "PHASES",
-      "area": "public-api",
-      "status": "pending"
+     "key": "PHASES",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "PROBE_ABI_MAJOR",
-      "area": "public-api",
-      "status": "pending"
+     "key": "PROBE_ABI_MAJOR",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "PROBE_ABI_MINOR",
-      "area": "public-api",
-      "status": "pending"
+     "key": "PROBE_ABI_MINOR",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -168,21 +180,24 @@
     },
     {
       "kind": "public-api",
-      "key": "RELEASE_VERSION",
-      "area": "public-api",
-      "status": "pending"
+     "key": "RELEASE_VERSION",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "RESULT_EVENT_SCHEMA_VERSION",
-      "area": "public-api",
-      "status": "pending"
+     "key": "RESULT_EVENT_SCHEMA_VERSION",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "RUN_WHEN",
-      "area": "public-api",
-      "status": "pending"
+     "key": "RUN_WHEN",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -200,15 +215,17 @@
     },
     {
       "kind": "public-api",
-      "key": "STEP_STATUSES",
-      "area": "public-api",
-      "status": "pending"
+     "key": "STEP_STATUSES",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "SimulatedBoard",
-      "area": "public-api",
-      "status": "pending"
+     "key": "SimulatedBoard",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -247,15 +264,17 @@
     },
     {
       "kind": "public-api",
-      "key": "busyboxBuild",
-      "area": "public-api",
-      "status": "pending"
+     "key": "busyboxBuild",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "cTestRun",
-      "area": "public-api",
-      "status": "pending"
+     "key": "cTestRun",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -266,9 +285,10 @@
     },
     {
       "kind": "public-api",
-      "key": "collectKernelCoverage",
-      "area": "public-api",
-      "status": "pending"
+     "key": "collectKernelCoverage",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -286,9 +306,10 @@
     },
     {
       "kind": "public-api",
-      "key": "consoleReporter",
-      "area": "public-api",
-      "status": "pending"
+     "key": "consoleReporter",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -299,21 +320,24 @@
     },
     {
       "kind": "public-api",
-      "key": "createStepDescriptor",
-      "area": "public-api",
-      "status": "pending"
+     "key": "createStepDescriptor",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "defineConfig",
-      "area": "public-api",
-      "status": "pending"
+     "key": "defineConfig",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "defineFragment",
-      "area": "public-api",
-      "status": "pending"
+     "key": "defineFragment",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -324,27 +348,31 @@
     },
     {
       "kind": "public-api",
-      "key": "defineStep",
-      "area": "public-api",
-      "status": "pending"
+     "key": "defineStep",
+     "area": "public-api",
+      "status": "implemented",
+      "note": "V2 已实现并纳入公共导出或内部配置加载主链"
     },
     {
       "kind": "public-api",
-      "key": "defineTest",
-      "area": "public-api",
-      "status": "pending"
+     "key": "defineTest",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "driverAbiCTest",
-      "area": "public-api",
-      "status": "pending"
+     "key": "driverAbiCTest",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "execRequest",
-      "area": "public-api",
-      "status": "pending"
+     "key": "execRequest",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -383,9 +411,10 @@
     },
     {
       "kind": "public-api",
-      "key": "fakeStep",
-      "area": "public-api",
-      "status": "pending"
+     "key": "fakeStep",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -396,45 +425,52 @@
     },
     {
       "kind": "public-api",
-      "key": "findConfig",
-      "area": "public-api",
-      "status": "pending"
+     "key": "findConfig",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "flattenWorkflow",
-      "area": "public-api",
-      "status": "pending"
+     "key": "flattenWorkflow",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "formatConsoleReport",
-      "area": "public-api",
-      "status": "pending"
+     "key": "formatConsoleReport",
+     "area": "public-api",
+      "status": "implemented",
+      "note": "V2 已实现并纳入公共导出或内部配置加载主链"
     },
     {
       "kind": "public-api",
-      "key": "formatHtmlReport",
-      "area": "public-api",
-      "status": "pending"
+     "key": "formatHtmlReport",
+     "area": "public-api",
+      "status": "implemented",
+      "note": "V2 已实现并纳入公共导出或内部配置加载主链"
     },
     {
       "kind": "public-api",
-      "key": "formatJUnitReport",
-      "area": "public-api",
-      "status": "pending"
+     "key": "formatJUnitReport",
+     "area": "public-api",
+      "status": "implemented",
+      "note": "V2 已实现并纳入公共导出或内部配置加载主链"
     },
     {
       "kind": "public-api",
-      "key": "guestExec",
-      "area": "public-api",
-      "status": "pending"
+     "key": "guestExec",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "guestProgramBuild",
-      "area": "public-api",
-      "status": "pending"
+     "key": "guestProgramBuild",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -452,81 +488,94 @@
     },
     {
       "kind": "public-api",
-      "key": "htmlReporter",
-      "area": "public-api",
-      "status": "pending"
+     "key": "htmlReporter",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "jsonReporter",
-      "area": "public-api",
-      "status": "pending"
+     "key": "jsonReporter",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "junitReporter",
-      "area": "public-api",
-      "status": "pending"
+     "key": "junitReporter",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "kernelBuild",
-      "area": "public-api",
-      "status": "pending"
+     "key": "kernelBuild",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "kernelModuleBuild",
-      "area": "public-api",
-      "status": "pending"
+     "key": "kernelModuleBuild",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "kernelTestModule",
-      "area": "public-api",
-      "status": "pending"
+     "key": "kernelTestModule",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "loadConfig",
-      "area": "public-api",
-      "status": "pending"
+     "key": "loadConfig",
+     "area": "public-api",
+      "status": "implemented",
+      "note": "V2 已实现并纳入公共导出或内部配置加载主链"
     },
     {
       "kind": "public-api",
-      "key": "mcuBoardStart",
-      "area": "public-api",
-      "status": "pending"
+     "key": "mcuBoardStart",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "mcuBuild",
-      "area": "public-api",
-      "status": "pending"
+     "key": "mcuBuild",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "mcuCTest",
-      "area": "public-api",
-      "status": "pending"
+     "key": "mcuCTest",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "mcuFlash",
-      "area": "public-api",
-      "status": "pending"
+     "key": "mcuFlash",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "mcuReset",
-      "area": "public-api",
-      "status": "pending"
+     "key": "mcuReset",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "mcuSessionRun",
-      "area": "public-api",
-      "status": "pending"
+     "key": "mcuSessionRun",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -544,9 +593,10 @@
     },
     {
       "kind": "public-api",
-      "key": "normalizeWorkflow",
-      "area": "public-api",
-      "status": "pending"
+     "key": "normalizeWorkflow",
+     "area": "public-api",
+      "status": "implemented",
+      "note": "V2 已实现并纳入公共导出或内部配置加载主链"
     },
     {
       "kind": "public-api",
@@ -599,9 +649,10 @@
     },
     {
       "kind": "public-api",
-      "key": "rootfsBuild",
-      "area": "public-api",
-      "status": "pending"
+     "key": "rootfsBuild",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -619,9 +670,10 @@
     },
     {
       "kind": "public-api",
-      "key": "runSimulatedMcuSession",
-      "area": "public-api",
-      "status": "pending"
+     "key": "runSimulatedMcuSession",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -646,9 +698,10 @@
     },
     {
       "kind": "public-api",
-      "key": "spawnRequest",
-      "area": "public-api",
-      "status": "pending"
+     "key": "spawnRequest",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -659,27 +712,31 @@
     },
     {
       "kind": "public-api",
-      "key": "umlBuild",
-      "area": "public-api",
-      "status": "pending"
+     "key": "umlBuild",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "umlKernelCTest",
-      "area": "public-api",
-      "status": "pending"
+     "key": "umlKernelCTest",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "umlStart",
-      "area": "public-api",
-      "status": "pending"
+     "key": "umlStart",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
-      "key": "validatePhaseOrder",
-      "area": "public-api",
-      "status": "pending"
+     "key": "validatePhaseOrder",
+     "area": "public-api",
+      "status": "intentional-change",
+      "note": "V2 实验版不保留 V1 低层兼容入口；对应能力由统一 TestJob、Workflow 或 Schema 提供"
     },
     {
       "kind": "public-api",
@@ -762,7 +819,8 @@
       "kind": "test-file",
       "key": "tests/cli/cli.test.js",
       "area": "cli-report-package",
-      "status": "pending"
+      "status": "implemented",
+      "note": "test/cli.test.js 覆盖 JSON/实时进度、筛选、Profile Reporter、Doctor、Clean、Help 和 Version"
     },
     {
       "kind": "test-file",
@@ -873,13 +931,15 @@
       "kind": "test-file",
       "key": "tests/package/install-portable.test.js",
       "area": "cli-report-package",
-      "status": "pending"
+      "status": "implemented",
+      "note": "test/install.test.js 实际生成并执行无 node_modules 的便携目录"
     },
     {
       "kind": "test-file",
       "key": "tests/package/package.test.js",
       "area": "cli-report-package",
-      "status": "pending"
+      "status": "implemented",
+      "note": "test/install.test.js 与 test/git-install.test.js 覆盖包内容、npx 和 pnpm dlx"
     },
     {
       "kind": "test-file",
@@ -1011,7 +1071,8 @@
       "kind": "test-file",
       "key": "tests/version/version.test.js",
       "area": "cli-report-package",
-      "status": "pending"
+      "status": "implemented",
+      "note": "CLI --version/-V 和便携 build-info/manifest 测试覆盖版本与 Commit"
     },
     {
       "kind": "test-file",
@@ -1024,37 +1085,43 @@
       "kind": "example",
       "key": "examples/all-in-one",
       "area": "cli-report-package",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移为 examples/all-in-one，组合五类普通 TestJob"
     },
     {
       "kind": "example",
       "key": "examples/c-lib",
       "area": "native-cache",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移为 examples/c-lib，并在便携安装测试中真实运行"
     },
     {
       "kind": "example",
       "key": "examples/kernel-lib",
       "area": "kernel-uml",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移为 examples/kernel-lib，使用公共 UML Environment 与自动 Test Module"
     },
     {
       "kind": "example",
       "key": "examples/linux-driver",
       "area": "driver-probe",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移为 examples/linux-driver，展示真实 Driver ABI 与 test-only Probe"
     },
     {
       "kind": "example",
       "key": "examples/mcu-sim",
       "area": "mcu",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移为 examples/mcu-sim，并在便携安装测试中真实运行"
     },
     {
       "kind": "example",
       "key": "examples/system-script",
       "area": "system-workflow",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移为 examples/system-script，并验证 Process Ready、Script Case 与日志清理"
     },
     {
       "kind": "document",

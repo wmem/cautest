@@ -22,10 +22,10 @@ function childOf(resource: unknown): ChildProcess | undefined {
   return candidate.handle?.child ?? candidate.child;
 }
 
-async function checkReady(resource: unknown, probe: ReadyProbe, signal: AbortSignal): Promise<void> {
+async function checkReady(resource: unknown, probe: ReadyProbe, signal: AbortSignal, baseDir: string): Promise<void> {
   const type = "type" in probe && probe.type !== undefined ? probe.type : probe.kind === "file" ? "file-exists" : probe.kind === "tcp" ? "tcp-connect" : "http-response";
   if (type === "process-alive") { const child = childOf(resource) ?? resource as ChildProcess; if (child === undefined || child.exitCode !== null || child.signalCode !== null) throw new Error("进程未运行"); return; }
-  if (type === "file-exists") { await access((probe as { readonly path: string }).path); return; }
+  if (type === "file-exists") { await access(path.resolve(baseDir, (probe as { readonly path: string }).path)); return; }
   if (type === "tcp-connect") await new Promise<void>((resolve, reject) => {
     const value = probe as { readonly host?: string; readonly port: number };
     const socket = net.createConnection({ host: value.host ?? "127.0.0.1", port: value.port });
@@ -37,7 +37,7 @@ async function checkReady(resource: unknown, probe: ReadyProbe, signal: AbortSig
   else if (type === "custom") { const value = probe as Extract<ReadyProbe, { type: "custom" }>; if (!await value.check({ resource, signal })) throw new Error("Custom Probe 尚未 Ready"); }
 }
 
-export async function waitForReady(resource: unknown, probe: ReadyProbe, options: { readonly signal?: AbortSignal; readonly timeoutMs?: number; readonly intervalMs?: number } = {}): Promise<void> {
+export async function waitForReady(resource: unknown, probe: ReadyProbe, options: { readonly signal?: AbortSignal; readonly timeoutMs?: number; readonly intervalMs?: number; readonly baseDir?: string } = {}): Promise<void> {
   if (typeof probe !== "object" || probe === null) throw new CautestError("必须配置 Ready Probe", { code: "config_error" });
   const controller = new AbortController();
   const abort = (): void => controller.abort(options.signal?.reason);
@@ -49,7 +49,7 @@ export async function waitForReady(resource: unknown, probe: ReadyProbe, options
     while (!controller.signal.aborted) {
       const child = childOf(resource);
       if (child !== undefined && (child.exitCode !== null || child.signalCode !== null)) throw new CautestError("进程在 Ready 前退出", { code: "provision_error" });
-      try { await checkReady(resource, probe, controller.signal); return; } catch (cause) { if (cause instanceof CautestError) throw cause; lastError = cause; }
+      try { await checkReady(resource, probe, controller.signal, path.resolve(options.baseDir ?? process.cwd())); return; } catch (cause) { if (cause instanceof CautestError) throw cause; lastError = cause; }
       await delay(options.intervalMs ?? 25, undefined, { signal: controller.signal }).catch(() => undefined);
     }
   } finally { clearTimeout(timer); options.signal?.removeEventListener("abort", abort); }
@@ -62,7 +62,7 @@ export function waitReady(input: { readonly name?: string; readonly resource?: s
   if (resourceKey === undefined || probe === undefined) throw new CautestError("waitReady 需要 resource/from 和 probe/ready", { code: "config_error" });
   return defineStep({ kind: "waitReady", name: input.name ?? "default", phase: "provision", ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), details: { resource: resourceKey, probe }, async execute(context) {
     const resource = context.resources.get(resourceKey);
-    await waitForReady(resource, probe, { signal: context.signal, ...(input.readyTimeoutMs === undefined ? {} : { timeoutMs: input.readyTimeoutMs }), ...(input.intervalMs === undefined ? {} : { intervalMs: input.intervalMs }) });
+    await waitForReady(resource, probe, { signal: context.signal, baseDir: context.project.configDir, ...(input.readyTimeoutMs === undefined ? {} : { timeoutMs: input.readyTimeoutMs }), ...(input.intervalMs === undefined ? {} : { intervalMs: input.intervalMs }) });
     if (resource.state === "starting") context.resources.ready(resource.kind, resource.name);
   } });
 }
@@ -98,7 +98,7 @@ export function processStart(input: ProcessStartInput) {
     child.once("exit", (exitCode, signalCode) => { lifecycle.exitCode = exitCode; lifecycle.signalCode = signalCode; });
     const resource = context.resources.publish({ kind: "process", name, state: "starting", handle: managed, metadata: { ownership: "owned", pid: child.pid, program: input.program, args: [...(input.args ?? [])], lifecycle } });
     context.defer(() => stopProcess(managed, input.stopGraceMs ?? 500), `stop-process:${name}`);
-    try { await waitForReady(resource, input.ready, { signal: context.signal, ...(input.readyTimeoutMs === undefined ? {} : { timeoutMs: input.readyTimeoutMs }), ...(input.intervalMs === undefined ? {} : { intervalMs: input.intervalMs }) }); }
+    try { await waitForReady(resource, input.ready, { signal: context.signal, baseDir: path.resolve(context.project.configDir, input.cwd ?? "."), ...(input.readyTimeoutMs === undefined ? {} : { timeoutMs: input.readyTimeoutMs }), ...(input.intervalMs === undefined ? {} : { intervalMs: input.intervalMs }) }); }
     catch (cause) { lifecycle.readiness = "failed"; context.resources.fail("process", name, { message: cause instanceof Error ? cause.message : String(cause) }); throw cause; }
     lifecycle.readiness = "ready"; context.resources.ready("process", name);
   } });
@@ -111,7 +111,7 @@ export function processAttach(input: ProcessAttachInput) {
   return defineStep({ kind: "processAttach", name, phase: "provision", ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), details: { ownership }, async execute(context) {
     const resource = context.resources.publish({ kind: "process", name, handle: input.handle, metadata: { ownership } });
     if (ownership === "owned") context.defer(async () => { if (input.stop !== undefined) await input.stop(input.handle); else { const value = input.handle as { stop?: () => unknown }; await value.stop?.(); } }, `stop-attached-process:${name}`);
-    if (input.ready !== undefined) await waitForReady(resource, input.ready, { signal: context.signal, ...(input.readyTimeoutMs === undefined ? {} : { timeoutMs: input.readyTimeoutMs }), ...(input.intervalMs === undefined ? {} : { intervalMs: input.intervalMs }) });
+    if (input.ready !== undefined) await waitForReady(resource, input.ready, { signal: context.signal, baseDir: context.project.configDir, ...(input.readyTimeoutMs === undefined ? {} : { timeoutMs: input.readyTimeoutMs }), ...(input.intervalMs === undefined ? {} : { intervalMs: input.intervalMs }) });
   } });
 }
 

@@ -1,12 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
+import picomatch from "picomatch";
 import { loadConfig } from "../config/load.js";
 import { planConfig } from "../config/plan.js";
 import type { TestJob } from "../config/schema/common.js";
 import { doctorJobs } from "../doctor/index.js";
 import { CautestError } from "../model/error.js";
 import { executeRun, writeRunDirectory } from "../result/run.js";
+import { writeReports } from "../reporters/index.js";
 
 interface CliStreams {
   readonly stdout: { write(text: string): unknown };
@@ -21,6 +23,10 @@ interface ParsedArguments {
   readonly verbose: boolean;
   readonly all: boolean;
   readonly help: boolean;
+  readonly profile?: string;
+  readonly levels: readonly string[];
+  readonly tags: readonly string[];
+  readonly failFast: boolean;
 }
 
 const usage = `用法: cautest [全局选项] <命令> [Job ID...]
@@ -38,6 +44,10 @@ const usage = `用法: cautest [全局选项] <命令> [Job ID...]
   --config <文件>      指定根配置文件
   --json               stdout 只输出结构化 JSON
   --verbose            实时转发 Step 输出到 stderr
+  --profile <名称>     应用 Profile 的 Reporter 和环境变量
+  --level <层级>       按 unit/component/integration/system 筛选
+  --tag <标签>         按标签筛选；可重复
+  --fail-fast          第一个失败 Job 后停止
   --version            显示版本和构建 Commit
 `;
 
@@ -46,7 +56,7 @@ const commandHelp: Readonly<Record<string, string>> = Object.freeze({
   plan: "用法: cautest [--config <文件>] plan [Job ID...] [--json]\n",
   describe: "用法: cautest [--config <文件>] describe [Job ID...] [--json]\n",
   doctor: "用法: cautest [--config <文件>] doctor [Job ID...] [--json]\n",
-  run: "用法: cautest [--config <文件>] run [Job ID...] [--json] [--verbose]\n",
+  run: "用法: cautest [--config <文件>] run [Job ID...] [--profile <名称>] [--fail-fast] [--json] [--verbose]\n",
   clean: "用法: cautest [--config <文件>] clean --all\n",
 });
 
@@ -56,6 +66,10 @@ function parseArguments(args: readonly string[]): ParsedArguments {
   let verbose = false;
   let all = false;
   let help = false;
+  let profile: string | undefined;
+  const levels: string[] = [];
+  const tags: string[] = [];
+  let failFast = false;
   const positional: string[] = [];
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -66,6 +80,15 @@ function parseArguments(args: readonly string[]): ParsedArguments {
       index += 1;
     } else if (argument === "--json") json = true;
     else if (argument === "--verbose") verbose = true;
+    else if (argument === "--profile" || argument === "--level" || argument === "--tag") {
+      const value = args[index + 1];
+      if (value === undefined) throw new CautestError(`${argument} 缺少值`, { code: "config_error" });
+      if (argument === "--profile") profile = value;
+      else if (argument === "--level") levels.push(value);
+      else tags.push(value);
+      index += 1;
+    }
+    else if (argument === "--fail-fast") failFast = true;
     else if (argument === "--all") all = true;
     else if (argument === "--help" || argument === "-h") help = true;
     else if (argument?.startsWith("-")) throw new CautestError(`未知选项: ${argument}`, { code: "config_error" });
@@ -79,24 +102,29 @@ function parseArguments(args: readonly string[]): ParsedArguments {
     verbose,
     all,
     help,
+    ...(profile === undefined ? {} : { profile }),
+    levels: Object.freeze(levels),
+    tags: Object.freeze(tags),
+    failFast,
   };
 }
 
 async function versionText(): Promise<string> {
-  const value = JSON.parse(await readFile(new URL("../../build-info.json", import.meta.url), "utf8")) as {
+  let contents: string;
+  try { contents = await readFile(new URL("../build-info.json", import.meta.url), "utf8"); }
+  catch { contents = await readFile(new URL("../../build-info.json", import.meta.url), "utf8"); }
+  const value = JSON.parse(contents) as {
     version?: unknown; commit?: unknown; dirty?: unknown;
   };
   return `Cautest ${String(value.version)} (commit ${String(value.commit)}${value.dirty === true ? ", dirty" : ""})`;
 }
 
-function selectedJobs(jobs: readonly TestJob[], selectors: readonly string[]): readonly TestJob[] {
-  if (selectors.length === 0) return jobs.filter((job) => job.enabled);
-  const requested = new Set(selectors);
-  const selected = jobs.filter((job) => requested.has(job.id));
-  const found = new Set(selected.map((job) => job.id));
-  const missing = selectors.filter((id) => !found.has(id));
+function selectedJobs(jobs: readonly TestJob[], parsed: ParsedArguments): readonly TestJob[] {
+  for (const level of parsed.levels) if (!["unit", "component", "integration", "system"].includes(level)) throw new CautestError(`--level 无效: ${level}`, { code: "config_error" });
+  const matchers = parsed.selectors.map((selector) => picomatch(selector));
+  const missing = parsed.selectors.filter((_selector, index) => !jobs.some((job) => matchers[index]!(job.id)));
   if (missing.length > 0) throw new CautestError(`未找到 Test Job: ${missing.join(", ")}`, { code: "selection_error" });
-  return selected;
+  return jobs.filter((job) => job.enabled && (matchers.length === 0 || matchers.some((match) => match(job.id))) && (parsed.levels.length === 0 || parsed.levels.includes(job.level)) && parsed.tags.every((tag) => job.tags.includes(tag)));
 }
 
 function json(value: unknown): string {
@@ -121,7 +149,9 @@ function line(streams: CliStreams, channel: "stdout" | "stderr", text: string): 
 
 async function runCommand(parsed: ParsedArguments, streams: CliStreams): Promise<number> {
   const loaded = await loadConfig(parsed.config);
-  const planned = planConfig(loaded.config, parsed.selectors);
+  const jobs = selectedJobs(loaded.config.jobs, parsed);
+  const selectedIds = new Set(jobs.map((job) => job.id));
+  const planned = planConfig(loaded.config).filter((job) => selectedIds.has(job.id));
   if (parsed.command === "list") {
     if (parsed.json) streams.stdout.write(json(planned.map(({ workflow: _workflow, ...job }) => job)));
     else for (const job of planned) line(streams, "stdout", `${job.id}\t${job.level}\t${job.enabled ? "enabled" : "disabled"}\t${job.tags.join(",")}`);
@@ -141,7 +171,6 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams): Promise
     else streams.stdout.write(json(description));
     return 0;
   }
-  const jobs = selectedJobs(loaded.config.jobs, parsed.selectors);
   if (parsed.command === "doctor") {
     const issues = await doctorJobs(jobs, loaded.dir);
     const result = { status: issues.some((issue) => issue.severity === "error") ? "ERROR" : "SUCCESS", issues };
@@ -161,6 +190,9 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams): Promise
   }
   if (parsed.command !== "run") throw new CautestError(`未知命令: ${parsed.command}`, { code: "config_error" });
 
+  const profile = parsed.profile === undefined ? undefined : loaded.config.profiles.find((candidate) => candidate.id === parsed.profile);
+  if (parsed.profile !== undefined && profile === undefined) throw new CautestError(`Profile 不存在: ${parsed.profile}`, { code: "config_error" });
+  const runJobs = profile === undefined ? jobs : jobs.map((job) => Object.freeze({ ...job, env: Object.freeze({ ...job.env, ...profile.env }) }));
   const issues = await doctorJobs(jobs, loaded.dir);
   if (issues.some((issue) => issue.severity === "error")) {
     if (parsed.json) streams.stdout.write(json({ status: "ERROR", issues }));
@@ -175,7 +207,8 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams): Promise
     configDir: loaded.dir,
     configHash: loaded.hash,
     configPath: loaded.path,
-    jobs,
+    jobs: runJobs,
+    failFast: parsed.failFast,
     ...(Number.isFinite(heartbeatMs) && heartbeatMs > 0 ? { heartbeatMs } : {}),
     onJob(event) {
       if (event.type === "START") line(streams, "stderr", `START Job ${event.jobId}`);
@@ -194,6 +227,7 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams): Promise
     },
   });
   const resultDir = await writeRunDirectory(run, resultRoot);
+  if (profile !== undefined) await writeReports(run, resultDir, profile.reporters);
   const summary = { ...run, runId: run.id, configHash: loaded.hash, resultDir };
   if (parsed.json) streams.stdout.write(json(summary));
   else line(streams, "stdout", `Run ${runId}: ${run.status}\n结果: ${resultDir}`);
@@ -203,7 +237,7 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams): Promise
 /** Cautest CLI 可测试入口。 */
 export async function runCli(args: readonly string[], streams: CliStreams = process): Promise<number> {
   try {
-    if (args.includes("--version")) {
+    if (args.includes("--version") || args.includes("-V")) {
       line(streams, "stdout", await versionText());
       return 0;
     }

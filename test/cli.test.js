@@ -77,3 +77,34 @@ test("run 子命令提供独立帮助", async () => {
   assert.equal(await runCli(["run", "--help"], io.streams), 0);
   assert.match(io.value.stdout, /^用法: cautest .* run/u);
 });
+
+test("--version 和 -V 无需配置即可显示 Release 与 Commit", async () => {
+  for (const option of ["--version", "-V"]) {
+    const io = streams();
+    assert.equal(await runCli([option], io.streams), 0);
+    assert.match(io.value.stdout, /^Cautest 0\.2\.0 \(commit /u);
+  }
+});
+
+test("CLI Profile 生成 Reporter，并支持 level/tag/Glob 筛选", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "cautest-cli-profile-"));
+  const config = path.join(root, "cautest.config.mjs");
+  await writeFile(config, `import { defineStep, testConfig, testJob } from ${JSON.stringify(configModule)};
+const run = defineStep({ kind: 'fixtureRun', phase: 'run', execute({ job }) { return { testResults: [{ name: 'suite', cases: [{ name: job.env.PROFILE ?? 'missing', status: 'PASS', assertions: [], diagnostics: [] }] }] }; } });
+export default testConfig({ defaults: { resultDir: '.state/results' }, profiles: [{ id: 'ci', reporters: ['json', 'junit', 'html'], env: { PROFILE: 'profile-applied' } }], jobs: [
+  testJob({ id: 'unit.fast', level: 'unit', tags: ['fast'], workflow: [run] }),
+  testJob({ id: 'system.slow', level: 'system', tags: ['slow'], workflow: [run] }),
+] });\n`);
+  const listed = streams();
+  assert.equal(await runCli(["--config", config, "list", "unit.*", "--level", "unit", "--tag", "fast"], listed.streams), 0);
+  assert.match(listed.value.stdout, /unit\.fast/u);
+  assert.doesNotMatch(listed.value.stdout, /system\.slow/u);
+
+  const io = streams();
+  assert.equal(await runCli(["--config", config, "run", "unit.*", "--profile", "ci", "--json"], io.streams), 0);
+  const summary = JSON.parse(io.value.stdout);
+  assert.equal(summary.jobs[0].groups[0].cases[0].name, "profile-applied");
+  assert.match(await readFile(path.join(summary.resultDir, "junit.xml"), "utf8"), /<testsuites/u);
+  assert.match(await readFile(path.join(summary.resultDir, "report.html"), "utf8"), /Step 时间线/u);
+  assert.equal(JSON.parse(await readFile(path.join(summary.resultDir, "run.json"), "utf8")).id, summary.id);
+});

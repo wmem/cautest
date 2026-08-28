@@ -14,6 +14,7 @@ export { executeWorkflow } from "../workflow/engine.js";
 export { ArtifactStore, CleanupStack, ResourceStore, ResultRecorder } from "../workflow/lifecycle.js";
 export { EventRecorder } from "../workflow/events.js";
 export { executeRun, writeRunDirectory } from "../result/run.js";
+export { formatConsoleReport, formatHtmlReport, formatJUnitReport, writeReports } from "../reporters/index.js";
 export { CautestError, serializeError } from "../model/error.js";
 export { CTP_PROTOCOL_MAJOR, CTP_PROTOCOL_MINOR, Ctp3Error, encodeCommand, escapeField, LineDecoder, parseProtocolLine, protocolError, splitEscapedFields } from "../protocol/ctp3.js";
 export { ProcessTransport, processTransport, StreamTransport } from "../protocol/transport.js";
