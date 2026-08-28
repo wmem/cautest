@@ -206,7 +206,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
   }
   const cleanup = await cleanupStack.run();
   for (const entry of cleanup) if (entry.error !== undefined) errors.push(entry.error);
-  for (const resource of resources.list()) if (resource.state !== "closed") resources.close(resource.kind, resource.name);
+  for (const resource of resources.list()) if (resource.state === "ready") resources.close(resource.kind, resource.name);
   const groups = results.list();
   const status = aggregate(steps, groups, cleanup, job.policy.allowEmpty);
   const endedAt = new Date();

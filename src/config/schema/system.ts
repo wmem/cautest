@@ -13,7 +13,7 @@ export interface ScriptSystemTestDefinition {
 
 /** `scriptSystemTestJob()` 的完整参数 Schema。 */
 export interface ScriptSystemTestJobInput extends TestJobCommonInput {
-  /** Default Export 为 Script Test Definition 的 JS Module。 */
+  /** Default Export 为 `defineScriptTest()` 结果或静态 `cases[]` 的 JS Module。 */
   readonly file: string;
 
   /** Result Group 和 Run Step 名称；省略时由文件名推导。 */

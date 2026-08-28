@@ -272,13 +272,15 @@
       "kind": "public-api",
       "key": "collectLogs",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 标准 Collect Step，失败路径也保留启动日志"
     },
     {
       "kind": "public-api",
       "key": "collectStep",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 通用 Collect Step"
     },
     {
       "kind": "public-api",
@@ -314,7 +316,8 @@
       "kind": "public-api",
       "key": "defineScriptTest",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 强类型渐进 Script Case API"
     },
     {
       "kind": "public-api",
@@ -344,7 +347,8 @@
       "kind": "public-api",
       "key": "execStep",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 保持 argv 边界的命令 Step"
     },
     {
       "kind": "public-api",
@@ -364,13 +368,15 @@
       "kind": "public-api",
       "key": "executeScriptTest",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 支持 EXPECT/ASSERT/SKIP/Timeout/隔离 Env"
     },
     {
       "kind": "public-api",
       "key": "externalTest",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 支持 JUnit、JSON 和 Custom Adapter"
     },
     {
       "kind": "public-api",
@@ -539,13 +545,15 @@
       "kind": "public-api",
       "key": "parseJUnit",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 标准外部结果解析"
     },
     {
       "kind": "public-api",
       "key": "parseJsonResults",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 标准外部结果解析"
     },
     {
       "kind": "public-api",
@@ -558,13 +566,15 @@
       "kind": "public-api",
       "key": "processAttach",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 borrowed/owned 所有权语义"
     },
     {
       "kind": "public-api",
       "key": "processStart",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 Ready、日志缓冲和 Cleanup 语义"
     },
     {
       "kind": "public-api",
@@ -596,7 +606,8 @@
       "kind": "public-api",
       "key": "runScriptTest",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 由 scriptSystemTestJob 直接生成普通 TestJob，不再暴露重复 Step 工厂"
     },
     {
       "kind": "public-api",
@@ -608,7 +619,8 @@
       "kind": "public-api",
       "key": "scriptSystemTest",
       "area": "public-api",
-      "status": "pending"
+      "status": "intentional-change",
+      "note": "V2 统一命名为 scriptSystemTestJob"
     },
     {
       "kind": "public-api",
@@ -621,7 +633,8 @@
       "kind": "public-api",
       "key": "shellExec",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 强制显式 unsafeShell:true"
     },
     {
       "kind": "public-api",
@@ -663,13 +676,15 @@
       "kind": "public-api",
       "key": "waitForReady",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 支持 Process/File/TCP/HTTP/Custom Probe"
     },
     {
       "kind": "public-api",
       "key": "waitReady",
       "area": "public-api",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 标准 Ready Step"
     },
     {
       "kind": "public-api",
@@ -888,7 +903,8 @@
       "kind": "test-file",
       "key": "tests/script-test/script-test.test.js",
       "area": "system-workflow",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 test/script-test.test.js 覆盖原场景"
     },
     {
       "kind": "test-file",
@@ -901,25 +917,29 @@
       "kind": "test-file",
       "key": "tests/steps/fixtures/external-json.js",
       "area": "system-workflow",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/fixtures/steps"
     },
     {
       "kind": "test-file",
       "key": "tests/steps/fixtures/external-junit.js",
       "area": "system-workflow",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/fixtures/steps"
     },
     {
       "kind": "test-file",
       "key": "tests/steps/fixtures/server.js",
       "area": "system-workflow",
-      "status": "pending"
+      "status": "implemented",
+      "note": "迁移到 test/fixtures/steps"
     },
     {
       "kind": "test-file",
       "key": "tests/steps/system-steps.test.js",
       "area": "system-workflow",
-      "status": "pending"
+      "status": "implemented",
+      "note": "V2 test/system-steps.test.js 覆盖标准 Step 生命周期"
     },
     {
       "kind": "test-file",

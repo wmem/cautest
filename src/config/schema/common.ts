@@ -216,6 +216,10 @@ export interface TestCaseResult {
   readonly status: "PASS" | "FAIL" | "ERROR" | "SKIP";
   readonly assertions: readonly TestAssertionResult[];
   readonly diagnostics: readonly unknown[];
+  readonly durationMs?: number;
+  readonly failures?: readonly Readonly<{ readonly message: string; readonly expected?: unknown; readonly actual?: unknown }>[];
+  readonly logs?: readonly string[];
+  readonly error?: Readonly<{ readonly code?: string; readonly message: string }>;
 }
 
 /** Test Suite 的结构化结果。 */

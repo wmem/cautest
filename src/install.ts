@@ -62,7 +62,7 @@ async function collectFiles(root: string, relative = ""): Promise<string[]> {
 
 async function createPortableTree(root: string, build: BuildInfo): Promise<void> {
   await mkdir(path.join(root, "lib"), { recursive: true });
-  for (const directory of ["config", "doctor", "jobs", "kernel", "model", "protocol", "result", "uml", "workflow"]) {
+  for (const directory of ["config", "doctor", "jobs", "kernel", "model", "protocol", "result", "steps", "system", "uml", "workflow"]) {
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true });
   }
   await mkdir(path.join(root, "lib/runtime"));

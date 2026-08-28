@@ -1,8 +1,11 @@
 import {
   defineStep,
+  defineScriptTest,
+  externalTest,
   jobNamespace,
   nativeCTestJob,
   nativeCTestJobFactory,
+  processStart,
   kernelCTestJobFactory,
   driverAbiCTestJobFactory,
   mcuCTestJob,
@@ -48,6 +51,14 @@ kernelCTestJobFactory({ environment: uml })({ id: "unit.kernel.queue", tests: ["
 driverAbiCTestJobFactory({ environment: uml })({ id: "integration.driver", drivers: [{ name: "driver", sourceDir: "driver", output: "driver.ko" }], guest: { tests: ["test/driver.c"] } });
 mcuCTestJob({ id: "component.mcu", firmware: { kind: "existing", file: "build/firmware" } });
 scriptSystemTestJob({ id: "system.api", file: "test/api.test.mjs" });
+defineScriptTest(async ({ test, env }) => {
+  await test.case("typed", async (context) => {
+    context.expectEqual(env.VALUE, "expected");
+    await context.wait(1);
+  });
+});
+processStart({ program: "node", args: ["server.mjs"], ready: { kind: "http", url: "http://127.0.0.1:3000/health" } });
+externalTest({ program: "tool", resultAdapter: "junit" });
 
 // @ts-expect-error Native C Test 的 tests 是非空必填字段。
 nativeCTestJob({ id: "unit.native.missing" });

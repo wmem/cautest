@@ -1,0 +1,1 @@
+console.log('<?xml version="1.0"?><testsuites><testsuite name="tool"><testcase name="pass" time="0.01"/><testcase name="skip"><skipped/></testcase><testcase name="error"><error message="broken"/></testcase></testsuite></testsuites>');

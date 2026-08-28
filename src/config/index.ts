@@ -18,4 +18,8 @@ export { CautestError, serializeError } from "../model/error.js";
 export { CTP_PROTOCOL_MAJOR, CTP_PROTOCOL_MINOR, Ctp3Error, encodeCommand, escapeField, LineDecoder, parseProtocolLine, protocolError, splitEscapedFields } from "../protocol/ctp3.js";
 export { ProcessTransport, processTransport, StreamTransport } from "../protocol/transport.js";
 export { CTestSession, filterTestDescriptors, planCTestExecutions, runCTestSession } from "../protocol/session.js";
+export { defineScriptTest, executeScriptTest } from "../system/script-test.js";
+export { collectLogs, collectStep, execStep, externalTest, parseJsonResults, parseJUnit, processAttach, processStart, shellExec, waitForReady, waitReady } from "../steps/system.js";
+export type { ScriptCaseContext, ScriptTestApi, ScriptTestDefinition } from "../system/script-test.js";
+export type { ExternalTestInput, ProcessAttachInput, ProcessStartInput, ReadyProbe } from "../steps/system.js";
 export type * from "./schema/index.js";

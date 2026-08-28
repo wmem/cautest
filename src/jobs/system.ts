@@ -4,6 +4,7 @@ import type { ScriptSystemTestDefinition, ScriptSystemTestJobInput, TestCaseResu
 import { testJob } from "../config/define.js";
 import { CautestError } from "../model/error.js";
 import { defineStep } from "../workflow/step.js";
+import { executeScriptTest, isScriptTest } from "../system/script-test.js";
 
 function safeName(file: string): string { return path.basename(file).replace(/\.[^.]+$/u, "").replace(/[^A-Za-z0-9_-]/gu, "-"); }
 
@@ -24,6 +25,10 @@ export function scriptSystemTestJob(input: ScriptSystemTestJobInput): TestJob {
   const step = defineStep({ kind: "scriptSystemRun", name, phase: "run", details: { file: input.file, caseTimeoutMs: input.caseTimeoutMs ?? 30_000 }, ...(input.stepTimeoutMs === undefined ? {} : { timeoutMs: input.stepTimeoutMs }), async execute(context) {
     const file = path.resolve(context.project.configDir, input.file);
     const loaded = await import(`${pathToFileURL(file).href}?cautest=${Date.now()}`) as { default?: unknown };
+    if (isScriptTest(loaded.default)) {
+      const group = await executeScriptTest(loaded.default, { name, caseTimeoutMs: input.caseTimeoutMs ?? 30_000, env: context.job.env, signal: context.signal });
+      return { outcome: group.cases.some((item) => item.status === "FAIL" || item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: [group] };
+    }
     const definition = loaded.default as Partial<ScriptSystemTestDefinition> | undefined;
     if (definition === undefined || !Array.isArray(definition.cases) || definition.cases.length === 0) throw new CautestError(`Script Test ${input.file} 必须导出非空 cases[]`, { code: "config_error" });
     const names = new Set<string>();

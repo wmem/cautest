@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepare": "tsc -p tsconfig.json && node dist/build-info.js",
-    "test": "pnpm run build && pnpm run test:types && pnpm run test:c && node --test test/schema.test.js test/config.test.js test/factory.test.js test/workflow.test.js test/protocol.test.js test/session.test.js test/native.test.js test/kernel.test.js test/kernel-module.test.js test/uml.test.js test/driver.test.js test/mcu.test.js test/system.test.js test/cli.test.js test/install.test.js test/parity.test.js",
+    "test": "pnpm run build && pnpm run test:types && pnpm run test:c && node --test test/schema.test.js test/config.test.js test/factory.test.js test/workflow.test.js test/protocol.test.js test/session.test.js test/native.test.js test/kernel.test.js test/kernel-module.test.js test/uml.test.js test/driver.test.js test/mcu.test.js test/system.test.js test/script-test.test.js test/system-steps.test.js test/cli.test.js test/install.test.js test/parity.test.js",
     "test:e2e": "node --test test/git-install.test.js",
     "audit:v1": "node scripts/v1-audit.mjs",
     "test:c": "sh scripts/test-c-runtime.sh",
