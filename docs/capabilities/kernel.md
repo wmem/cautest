@@ -1,40 +1,19 @@
 # Kernel/UML C Test
 
-Kernel、BusyBox 和 UML 是可复用环境；具体 Job 通常只写测试、产品源码和 Header：
+Kernel/UML C Test 用于必须在 Linux Kernel 上下文中执行的源码。它把 Kernel、BusyBox 和 UML 组织为可复用环境，再把某个 Job 的产品源码与测试源码编入隔离的 Test Module；测试作者不需要维护 Kbuild、模块入口、Registry 或 Runtime 注册代码。
 
-```js
-const environment = umlKernelEnvironment({
-  kernel: { sourceDir: "/opt/src/linux", arch: "um", jobs: 16 },
-  busybox: { sourceDir: "/opt/src/busybox", jobs: 16 },
-  moduleDefaults: {
-    headers: ["include/**/*.h"],
-    defines: { CONFIG_PRODUCT_TEST: 1 },
-  },
-  runtime: {
-    maxRegistries: 64,
-    eventCapacity: 512,
-    workspaceSize: 65536,
-  },
-});
+## 从 Test Module 到 UML 结果
 
-const kernelUnit = kernelCTestJobFactory({ environment });
+一个 Job 依次准备 Kernel 和 BusyBox、构建 Runtime 与 Test Module、生成 Rootfs、启动 UML，再由 Guest Agent 把 Kernel Endpoint 接入 CTP3 Session。Host 在执行前获得 Catalog 并应用 Suite、Case、参数、超时和停止策略；测试事件最终进入与 Native、MCU 相同的 Result 模型。
 
-kernelUnit({
-  id: "unit.utils.cm_queue",
-  tests: ["test/unit/utils/cm_queue_test.c"],
-  sources: ["src/utils/cm_queue.c"],
-  headers: ["src/utils/cm_queue.h"],
-});
-```
+Kernel、BusyBox、Module、Guest Program 和 Rootfs 各有独立缓存指纹。自动 Module 和已有 Kbuild Module 都在 `.cautest/work` 的专属 Sandbox 中构建，Kbuild 的 `M=` 不指向项目源码目录。发布 Cache 时校验 `.ko`、`Module.symvers`、`modules.order` 及可选 GCOV Artifact，因此同一源码可以为不同 Kernel 或 ARCH 并发构建。
 
-Cautest 自动生成 Kbuild/Makefile、Registry、`module_init/module_exit`、`MODULE_LICENSE` 和 Runtime 注册入口。Suite 默认由 ID 最后一段推导，默认选择相应 Suite。复杂测试可以覆盖 `suites`、Module 名称、`includeDirs`、`defines`、`cflags`、Make 变量、额外 Module、Guest Program、UML 参数和超时。
+## 身份、失败与覆盖率边界
 
-`sources` 支持 Glob。自动 Module 和已有 Kbuild Module 始终在 `.cautest/work` 的专属 Sandbox 构建；Kbuild 的 `M=` 从不指向项目源码目录。发布 Cache Manifest 校验 `.ko`、`Module.symvers`、`modules.order` 及可选 GCOV Artifact，相同源码可并发构建不同 Kernel/ARCH。
+Rootfs Catalog 把 Kernel Endpoint 绑定到当前 Build ID；Host 在 Ready、HELLO 和执行阶段校验 Image、Build 与 Boot 身份，拒绝旧 Rootfs、旧 Module 或旧启动实例的结果。Kernel/BusyBox 源码、宿主工具和 UML 能力缺失会阻止真实执行，而不是退化为 Host 上的伪 Module 测试。
 
-提供 `coverage: {}` 后，Cautest 自动启用 UML Kernel GCOV 和 HOSTFS，收集 Guest `.gcda`，结合 Manifest 中的 `.gcno`/源码生成逐行 `.gcov` 报告。
+启用覆盖率时，Cautest 打开 UML Kernel GCOV 和 HOSTFS，收集 Guest `.gcda`，再结合 Manifest 中的 `.gcno` 与源码生成逐行报告。覆盖率收集是标准测试完成后的附加结果。
 
-调用链：`kernelCTestJob` → `kernelBuild` → `busyboxBuild` → Runtime/额外/自动 Test Module → 可选 `umlGuestProgramBuild` → `umlRootfsBuild` → `umlStart` → `cTestRun(kernel)` → 可选 `kernelCoverage` → `umlLogs`。所有节点都在执行前由 `plan` 展开。
+测试作者从[在 Kernel UML 中运行 C 测试](../usage/kernel-uml.md)开始；Driver 内部源码测试可沿用[关联单元测试](../usage/linux-driver-unit.md)。精确配置由 `UmlKernelEnvironmentInput`、`LinuxKernelBuildInput`、`BusyBoxBuildInput`、`KernelModuleDefaultsInput` 和 `KernelCTestJobInput` 定义，见源码 `src/config/schema/kernel.ts` 或安装后的 `lib/config/schema/kernel.d.ts`。
 
-仓库维护者可设置 `KERNEL_SRC`、`BUSYBOX_SRC` 后执行 `pnpm test:uml`。该入口实际运行 `examples/kernel-lib` 和 `examples/linux-driver-unit`，而不是用伪 Module 替代目标行为。
-
-权威 Schema：`UmlKernelEnvironmentInput`、`LinuxKernelBuildInput`、`BusyBoxBuildInput`、`KernelModuleDefaultsInput`、`KernelCTestJobInput`，见源码 `src/config/schema/kernel.ts` 或安装后的 `lib/config/schema/kernel.d.ts`。
+仓库维护者设置 `KERNEL_SRC`、`BUSYBOX_SRC` 后可用 `pnpm test:uml` 验证真实 Kernel、Test Module、Rootfs、Guest Agent 和 CTP3 闭环。

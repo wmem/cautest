@@ -1,33 +1,15 @@
 # Script System Test
 
-配置只引用测试模块：
+Script System Test 用 JavaScript 从进程外部验证服务、CLI 或系统集成行为。它把 Case 生命周期、Assertion、超时、日志和附件转换为标准 Result，因此可以与 Native、Kernel、Driver 和 MCU Job 使用相同的选择、执行和报告方式。
 
-```js
-scriptSystemTestJob({
-  id: "system.api.health",
-  file: "test/system/api-health.test.mjs",
-  caseTimeoutMs: 5000,
-});
-```
+## 测试模块的执行模型
 
-测试模块推荐使用渐进 Assertion API：
+Job 动态加载并校验测试模块，再按声明顺序执行 Case。顶层回调获得受 Workflow 管理的命令执行函数、AbortSignal 和冻结的 Job 环境；每个 Case 获得独立 Context 和可覆盖的超时。继续执行的 Expect、终止当前 Case 的 Assert、显式 FAIL/SKIP、日志和附件都会形成结构化事件或结果，而不是只写 Console 文本。
 
-```js
-import { defineScriptTest } from "@cautest/config.js";
+测试模块也可以使用低层 `{ cases: [{ name, run }] }` Schema。无论采用哪种声明方式，Case Start/End、失败 Assertion、Skip 和异常都进入统一 Event Recorder；未捕获异常或执行条件损坏形成 ERROR，不伪装为 Assertion 失败。
 
-export default defineScriptTest(async ({ test, exec, signal, env }) => {
-  const service = await exec({ program: "curl", args: ["-sS", env.API_URL] });
-  await test.case("health endpoint", async (t) => {
-    signal.throwIfAborted();
-    t.assertEqual(0, service.exitCode);
-    t.expectEqual('{"status":"ok"}', service.stdout);
-    t.attach("response", service.stdout);
-  }, { timeoutMs: 3000 });
-});
-```
+## 与系统资源的边界
 
-顶层回调获得受 Workflow 管理的 `exec`、AbortSignal 和冻结 Job Env。Case Context 提供继续执行的 `expect`/`expectEqual`/`fail`、终止当前 Case 的 `assert`/`assertEqual`、`skip`、`log`、`attach` 和可取消 `wait`；第三个参数可以覆盖单 Case timeout。Case Start/End、失败 Assertion 和 Skip 都进入统一 Run Event。
+Script Test 本身只描述测试模块。服务启动、Ready Probe、外部进程日志和资源清理由标准 Workflow Step 组合；这些 Step 共享 Job 的 AbortSignal、失败传播和 LIFO Cleanup。只有多个能力必须共享同一次 Job 生命周期时才组合 Workflow，普通项目应优先保留独立 Job。
 
-也可以直接默认导出 `{ cases: [{ name, run }] }` 的低层 Schema。调用链：动态加载并校验定义 → 按序执行每个 Case（独立超时和 AbortSignal）→ 结构化 PASS/FAIL/SKIP/ERROR Result。该 Job 与 Native、Kernel、MCU 一样只是普通 `TestJob`，可以和它们放在同一个 `jobs` 数组中。
-
-权威 Schema：`ScriptSystemTestJobInput`、`ScriptSystemTestDefinition`，见源码 `src/config/schema/system.ts` 或安装后的 `lib/config/schema/system.d.ts`。
+测试作者从[运行 Script System Test](../usage/system-script.md)开始；需要共享服务与其他标准能力时再读[组合多个标准 Workflow](../usage/workflow.md)。精确接口由 `ScriptSystemTestJobInput`、`ScriptSystemTestDefinition` 以及安装后的 `lib/config/index.d.ts`、`lib/config/schema/system.d.ts` 定义。

@@ -7,4 +7,4 @@
 ./cautest.js --help
 ```
 
-项目配置必须通过本目录中的 `cautest.js` 加载。安装目录内的 `lib/config/*.d.ts` 提供 JavaScript 配置类型，`assets/cautest-c/` 提供 C Runtime 和公共头文件。
+项目配置必须通过本目录中的 `cautest.js` 加载。安装目录内的 `lib/config/index.d.ts` 和 `lib/config/schema/*.d.ts` 提供 JavaScript 配置类型，`assets/cautest-c/` 提供 C Runtime 和公共头文件。

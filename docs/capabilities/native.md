@@ -1,34 +1,15 @@
 # Native C Test
 
-最小声明只需要 Job ID 和测试源码：
+Native C Test 把可以在开发机直接编译和运行的 C 代码变成标准 Test Job。它适合不依赖 Kernel API、真实 Driver 或硬件外设的单元与组件测试；这些目标环境分别由 Kernel、Driver 和 MCU Capability 承担。
 
-```js
-nativeCTestJob({
-  id: "unit.math",
-  tests: ["test/unit/math_test.c"],
-});
-```
+## 从源码到结构化结果
 
-产品源码、Header、宏、Compiler、Flag、选择规则和 GCOV 都可以覆盖：
+Job 声明测试源码、产品源码和必要的构建输入。执行时，Cautest 解析文件 Pattern，生成 Registry 和程序入口，把源码与 C Runtime 编译为本机可执行文件，再启动目标进程。Host 与目标进程通过 CTP3 交换 Catalog、选择条件和执行事件，因此结果保留 Suite、Case、Assertion、日志以及 expected/actual，而不依赖 Console 文本反推状态。
 
-```js
-nativeCTestJob({
-  id: "unit.utils.queue",
-  tests: ["test/unit/utils/*_test.c", "!test/unit/utils/slow_*"],
-  sources: ["src/utils/cm_queue.c"],
-  headers: ["src/utils/cm_queue.h"],
-  suites: ["cm_queue"],
-  build: {
-    compiler: "clang",
-    defines: { UNIT_TEST: 1 },
-    cflags: ["-Werror"],
-    cache: { fingerprintEnv: ["CCACHE_DIR"] },
-  },
-  run: { include: ["cm_queue/*"], caseTimeoutMs: 1000 },
-  coverage: { tool: "gcov" },
-});
-```
+编译和运行是两个独立责任。构建输出由包含 Compiler、Flag、宏、源码、Header 和声明环境的指纹管理；缓存命中后仍校验 Manifest 和产物完整性。运行阶段负责选择、Case 超时和 Suite Policy，改变这些条件不要求重新描述 Job 的构建输入。
 
-调用链：`nativeCTestJob` → `nativeCompile`（生成 Registry/入口、指纹、编译和 Cache Manifest）→ `cTestRun`（FD3/FD4 CTP3）→ 可选 `nativeCoverage`。结构化结果保留 Suite、Case、Assertion 的 expected/actual。
+## 边界、失败与附加产物
 
-权威 Schema：`NativeCTestJobInput`、`NativeCBuildInput`、`NativeCoverageInput`，见源码 `src/config/schema/native.ts` 或安装后的 `lib/config/schema/native.d.ts`。
+源码或工具链问题属于构建/基础设施错误；CTP3 身份、事件顺序或 Target 生命周期异常属于运行基础设施错误；Assertion、FAIL、SKIP 和 ERROR 则按 C Test 语义进入结构化 Case 结果。启用 GCOV 时，覆盖率作为运行后的附加收集步骤生成，不替代标准测试结果。
+
+测试作者从[运行 Native C 测试](../usage/native-c.md)开始；C 测试生命周期和断言语义见 [C Test API](../specifications/c-test-api.md)。精确配置由 `NativeCTestJobInput`、`NativeCBuildInput` 和 `NativeCoverageInput` 定义，见源码 `src/config/schema/native.ts` 或安装后的 `lib/config/schema/native.d.ts`。

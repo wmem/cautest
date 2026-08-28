@@ -81,7 +81,7 @@ export default testConfig({
 const native = nativeCTestJob({ id: "source.native", tests: ["test/native.c"] });
 const service = testJob({ id: "source.service", level: "system", workflow: [
   processStart({ name: "api", program: "node", args: ["server.mjs"], ready: { type: "process-alive" } }),
-  collectLogs({ name: "api", resource: "process:api" }),
+  collectLogs({ name: "api", from: "process:api" }),
 ] });
 
 const combined = testJob({

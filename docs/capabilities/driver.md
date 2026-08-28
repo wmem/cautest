@@ -1,34 +1,17 @@
 # Linux Driver ABI Test
 
-Driver ABI Test 复用 Kernel/UML 环境，在 Guest Userspace 执行自动生成入口的 C Test：
+Linux Driver ABI Test 在 Kernel/UML 环境中真实构建和加载产品 Driver，再从 Guest Userspace 执行 C Test。它用于验证设备节点、公开 ABI 和 Driver 边界；只验证可分离内部算法时，应使用 Kernel Test Module 形式的 Driver Unit Test。
 
-```js
-driverAbiCTestJob({
-  id: "integration.driver.queue",
-  environment,
-  probe: {},
-  drivers: [{
-    name: "queue-driver",
-    sourceDir: "src/driver",
-    sandboxRoot: ".",
-    output: "queue_driver.ko",
-  }],
-  guest: {
-    tests: ["test/driver/queue_abi_test.c"],
-    headers: ["include/queue_abi.h"],
-    suites: ["queue_abi"],
-  },
-});
-```
+## Driver、Guest 与 Probe 的协作
 
-`probe: {}` 启用内置 test-only Probe Module，并向产品 Driver Kbuild 注入 `CONFIG_CAUTEST=y` 和 `CAUTEST_C_ROOT`。具体 Driver 可以用 `probe.makeVariables` 覆盖或追加变量。若 ABI 测试不使用 Probe，可省略 `probe`。
+Job 声明一个或多个产品 Driver 以及 Guest C Test。Cautest 按声明顺序构建 Module 并放入 Rootfs，同时生成 Guest Registry 和程序入口、链接 CTP3 Runtime，最后在 UML 中加载 Driver 并执行 Guest Test。多个 Driver 的构建依赖通过名称表达，构建仍在专属 Sandbox 中完成，不污染产品源码树。
 
-启用 Probe 的产品 Kbuild 需要同时加入 `$(CAUTEST_C_ROOT)/include` 和 `$(CAUTEST_C_ROOT)/platform/linux-kernel/include`；前者提供统一版本 Header，后者提供 Probe API/ABI Header。可直接参考 `examples/linux-driver/driver/Makefile`。
+可选的 test-only Probe Module 为 Guest Test 提供受控的内部观测边界。启用 Probe 时，Cautest 向产品 Kbuild 注入 `CONFIG_CAUTEST=y` 和 `CAUTEST_C_ROOT`；产品 Kbuild 需要显式包含 Cautest 公共版本 Header 与 Probe API/ABI Header。未启用 Probe 的 ABI Test 不承担这项构建依赖。
 
-Cautest 自动生成 Guest Registry/入口并链接 CTP3 Runtime 和 Probe Client；不需要手写 Guest Makefile、Registry 或 `main()`。多个 Driver Module 按声明顺序进入 Rootfs，`extraModules` 用名称表达构建依赖。
+## 结果与失败边界
 
-调用链：`driverAbiCTestJob` → 公共 Kernel/BusyBox → 可选内置 Probe → 隔离 Driver Module → 自动 Guest C Test → Rootfs → UML → `cTestRun(process)` → Logs。
+Driver 构建、Module 装载、设备准备、Guest Program 和 CTP3 Session 分别保留自己的诊断与 Artifact。Guest 中的 Assertion 决定测试结果；构建失败、设备不可用、身份不匹配或协议错误属于基础设施错误。Host 上直接运行 Guest ELF 不能证明 Driver、Probe、Rootfs 和 UML 调用链成立。
 
-仓库维护者可用 `KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:driver:uml` 实际验证整条链路。这个入口运行 `examples/linux-driver`，不会退化为 Host 上直接执行 Guest ELF；缺少两个源码树时会以 `BLOCKED`/77 明确结束。
+测试作者从[运行 Linux Driver ABI 与 Probe 测试](../usage/linux-driver-abi.md)开始；内部算法测试见 [Linux Driver Unit](../usage/linux-driver-unit.md)。精确配置由 `DriverAbiCTestJobInput`、`DriverGuestCTestInput` 和 `DriverProbeInput` 定义，见源码 `src/config/schema/driver.ts` 或安装后的 `lib/config/schema/driver.d.ts`。
 
-权威 Schema：`DriverAbiCTestJobInput`、`DriverGuestCTestInput`、`DriverProbeInput`，见源码 `src/config/schema/driver.ts` 或安装后的 `lib/config/schema/driver.d.ts`。
+仓库维护者设置 `KERNEL_SRC`、`BUSYBOX_SRC` 后可用 `pnpm test:driver:uml` 验证真实 Driver、可选 Probe、Guest ABI、Rootfs、UML 和结果收集闭环；缺少外部源码树时入口以 `BLOCKED`/77 结束。

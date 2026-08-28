@@ -47,4 +47,4 @@ cd examples/kernel-lib
 
 第一次执行会构建 Kernel 和 BusyBox，耗时明显高于 Native；后续运行会按输入指纹复用缓存。成功结果包含 Kernel、Test Module、Rootfs、UML 日志和 `kernel_counter/increments` Case，保存在示例目录的 `.cautest/results/<run-id>/`。
 
-`doctor` 报 Kernel 源码污染时，不要让 Cautest清理源码树；换用未进行 in-tree 构建的源码树。缺少 `cpio`、静态链接能力或 UML ptrace 支持时，按诊断补齐宿主环境。Kernel、BusyBox、Module、Rootfs 和 Machine 的高级选项位于安装目录的 `lib/config/schema/kernel.d.ts`。
+`doctor` 报 Kernel 源码污染时，不要让 Cautest 清理源码树；换用未进行 in-tree 构建的源码树。缺少 `cpio`、静态链接能力或 UML ptrace 支持时，按诊断补齐宿主环境。Kernel、BusyBox、Module、Rootfs 和 Machine 的高级选项位于安装目录的 `lib/config/schema/kernel.d.ts`。
