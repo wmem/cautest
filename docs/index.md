@@ -10,11 +10,15 @@ Cautest 把不同目标环境的准备、构建、运行和收集过程统一为
 - [MCU](capabilities/mcu.md)
 - [Script System Test](capabilities/system.md)
 
-需要精确查阅公共规则时进入 Specification：
+面向配置作者和 CI 的公共规则与安装包共享同一份 Usage：
 
-- [配置模型](specifications/configuration.md)
-- [CLI、Doctor 与退出码](specifications/cli.md)
-- [结果目录与 Reporter](specifications/results.md)
+- [测试组织模型](usage/model.md)
+- [配置 API 索引](usage/config-reference.md)
+- [CLI、Doctor 与退出码](usage/cli.md)
+- [结果目录与 Reporter](usage/results.md)
+
+实现者需要精确查阅 C Runtime 与协议时进入 Specification：
+
 - [C Test API](specifications/c-test-api.md)
 - [CTP3 协议](specifications/ctp3.md)
 

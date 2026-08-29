@@ -33,6 +33,9 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   assert.match(await readFile(path.join(destination, "README.md"), "utf8"), /\[使用指南\]\(docs\/usage\/index\.md\)/u);
   assert.match(await readFile(path.join(destination, "docs/usage/index.md"), "utf8"), /doctor.*list.*plan.*run/su);
   assert.match(await readFile(path.join(destination, "docs/usage/linux-driver-unit.md"), "utf8"), /kernelCTestJobFactory/u);
+  for (const document of ["project-organization.md", "model.md", "config-reference.md", "cli.md", "results.md"]) {
+    assert.equal((await lstat(path.join(destination, "docs/usage", document))).isFile(), true, document);
+  }
   await assert.rejects(lstat(path.join(destination, "docs/usage/installed.md")));
   await assert.rejects(lstat(path.join(destination, "docs/index.md")));
   await assert.rejects(lstat(path.join(destination, "docs/specifications")));
