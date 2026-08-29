@@ -11,7 +11,8 @@
     "docs/usage",
     "examples",
     "dist",
-    "README.md"
+    "README.md",
+    "versions.json"
   ],
   "scripts": {
     "versions:sync": "node scripts/sync-versions.mjs --write",

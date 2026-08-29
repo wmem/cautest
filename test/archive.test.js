@@ -11,6 +11,12 @@ const exec = promisify(execFile);
 const projectRoot = path.resolve(new URL("..", import.meta.url).pathname);
 const archiveCommand = path.join(projectRoot, "dist/archive.js");
 
+test("npm 发布包包含安装器运行时输入", async () => {
+  const packed = JSON.parse((await exec("npm", ["pack", "--json", "--dry-run", "--ignore-scripts"], { cwd: projectRoot })).stdout);
+  const files = new Set(packed[0].files.map((item) => item.path));
+  for (const required of ["dist/install.js", "dist/portable.js", "dist/build-info.json", "versions.json"]) assert.ok(files.has(required), required);
+});
+
 test("便携包可解压、校验并直接运行", async (t) => {
   await exec(process.execPath, ["dist/build-info.js"], { cwd: projectRoot });
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-archive-"));

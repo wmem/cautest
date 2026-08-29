@@ -13,7 +13,7 @@ async function createGitSnapshot() {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-git-"));
   const repository = path.join(temporary, "repository");
   await mkdir(repository);
-  for (const entry of ["assets", "docs", "examples", "src", "usage", "package.json", "pnpm-lock.yaml", "README.md", "tsconfig.json"]) {
+  for (const entry of ["assets", "docs", "examples", "scripts", "src", "package.json", "pnpm-lock.yaml", "README.md", "tsconfig.json", "versions.json"]) {
     await cp(path.join(projectRoot, entry), path.join(repository, entry), { recursive: true });
   }
   await exec("git", ["init", "-b", "main"], { cwd: repository });
@@ -29,7 +29,7 @@ async function verifyPortable(destination) {
   const names = await readdir(destination);
   assert.ok(names.includes("cautest.js"));
   assert.ok(names.includes("docs"));
-  assert.ok(names.includes("usage"));
+  assert.ok(!names.includes("usage"));
   assert.ok(!names.includes("node_modules"));
   const config = path.join(path.dirname(path.dirname(destination)), `${path.basename(destination)}.config.mjs`);
     await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config.js';
