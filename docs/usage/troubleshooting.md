@@ -25,7 +25,26 @@ export KERNEL_SRC=/path/to/linux
 export BUSYBOX_SRC=/path/to/busybox
 ```
 
+同时为首次构建显式预留足够时间，最小配置如下：
+
+```js
+const environment = umlKernelEnvironment({
+  kernel: {
+    sourceDir: process.env.KERNEL_SRC,
+    timeoutMs: 20 * 60_000,
+  },
+  busybox: {
+    sourceDir: process.env.BUSYBOX_SRC,
+    timeoutMs: 10 * 60_000,
+  },
+});
+```
+
+`kernel.timeoutMs` 和 `busybox.timeoutMs` 控制各自的 Build Step；具体值应根据机器性能和源码配置调整。未设置时，两者会继承通用 60 秒 Step 默认值，`doctor` 会给出警告。CLI 的 `--run-timeout` 只控制 C Test Run，不能延长 Kernel 或 BusyBox Build Step。
+
 源码树必须包含有效 Makefile，Kernel UML 还需要 `arch/um/Kconfig`。如果 `doctor` 报 Kernel in-tree 污染，请换用干净源码树；Cautest 不会自动删除 `.config` 或生成文件。缺少 `cpio`、静态链接或 UML ptrace 能力时按诊断修复宿主环境。
+
+BusyBox 首次执行 `silentoldconfig` 时，`--verbose` 日志可能出现类似交互问答的配置项；该子进程不接收终端输入，会使用默认配置继续执行，这本身不表示构建卡住。应结合 Step 超时和后续日志判断。
 
 Driver Module 构建成功但 Guest 无法访问设备时，检查 Module 是否按 `drivers` 顺序进入 Rootfs、设备注册是否成功，以及 Driver 的 `output` 是否与 Kbuild 产物一致。Probe 测试还要确认产品 Makefile 在 `CONFIG_CAUTEST=y` 时包含两个 Cautest Header 目录。
 

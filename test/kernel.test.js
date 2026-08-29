@@ -5,8 +5,8 @@ import { planConfig } from "../dist/config/plan.js";
 
 test("Kernel Environment 独立复用并展开自动 Test Module Workflow", () => {
   const environment = umlKernelEnvironment({
-    kernel: { sourceDir: "vendor/linux", arch: "um" },
-    busybox: { sourceDir: "vendor/busybox" },
+    kernel: { sourceDir: "vendor/linux", arch: "um", timeoutMs: 20 * 60_000 },
+    busybox: { sourceDir: "vendor/busybox", timeoutMs: 10 * 60_000 },
     moduleDefaults: { headers: ["include/**/*.h"], defines: { DRIVER_TEST: 1 } },
     runtime: { maxRegistries: 64, eventCapacity: 512 },
   });
@@ -18,6 +18,8 @@ test("Kernel Environment 独立复用并展开自动 Test Module Workflow", () =
   assert.deepEqual(plan.workflow[3].details.suites, ["queue"]);
   assert.deepEqual(plan.workflow[3].details.headers, ["include/**/*.h", "src/queue.h"]);
   assert.deepEqual(plan.workflow[4].details.sources, ["test/guest.c"]);
+  assert.equal(plan.workflow[0].timeoutMs, 20 * 60_000);
+  assert.equal(plan.workflow[1].timeoutMs, 10 * 60_000);
   assert.deepEqual(job.tags, ["kernel-unit"]);
 });
 

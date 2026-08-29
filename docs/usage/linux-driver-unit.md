@@ -24,8 +24,14 @@ import {
 export function driverUnitJob(baseDir = ".") {
   const fromExample = (relative) => baseDir === "." ? relative : `${baseDir}/${relative}`;
   const environment = umlKernelEnvironment({
-    kernel: { sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux") },
-    busybox: { sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox") },
+    kernel: {
+      sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux"),
+      timeoutMs: 20 * 60_000,
+    },
+    busybox: {
+      sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox"),
+      timeoutMs: 10 * 60_000,
+    },
   });
 
   const driverUnitTest = kernelCTestJobFactory({
@@ -58,3 +64,5 @@ cd examples/linux-driver-unit
 ```
 
 Cautest 自动生成 Kbuild、Registry、模块入口和 C Runtime 注册。成功时会看到 `example_driver_core/clamps_to_driver_limits` 通过。需要测试多个内部模块时，可以继续复用 Factory；特殊宏和 Flag 放入单个 Job 的 `module.defines`、`module.cflags`，精确字段查看 `lib/config/schema/kernel.d.ts`。
+
+`kernel.timeoutMs` 和 `busybox.timeoutMs` 分别控制对应 Build Step；示例为首次构建预留 20 分钟和 10 分钟，应根据机器性能和源码配置调整。CLI 的 `--run-timeout` 只控制 C Test Run，不能解决 Kernel、BusyBox 或 Module 的构建 Step 超时。

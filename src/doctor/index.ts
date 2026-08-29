@@ -105,6 +105,19 @@ export async function doctorJobs(jobs: readonly TestJob[], configDir: string, de
     const builtModules = new Set<string>();
     for (const step of job.workflow) {
       for (const field of ["tests", "sources", "headers", "inputs", "extraSymbols", "configFragments"]) await checkPatterns(job, step, field, configDir, issues);
+      if ((step.kind === "kernelBuild" || step.kind === "busyboxBuild") && step.timeoutMs === undefined && defaults.stepTimeoutMs === 60_000) {
+        const label = step.kind === "kernelBuild" ? "Kernel" : "BusyBox";
+        const field = step.kind === "kernelBuild" ? "kernel.timeoutMs" : "busybox.timeoutMs";
+        const example = step.kind === "kernelBuild" ? "20 * 60_000" : "10 * 60_000";
+        issues.push({
+          code: "CT-DOCTOR-TIMEOUT-001",
+          severity: "warning",
+          jobId: job.id,
+          step: step.kind,
+          message: `${label} Build 未设置专用 timeoutMs，将继承通用 60 秒 Step 默认值`,
+          hint: `在 umlKernelEnvironment() 的 ${field} 设置首次构建超时（例如 ${example}）；--run-timeout 只控制 C Test Run`,
+        });
+      }
       const file = step.details.file;
       if (typeof file === "string" && !await exists(path.resolve(configDir, file))) issues.push({ code: "CT-DOCTOR-INPUT-002", severity: "error", jobId: job.id, step: step.kind, message: `文件不存在: ${file}`, hint: "修正配置文件路径" });
       const sourceDir = step.details.sourceDir;

@@ -67,6 +67,11 @@ test("Usage 提供按需入口并绑定完整可执行示例", async () => {
     assert.ok(contents.includes(config), `${document} 必须展示 examples/${example} 的完整配置`);
     for (const command of ["doctor", "list", "plan", "run"]) assert.match(contents, new RegExp(`\\b${command}\\b`, "u"), `${document}: ${command}`);
   }
+
+  for (const document of ["kernel-uml.md", "linux-driver-unit.md", "linux-driver-abi.md", "troubleshooting.md"]) {
+    const contents = await readFile(path.join(root, `docs/usage/${document}`), "utf8");
+    for (const field of ["kernel.timeoutMs", "busybox.timeoutMs", "--run-timeout", "C Test Run"]) assert.match(contents, new RegExp(field.replace(".", "\\."), "u"), `${document}: ${field}`);
+  }
 });
 
 test("开发者索引覆盖 Project Docs 核心阅读路径", async () => {

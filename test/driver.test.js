@@ -9,9 +9,15 @@ import { runNativeSession } from "../dist/protocol/native-session.js";
 import { buildDriverGuestCTest } from "../dist/uml/runtime.js";
 
 test("Driver ABI Job 使用唯一 Schema 展开 Driver、Guest 和 UML Workflow", () => {
-  const environment = umlKernelEnvironment({ kernel: { sourceDir: "linux" }, busybox: { sourceDir: "busybox" } });
+  const environment = umlKernelEnvironment({
+    kernel: { sourceDir: "linux", timeoutMs: 20 * 60_000 },
+    busybox: { sourceDir: "busybox", timeoutMs: 10 * 60_000 },
+  });
   const job = driverAbiCTestJobFactory({ environment })({ id: "integration.driver.demo", drivers: [{ name: "demo", sourceDir: "driver", output: "demo.ko" }], guest: { tests: ["test/driver_test.c"] } });
-  assert.deepEqual(planConfig(testConfig({ jobs: [job] }))[0].workflow.map((step) => step.kind), ["kernelBuild", "busyboxBuild", "kernelModuleBuild", "driverGuestCTestBuild", "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs"]);
+  const plan = planConfig(testConfig({ jobs: [job] }))[0];
+  assert.deepEqual(plan.workflow.map((step) => step.kind), ["kernelBuild", "busyboxBuild", "kernelModuleBuild", "driverGuestCTestBuild", "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs"]);
+  assert.equal(plan.workflow[0].timeoutMs, 20 * 60_000);
+  assert.equal(plan.workflow[1].timeoutMs, 10 * 60_000);
 });
 
 test("Linux Driver 示例同时引入公共版本与 Kernel Probe Header", async () => {

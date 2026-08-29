@@ -20,9 +20,18 @@ import { kernelCTestJob, testConfig, umlKernelEnvironment } from "@cautest/confi
 export function kernelCounterJob(baseDir = ".") {
   const fromExample = (relative) => baseDir === "." ? relative : `${baseDir}/${relative}`;
   const environment = umlKernelEnvironment({
-    kernel: { sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux") },
-    busybox: { sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox") },
-    moduleDefaults: { headers: [fromExample("include/**/*.h")], defines: { EXAMPLE_TEST: 1 } },
+    kernel: {
+      sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux"),
+      timeoutMs: 20 * 60_000,
+    },
+    busybox: {
+      sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox"),
+      timeoutMs: 10 * 60_000,
+    },
+    moduleDefaults: {
+      headers: [fromExample("include/**/*.h")],
+      defines: { EXAMPLE_TEST: 1 },
+    },
   });
 
   return kernelCTestJob({
@@ -52,5 +61,7 @@ cd examples/kernel-lib
 ```
 
 第一次执行会构建 Kernel 和 BusyBox，耗时明显高于 Native；后续运行会按输入指纹复用缓存。成功结果包含 Kernel、Test Module、Rootfs、UML 日志和 `kernel_counter/increments` Case，保存在示例目录的 `.cautest/results/<run-id>/`。
+
+`kernel.timeoutMs` 和 `busybox.timeoutMs` 分别控制对应 Build Step；示例为首次构建预留 20 分钟和 10 分钟，应根据机器性能和源码配置调整。CLI 的 `--run-timeout` 只控制 C Test Run，不能延长 Kernel、BusyBox 或 Module 的构建时间。
 
 `doctor` 报 Kernel 源码污染时，不要让 Cautest 清理源码树；换用未进行 in-tree 构建的源码树。缺少 `cpio`、静态链接能力或 UML ptrace 支持时，按诊断补齐宿主环境。Kernel、BusyBox、Module、Rootfs 和 Machine 的高级选项位于安装目录的 `lib/config/schema/kernel.d.ts`。

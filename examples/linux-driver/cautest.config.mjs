@@ -3,8 +3,14 @@ import { driverAbiCTestJob, testConfig, umlKernelEnvironment } from "@cautest/co
 export function driverAbiJob(baseDir = ".") {
   const fromExample = (relative) => baseDir === "." ? relative : `${baseDir}/${relative}`;
   const environment = umlKernelEnvironment({
-    kernel: { sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux") },
-    busybox: { sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox") },
+    kernel: {
+      sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux"),
+      timeoutMs: 20 * 60_000,
+    },
+    busybox: {
+      sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox"),
+      timeoutMs: 10 * 60_000,
+    },
   });
 
   return driverAbiCTestJob({

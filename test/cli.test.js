@@ -61,6 +61,37 @@ export default testConfig({ jobs: [testJob({ id: 'unit.bad', level: 'unit', work
   assert.ok(codes.includes("CT-DOCTOR-KMOD-004"));
 });
 
+test("doctor 警告 Kernel 和 BusyBox Build 继承通用 60 秒超时", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "cautest-cli-doctor-timeout-"));
+  await mkdir(path.join(root, "kernel"), { recursive: true });
+  await mkdir(path.join(root, "busybox"), { recursive: true });
+  await writeFile(path.join(root, "kernel/Makefile"), "all:\n\t@true\n");
+  await writeFile(path.join(root, "busybox/Makefile"), "all:\n\t@true\n");
+  const configSource = (timeoutFields) => `import { defineStep, testConfig, testJob } from ${JSON.stringify(configModule)};
+const steps = [
+  defineStep({ kind: 'kernelBuild', phase: 'build', details: { sourceDir: 'kernel', make: '/usr/bin/make' }, ${timeoutFields.kernel}execute() {} }),
+  defineStep({ kind: 'busyboxBuild', phase: 'build', details: { sourceDir: 'busybox', make: '/usr/bin/make', static: false }, ${timeoutFields.busybox}execute() {} }),
+];
+export default testConfig({ jobs: [testJob({ id: 'integration.timeout', level: 'integration', workflow: steps })] });\n`;
+
+  const inheritedConfig = path.join(root, "inherited.config.mjs");
+  await writeFile(inheritedConfig, configSource({ kernel: "", busybox: "" }));
+  const inherited = streams();
+  assert.equal(await runCli(["--config", inheritedConfig, "doctor", "--json"], inherited.streams), 0);
+  const inheritedResult = JSON.parse(inherited.value.stdout);
+  assert.equal(inheritedResult.status, "SUCCESS");
+  const warnings = inheritedResult.issues.filter((item) => item.code === "CT-DOCTOR-TIMEOUT-001");
+  assert.deepEqual(warnings.map((item) => item.step), ["kernelBuild", "busyboxBuild"]);
+  assert.ok(warnings.every((item) => item.severity === "warning"));
+  assert.ok(warnings.every((item) => item.hint.includes("--run-timeout 只控制 C Test Run")));
+
+  const explicitConfig = path.join(root, "explicit.config.mjs");
+  await writeFile(explicitConfig, configSource({ kernel: "timeoutMs: 20 * 60_000, ", busybox: "timeoutMs: 10 * 60_000, " }));
+  const explicit = streams();
+  assert.equal(await runCli(["--config", explicitConfig, "doctor", "--json"], explicit.streams), 0);
+  assert.equal(JSON.parse(explicit.value.stdout).issues.some((item) => item.code === "CT-DOCTOR-TIMEOUT-001"), false);
+});
+
 test("doctor 检查 Toolchain、静态链接、UML ptrace、受管目录和 Kernel 污染", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "cautest-cli-doctor-host-"));
   const config = path.join(root, "cautest.config.mjs");

@@ -3,9 +3,18 @@ import { kernelCTestJob, testConfig, umlKernelEnvironment } from "@cautest/confi
 export function kernelCounterJob(baseDir = ".") {
   const fromExample = (relative) => baseDir === "." ? relative : `${baseDir}/${relative}`;
   const environment = umlKernelEnvironment({
-    kernel: { sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux") },
-    busybox: { sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox") },
-    moduleDefaults: { headers: [fromExample("include/**/*.h")], defines: { EXAMPLE_TEST: 1 } },
+    kernel: {
+      sourceDir: process.env.KERNEL_SRC ?? fromExample("vendor/linux"),
+      timeoutMs: 20 * 60_000,
+    },
+    busybox: {
+      sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox"),
+      timeoutMs: 10 * 60_000,
+    },
+    moduleDefaults: {
+      headers: [fromExample("include/**/*.h")],
+      defines: { EXAMPLE_TEST: 1 },
+    },
   });
 
   return kernelCTestJob({
