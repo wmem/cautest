@@ -238,6 +238,33 @@ test("describe 支持公开 Job Factory/Preset 概要", async () => {
   assert.match(value.preset.summary, /CTP3/u);
 });
 
+test("describe.sources 覆盖中间汇总和公共 Factory 模块", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "cautest-cli-describe-sources-"));
+  const fragments = path.join(root, "config");
+  const config = path.join(root, "cautest.config.mjs");
+  await mkdir(fragments, { recursive: true });
+  await writeFile(path.join(fragments, "factory.mjs"), `import { defineStep, testJob } from ${JSON.stringify(configModule)};
+const step = defineStep({ kind: 'fixture', phase: 'run', execute() {} });
+export function createJob(id) { return testJob({ id, level: 'unit', workflow: [step] }); }
+`);
+  await writeFile(path.join(fragments, "jobs.mjs"), "import { createJob } from './factory.mjs';\nexport default [createJob('unit.fixture')];\n");
+  await writeFile(path.join(fragments, "index.mjs"), "export { default } from './jobs.mjs';\n");
+  await writeFile(config, `import { testConfig } from ${JSON.stringify(configModule)};
+import jobs from './config/index.mjs';
+export default testConfig({ jobs });
+`);
+
+  const io = streams();
+  assert.equal(await runCli(["--config", config, "describe", "--json"], io.streams), 0, io.value.stderr);
+  const value = JSON.parse(io.value.stdout);
+  assert.deepEqual(value.sources.map((source) => path.relative(root, source)).sort(), [
+    "cautest.config.mjs",
+    path.join("config", "factory.mjs"),
+    path.join("config", "index.mjs"),
+    path.join("config", "jobs.mjs"),
+  ]);
+});
+
 test("CLI 稳定区分 FAIL、ERROR、参数错误和显式空选择", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "cautest-cli-exit-codes-"));
   const config = path.join(root, "cautest.config.mjs");

@@ -141,6 +141,16 @@ export default testConfig({ jobs: [
   ]);
   const allPlan = JSON.parse((await exec(path.join(destination, "cautest.js"), ["--config", allInOne, "plan", "--json"], { cwd: temporary, env: exampleEnv })).stdout);
   assert.deepEqual(allPlan.map((job) => job.id), allList.map((job) => job.id));
+  const allDescription = JSON.parse((await exec(path.join(destination, "cautest.js"), ["--config", allInOne, "describe", "--json"], { cwd: temporary, env: exampleEnv })).stdout);
+  assert.deepEqual(allDescription.sources.map((source) => path.relative(path.join(destination, "examples"), source)).sort(), [
+    "all-in-one.config.mjs",
+    path.join("c-lib", "cautest.config.mjs"),
+    path.join("kernel-lib", "cautest.config.mjs"),
+    path.join("linux-driver-unit", "cautest.config.mjs"),
+    path.join("linux-driver", "cautest.config.mjs"),
+    path.join("mcu-sim", "cautest.config.mjs"),
+    path.join("system-script", "cautest.config.mjs"),
+  ]);
 
   for (const [example, jobId, level, tags] of [
     ["kernel-lib", "component.kernel-counter", "component", ["component", "kernel", "uml"]],

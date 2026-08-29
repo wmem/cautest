@@ -99,16 +99,21 @@ test("文件 Pattern 支持 Glob、排除、排序和逐项空匹配检查", asy
 
 async function writeConfigTree(parent, extraComment = "") {
   const root = path.join(parent, "project");
-  await mkdir(root, { recursive: true });
+  const fragments = path.join(root, "config");
+  await mkdir(fragments, { recursive: true });
   const api = pathToFileURL(path.resolve("dist/config/index.js")).href;
-  await writeFile(path.join(root, "jobs.mjs"), `import { defineStep, jobNamespace, testJob, withJobDefaults } from ${JSON.stringify(api)};
+  await writeFile(path.join(fragments, "factory.mjs"), `import { defineStep, testJob, withJobDefaults } from ${JSON.stringify(api)};
 ${extraComment}
 const run = defineStep({ kind: 'hashFixture', phase: 'run', execute() {} });
-const factory = withJobDefaults(testJob, { level: 'unit', workflow: [run] });
+export default withJobDefaults(testJob, { level: 'unit', workflow: [run] });
+`);
+  await writeFile(path.join(fragments, "jobs.mjs"), `import { jobNamespace } from ${JSON.stringify(api)};
+import factory from './factory.mjs';
 export default jobNamespace({ namespace: 'unit.hash', source: import.meta.url, factory, definitions: [{ name: 'example' }] });
 `);
+  await writeFile(path.join(fragments, "index.mjs"), "export { default } from './jobs.mjs';\n");
   await writeFile(path.join(root, "cautest.config.mjs"), `import { testConfig } from ${JSON.stringify(api)};
-import jobs from './jobs.mjs';
+import jobs from './config/index.mjs';
 export default testConfig({ jobs: [...jobs] });
 `);
   return path.join(root, "cautest.config.mjs");
@@ -123,6 +128,6 @@ test("configHash 覆盖配置片段内容和最终解析结果且不依赖检出
   const changed = await loadConfig(await writeConfigTree(changedRoot, "// 修改片段内容也必须改变指纹"));
   assert.equal(first.hash, second.hash);
   assert.notEqual(first.hash, changed.hash);
-  assert.deepEqual(first.sources.map((source) => path.basename(source)).sort(), ["cautest.config.mjs", "jobs.mjs"]);
+  assert.deepEqual(first.sources.map((source) => path.basename(source)).sort(), ["cautest.config.mjs", "factory.mjs", "index.mjs", "jobs.mjs"]);
   assert.equal((await readFile(first.sources[1], "utf8")).length > 0, true);
 });

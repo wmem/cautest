@@ -55,7 +55,7 @@ cautest --version | -V
 "$CAUTEST" run
 ```
 
-`plan` 显示最终 Job 来源、完整 ID 和严格执行顺序。`describe` 额外显示所有配置来源、最终默认项与 `configHash`；不指定 Job 时也列出公开 Job Factory/Preset，指定名称可以查询概要：
+`plan` 显示最终 Job 来源、完整 ID 和严格执行顺序。`describe` 额外显示所有本地配置来源、最终默认项与 `configHash`；来源包括根配置、Job 声明、中间汇总模块和公共 Factory 模块，不包括 Cautest 自身运行库及 `node_modules`。这些来源的文件内容和最终归一化配置共同参与 `configHash`。不指定 Job 时也列出公开 Job Factory/Preset，指定名称可以查询概要：
 
 ```bash
 "$CAUTEST" describe nativeCTestJob --json

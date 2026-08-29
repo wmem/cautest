@@ -6,6 +6,7 @@ import { isTestConfig } from "./define.js";
 import { CautestError } from "../model/error.js";
 import { calculateConfigHash } from "./hash.js";
 import { getJobOrigin, setJobOrigin } from "./provenance.js";
+import { collectConfigSources, enableConfigSourceTracking } from "./source-tracker.js";
 
 const configNames = ["cautest.config.js", "cautest.config.mjs", "cautest.config.cjs"] as const;
 
@@ -38,9 +39,11 @@ export async function findConfig(startDirectory = process.cwd()): Promise<string
 
 export async function loadConfig(configPath?: string): Promise<LoadedConfig> {
   const resolved = configPath === undefined ? await findConfig() : path.resolve(configPath);
+  const configUrl = pathToFileURL(resolved).href;
+  enableConfigSourceTracking();
   let loaded: Record<string, unknown>;
   try {
-    loaded = await import(pathToFileURL(resolved).href) as Record<string, unknown>;
+    loaded = await import(configUrl) as Record<string, unknown>;
   } catch (cause) {
     throw new CautestError(`无法加载配置 ${resolved}: ${cause instanceof Error ? cause.message : String(cause)}`, {
       code: "config_error",
@@ -55,7 +58,8 @@ export async function loadConfig(configPath?: string): Promise<LoadedConfig> {
       setJobOrigin(job, { source: pathToFileURL(resolved).href, configPath: `jobs.${job.id}` });
     }
   }
-  const fingerprint = await calculateConfigHash(loaded.default, resolved);
+  const importedSources = await collectConfigSources(configUrl, resolved);
+  const fingerprint = await calculateConfigHash(loaded.default, resolved, importedSources);
   return {
     config: loaded.default,
     path: resolved,

@@ -53,10 +53,14 @@ export interface ConfigHashResult {
   readonly sources: readonly string[];
 }
 
-/** 对所有正式配置片段内容和最终归一化结果计算位置无关的 SHA-256。 */
-export async function calculateConfigHash(config: TestConfig, configPath: string): Promise<ConfigHashResult> {
+/** 对所有已发现的配置来源内容和最终归一化结果计算位置无关的 SHA-256。 */
+export async function calculateConfigHash(
+  config: TestConfig,
+  configPath: string,
+  importedSources: readonly string[] = [],
+): Promise<ConfigHashResult> {
   const configDir = path.dirname(configPath);
-  const sourcePaths = new Set<string>([configPath]);
+  const sourcePaths = new Set<string>([configPath, ...importedSources]);
   for (const job of config.jobs) {
     const origin = getJobOrigin(job);
     if (origin !== undefined) sourcePaths.add(fileURLToPath(origin.source));
