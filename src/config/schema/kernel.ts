@@ -83,7 +83,7 @@ export interface BusyBoxBuildInput {
   readonly cache?: BuildCacheInput;
 }
 
-/** 所有 Kernel Module 共用、但不影响 Kernel/BusyBox Artifact 的默认值。 */
+/** Cautest Kernel Runtime 与自动生成 Test Module 共用、但不影响 Kernel/BusyBox Artifact 的默认值。 */
 export interface KernelModuleDefaultsInput {
   /** 自动进入指纹，并自动推导 Include 目录的公共 Header。 */
   readonly headers?: readonly FilePattern[];
@@ -103,7 +103,7 @@ export interface KernelModuleDefaultsInput {
   /** Module Make 默认并行度。@defaultValue 4 */
   readonly jobs?: number;
 
-  /** Module Build 默认超时，单位毫秒。 */
+  /** Cautest Kernel Runtime 与自动生成 Test Module 的 Build Step 默认超时，单位毫秒。 */
   readonly timeoutMs?: number;
 
   /** Module Artifact 默认缓存策略。 */

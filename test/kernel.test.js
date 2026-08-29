@@ -7,11 +7,11 @@ test("Kernel Environment 独立复用并展开自动 Test Module Workflow", () =
   const environment = umlKernelEnvironment({
     kernel: { sourceDir: "vendor/linux", arch: "um", timeoutMs: 20 * 60_000 },
     busybox: { sourceDir: "vendor/busybox", timeoutMs: 10 * 60_000 },
-    moduleDefaults: { headers: ["include/**/*.h"], defines: { DRIVER_TEST: 1 } },
+    moduleDefaults: { headers: ["include/**/*.h"], defines: { DRIVER_TEST: 1 }, timeoutMs: 5 * 60_000 },
     runtime: { maxRegistries: 64, eventCapacity: 512 },
   });
   const factory = kernelCTestJobFactory({ environment, defaults: { tags: ["kernel-unit"] } });
-  const job = factory({ id: "unit.utils.queue", tests: ["test/unit/queue_test.c"], sources: ["src/queue.c"], headers: ["src/queue.h"], guestPrograms: [{ name: "fixture", sources: ["test/guest.c"] }] });
+  const job = factory({ id: "unit.utils.queue", tests: ["test/unit/queue_test.c"], sources: ["src/queue.c"], headers: ["src/queue.h"], module: { timeoutMs: 7 * 60_000 }, guestPrograms: [{ name: "fixture", sources: ["test/guest.c"] }] });
   const plan = planConfig(testConfig({ jobs: [job] }))[0];
   assert.equal(plan.id, "unit.utils.queue");
   assert.deepEqual(plan.workflow.map((step) => step.kind), ["kernelBuild", "busyboxBuild", "kernelModuleBuild", "generatedKernelTestModule", "umlGuestProgramBuild", "umlRootfsBuild", "umlStart", "cTestRun", "umlLogs"]);
@@ -20,7 +20,13 @@ test("Kernel Environment 独立复用并展开自动 Test Module Workflow", () =
   assert.deepEqual(plan.workflow[4].details.sources, ["test/guest.c"]);
   assert.equal(plan.workflow[0].timeoutMs, 20 * 60_000);
   assert.equal(plan.workflow[1].timeoutMs, 10 * 60_000);
+  assert.equal(plan.workflow[2].timeoutMs, 5 * 60_000);
+  assert.equal(plan.workflow[3].timeoutMs, 7 * 60_000);
   assert.deepEqual(job.tags, ["kernel-unit"]);
+
+  const defaultPlan = planConfig(testConfig({ jobs: [factory({ id: "unit.utils.stack", tests: ["test/unit/stack_test.c"] })] }))[0];
+  assert.equal(defaultPlan.workflow[2].timeoutMs, 5 * 60_000);
+  assert.equal(defaultPlan.workflow[3].timeoutMs, 5 * 60_000);
 });
 
 test("Kernel Job 拒绝手写 Environment", () => {
