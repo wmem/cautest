@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -47,7 +47,7 @@ export default testConfig({ defaults: { resultDir: '.state/results' }, jobs: [te
   assert.equal(JSON.parse(await readFile(path.join(summary.resultDir, "summary.json"), "utf8")).runId, summary.runId);
 });
 
-test("doctor 在执行前报告稳定错误码", async () => {
+test("doctor 和 run 预检失败使用基础设施错误码且不创建 Run 结果目录", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "cautest-cli-doctor-"));
   const config = path.join(root, "cautest.config.mjs");
   await writeFile(config, `import { defineStep, testConfig, testJob } from ${JSON.stringify(configModule)};
@@ -59,6 +59,14 @@ export default testConfig({ jobs: [testJob({ id: 'unit.bad', level: 'unit', work
   assert.ok(codes.includes("CT-DOCTOR-KMOD-001"));
   assert.ok(codes.includes("CT-DOCTOR-KMOD-003"));
   assert.ok(codes.includes("CT-DOCTOR-KMOD-004"));
+
+  const runIo = streams();
+  assert.equal(await runCli(["--config", config, "run", "--json"], runIo.streams), 2);
+  const runResult = JSON.parse(runIo.value.stdout);
+  assert.equal(runResult.status, "ERROR");
+  assert.deepEqual(Object.keys(runResult).sort(), ["issues", "status"]);
+  assert.deepEqual(runResult.issues.map((issue) => issue.code), codes);
+  await assert.rejects(access(path.join(root, ".cautest/results")), { code: "ENOENT" });
 });
 
 test("doctor 警告 Kernel 和 BusyBox Build 继承通用 60 秒超时", async () => {

@@ -10,7 +10,6 @@ Cautest 同时测试 Host 编排和真实 C Target 行为。只通过 TypeScript
 | `pnpm test:uml` | 真实 Linux UML、`examples/kernel-lib`、`examples/linux-driver-unit`、自动 Test Module、Rootfs、Guest Agent 和 CTP3 Case |
 | `pnpm test:driver:uml` | 真实 Linux UML、Driver Module、test-only Probe、Guest ABI Test 和 CTP3 Case |
 | `pnpm test:e2e` | 从固定 Git Commit 使用 npx 与 pnpm dlx 编译、安装和执行便携版本 |
-| `pnpm audit:v1` | V1 的 103 个 API、46 个测试文件、6 组 Example 和 89 篇文档均有迁移结论 |
 | `pnpm versions:check` | 校验 Release、C API、CTP、Kernel/Probe ABI、Result/Event/CLI/Manifest/Cache 版本没有漂移 |
 
 默认 Node 测试使用临时目录和伪 Make 隔离外部成本，但不会用伪输出替代关键行为：Native/Driver Guest/MCU Firmware 会真实编译并执行；Kernel Module 测试会验证源码树前后文件集合、损坏 Manifest 重建和不同 ARCH/Kernel 并发。

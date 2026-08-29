@@ -93,7 +93,7 @@ Level 为 `unit`、`component`、`integration` 或 `system`。多个 `--tag` 使
 
 普通模式在 stdout 打印 Console 结果；实时 Step 进度和 heartbeat 写 stderr。`--verbose` 还会把构建与目标进程输出实时转发到 stderr。
 
-`run --json` 的 stdout 只包含一份有界的紧凑索引，包括 `runId`、状态、`configHash`、结果目录及标准文件路径；完整 Case、事件和 Artifact 保存在磁盘，不会随着测试数量无限扩大 stdout。CI 应分别捕获 stdout、stderr 和进程退出码。
+预检通过后，`run --json` 的 stdout 只包含一份有界的紧凑索引，包括 `runId`、状态、`configHash`、结果目录及标准文件路径；完整 Case、事件和 Artifact 保存在磁盘，不会随着测试数量无限扩大 stdout。预检失败时返回退出码 `2`，stdout 只包含 `{ "status": "ERROR", "issues": [...] }`，不会分配 `runId` 或创建标准 Run 结果目录。CI 应分别捕获 stdout、stderr 和进程退出码。
 
 Reporter 可通过 Profile 或 CLI 选择：
 

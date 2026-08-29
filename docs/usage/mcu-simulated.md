@@ -28,7 +28,7 @@ examples/mcu-sim/
     └── registry.c
 ```
 
-配置让 Cautest 构建 Host 模拟 Firmware，并只运行一个 Case：
+配置让 Cautest 构建 Host 模拟 Firmware，并运行两个 Case：
 
 ```js
 import { mcuCTestJob, testConfig } from "@cautest/config.js";

@@ -84,6 +84,10 @@ test("Usage 提供按需入口并绑定完整可执行示例", async () => {
     const contents = await readFile(path.join(root, `docs/usage/${document}`), "utf8");
     for (const field of ["kernel.timeoutMs", "busybox.timeoutMs", "--run-timeout", "C Test Run"]) assert.match(contents, new RegExp(field.replace(".", "\\."), "u"), `${document}: ${field}`);
   }
+
+  const mcu = await readFile(path.join(root, "docs/usage/mcu-simulated.md"), "utf8");
+  assert.match(mcu, /运行两个 Case/u);
+  assert.doesNotMatch(mcu, /只运行一个 Case/u);
 });
 
 test("开发者索引覆盖 Project Docs 核心阅读路径", async () => {
@@ -113,11 +117,8 @@ test("安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结
   const cli = await readFile(path.join(root, "docs/usage/cli.md"), "utf8");
   for (const command of ["list", "plan", "describe", "doctor", "run", "session", "clean", "help"]) assert.match(cli, new RegExp(`\\b${command}\\b`, "u"), `cli.md: ${command}`);
   for (const code of ["0", "1", "2", "3", "4", "130"]) assert.ok(cli.includes(`| \`${code}\` |`), `cli.md: exit ${code}`);
-});
+  for (const contract of ["issues", "不会分配 `runId`", "不会", "标准 Run 结果目录"]) assert.ok(cli.includes(contract), `cli.md: ${contract}`);
 
-test("V1 审计的 API、测试、Example 和文档均有明确迁移结论", async () => {
-  const inventory = JSON.parse(await readFile(path.join(root, "migration/v1-inventory.json"), "utf8"));
-  assert.equal(inventory.items.length, 244);
-  assert.deepEqual([...new Set(inventory.items.map((item) => item.status))].sort(), ["implemented", "intentional-change"]);
-  assert.ok(inventory.items.filter((item) => item.kind === "document" && item.status === "implemented").length > 0);
+  const results = await readFile(path.join(root, "docs/usage/results.md"), "utf8");
+  for (const contract of ["预检失败", "退出码 `2`", "issues", "不创建该目录"]) assert.ok(results.includes(contract), `results.md: ${contract}`);
 });

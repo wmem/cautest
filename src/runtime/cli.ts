@@ -411,7 +411,7 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams, options:
   if (issues.some((issue) => issue.severity === "error")) {
     if (parsed.json) streams.stdout.write(json({ status: "ERROR", issues }));
     else for (const issue of issues) line(streams, "stderr", `${issue.code} ${issue.jobId}/${issue.step}: ${issue.message}\n修复: ${issue.hint}`);
-    return 5;
+    return 2;
   }
   const runId = `${new Date().toISOString().replace(/[-:.TZ]/gu, "")}-${randomUUID().slice(0, 8)}`;
   const resultRoot = path.resolve(loaded.dir, parsed.outputDir ?? loaded.config.defaults.resultDir);

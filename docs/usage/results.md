@@ -1,6 +1,6 @@
 # 结果目录与 Reporter
 
-每次 `run` 在 `<defaults.resultDir>/<run-id>` 建立独立目录。实时进度写 stderr；`--json` 的 stdout 只返回带 CLI Schema Version 的紧凑索引，包含 `command`、`runId`、`status`、`configHash`、`resultDir` 以及 Result、Summary、Failures 路径。
+预检通过并开始执行后，每次 `run` 在 `<defaults.resultDir>/<run-id>` 建立独立目录。实时进度写 stderr；`--json` 的 stdout 只返回带 CLI Schema Version 的紧凑索引，包含 `command`、`runId`、`status`、`configHash`、`resultDir` 以及 Result、Summary、Failures 路径。预检失败发生在 Run 创建之前，返回退出码 `2` 和 `{ "status": "ERROR", "issues": [...] }`，不创建该目录。
 
 ## 标准文件
 

@@ -66,11 +66,11 @@ test("Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓
 test("Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-native-artifacts-"));
   const project = { configDir: projectRoot, resultDir: path.join(temporary, "results"), cacheDir: path.join(temporary, "cache"), generatedDir: path.join(temporary, "generated"), workDir: path.join(temporary, "work") };
-  const definition = nativeCTestJob({ id: "unit.native.v1", tests: ["test/fixtures/native/v1_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { include: ["native_cases/pass_case", "native_cases/parameter_case@*"] }, coverage: {} });
+  const definition = nativeCTestJob({ id: "unit.native.behavior", tests: ["test/fixtures/native/native_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { include: ["native_cases/pass_case", "native_cases/parameter_case@*"] }, coverage: {} });
   const eventFile = path.join(temporary, "events.jsonl");
   const events = new EventRecorder({ file: eventFile });
   const first = await executeWorkflow(definition, { project, events });
-  const eventProbe = await executeWorkflow(nativeCTestJob({ id: "unit.native.event-probe", tests: ["test/fixtures/native/v1_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { include: ["native_cases/fail_case"] } }), { project, events });
+  const eventProbe = await executeWorkflow(nativeCTestJob({ id: "unit.native.event-probe", tests: ["test/fixtures/native/native_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { include: ["native_cases/fail_case"] } }), { project, events });
   await events.close();
   assert.equal(first.status, "SUCCESS");
   assert.equal(eventProbe.status, "FAIL");
@@ -122,16 +122,16 @@ test("Profile Env 覆盖 Native Job Env，并进入构建、运行和 Cache 指�
 
 test("Native Crash/Timeout 映射 ERROR 且后续 Case 继续", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-native-isolation-"));
-  const definition = nativeCTestJob({ id: "unit.native.isolation", tests: ["test/fixtures/native/v1_cases.c"], suites: ["native_cases", "snapshot_cases"], build: { cache: { enabled: false } }, run: { include: ["native_cases/crash_case", "native_cases/timeout_case", "native_cases/parameter_case@one"], caseTimeoutMs: 80, runTimeoutMs: 5_000 } });
+  const definition = nativeCTestJob({ id: "unit.native.isolation", tests: ["test/fixtures/native/native_cases.c"], suites: ["native_cases", "snapshot_cases"], build: { cache: { enabled: false } }, run: { include: ["native_cases/crash_case", "native_cases/timeout_case", "native_cases/parameter_case@one"], caseTimeoutMs: 80, runTimeoutMs: 5_000 } });
   const result = await executeWorkflow(definition, { project: { configDir: projectRoot, resultDir: path.join(temporary, "results"), workDir: path.join(temporary, "work") } });
   assert.equal(result.status, "ERROR"); assert.deepEqual(result.groups[0].cases.map((item) => [item.name, item.status]), [["crash_case", "ERROR"], ["timeout_case", "ERROR"], ["parameter_case@one", "PASS"]]);
 });
 
 test("Native 保留 FAIL/SKIP/ERROR，并让 Suite Fixture 使用同一初始快照", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-native-semantics-")); const project = { configDir: projectRoot, resultDir: path.join(temporary, "results"), cacheDir: path.join(temporary, "cache"), workDir: path.join(temporary, "work") };
-  const statuses = await executeWorkflow(nativeCTestJob({ id: "unit.native.statuses", tests: ["test/fixtures/native/v1_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { include: ["native_cases/fail_case", "native_cases/skip_case", "native_cases/error_case"] } }), { project });
+  const statuses = await executeWorkflow(nativeCTestJob({ id: "unit.native.statuses", tests: ["test/fixtures/native/native_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { include: ["native_cases/fail_case", "native_cases/skip_case", "native_cases/error_case"] } }), { project });
   assert.equal(statuses.status, "ERROR"); assert.deepEqual(statuses.groups[0].cases.map((item) => [item.name, item.status]), [["fail_case", "FAIL"], ["skip_case", "SKIP"], ["error_case", "ERROR"]]);
-  const snapshot = await executeWorkflow(nativeCTestJob({ id: "unit.native.snapshot", tests: ["test/fixtures/native/v1_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { suite: "snapshot_cases" } }), { project });
+  const snapshot = await executeWorkflow(nativeCTestJob({ id: "unit.native.snapshot", tests: ["test/fixtures/native/native_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { suite: "snapshot_cases" } }), { project });
   assert.equal(snapshot.status, "SUCCESS"); assert.deepEqual(snapshot.groups[0].cases.map((item) => [item.name, item.status]), [["snapshot_first", "PASS"], ["snapshot_second", "PASS"]]);
   const stdout = await readFile(snapshot.artifacts.find((item) => item.name.endsWith("-stdout")).path, "utf8"); assert.equal(stdout.match(/suite setup marker/gu)?.length, 1); assert.equal(stdout.match(/suite teardown marker/gu)?.length, 1);
 });
