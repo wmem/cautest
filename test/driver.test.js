@@ -25,6 +25,7 @@ test("Linux Driver 示例同时引入公共版本与 Kernel Probe Header", async
   const makefile = await readFile(path.join(project, "examples/linux-driver/driver/Makefile"), "utf8");
   assert.match(makefile, /-I\$\(CAUTEST_C_ROOT\)\/include/u);
   assert.match(makefile, /-I\$\(CAUTEST_C_ROOT\)\/platform\/linux-kernel\/include/u);
+  assert.match(makefile, /example_driver-y := example_driver_main\.o example_driver_value\.o/u);
 });
 
 test("Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3", async () => {
@@ -38,6 +39,20 @@ test("Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3", asy
   const session = await runNativeSession({ program: artifact.path, cwd: project, env: process.env, expectedBuildId: artifact.buildId, run: { include: ["smoke/passes"] }, signal });
   assert.equal(session.groups[0].cases[0].status, "PASS");
   assert.equal(session.selection[0].name, "smoke/passes");
+});
+
+test("Linux Driver 典型示例的多个 Guest 测试文件可以共同构建", async () => {
+  const project = path.resolve(new URL("..", import.meta.url).pathname);
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-driver-example-"));
+  const artifact = await buildDriverGuestCTest("integration.driver.example", {
+    tests: ["examples/linux-driver/guest/**/*_test.c"],
+    headers: ["examples/linux-driver/include/**/*.h"],
+    suites: ["driver_api", "driver_contract"],
+  }, {
+    job: { id: "integration.driver.example", env: {} }, signal: new AbortController().signal, state: new Map(), output() {},
+    project: { configDir: project, resultDir: path.join(temporary, "results"), cacheDir: path.join(temporary, "cache"), generatedDir: path.join(temporary, "generated"), workDir: path.join(temporary, "work") },
+  });
+  await assert.doesNotReject(access(artifact.path));
 });
 
 test("Driver Guest 构建兑现自定义缓存目录、禁用缓存和 fingerprintEnv", async () => {

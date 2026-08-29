@@ -12,8 +12,8 @@ export function kernelCounterJob(baseDir = ".") {
       timeoutMs: 10 * 60_000,
     },
     moduleDefaults: {
-      headers: [fromExample("include/**/*.h")],
       defines: { EXAMPLE_TEST: 1 },
+      timeoutMs: 5 * 60_000,
     },
   });
 
@@ -21,10 +21,10 @@ export function kernelCounterJob(baseDir = ".") {
     id: "component.kernel-counter",
     level: "component",
     environment,
-    tests: [fromExample("test/kernel_counter_test.c")],
-    sources: [fromExample("src/kernel_counter.c")],
-    headers: [fromExample("include/kernel_counter.h")],
-    suites: ["kernel_counter"],
+    tests: [fromExample("test/**/*_test.c")],
+    sources: [fromExample("src/**/*.c")],
+    headers: [fromExample("include/**/*.h")],
+    suites: ["kernel_counter", "kernel_counter_limits"],
   });
 }
 

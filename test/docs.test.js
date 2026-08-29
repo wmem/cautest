@@ -73,6 +73,13 @@ test("Usage 提供按需入口并绑定完整可执行示例", async () => {
     for (const command of ["doctor", "list", "plan", "run"]) assert.match(contents, new RegExp(`\\b${command}\\b`, "u"), `${document}: ${command}`);
   }
 
+  for (const document of ["native-c.md", "kernel-uml.md", "linux-driver-unit.md", "linux-driver-abi.md", "mcu-simulated.md", "system-script.md"]) {
+    const contents = await readFile(path.join(root, `docs/usage/${document}`), "utf8");
+    assert.match(contents, /最小/u, `${document}: 最小用法`);
+    assert.match(contents, /典型/u, `${document}: 典型用法`);
+    assert.match(contents, /config-reference\.md/u, `${document}: 配置入口`);
+  }
+
   for (const document of ["kernel-uml.md", "linux-driver-unit.md", "linux-driver-abi.md", "troubleshooting.md"]) {
     const contents = await readFile(path.join(root, `docs/usage/${document}`), "utf8");
     for (const field of ["kernel.timeoutMs", "busybox.timeoutMs", "--run-timeout", "C Test Run"]) assert.match(contents, new RegExp(field.replace(".", "\\."), "u"), `${document}: ${field}`);

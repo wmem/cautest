@@ -61,7 +61,7 @@ test("真实入口展开 Kernel 与 Driver/Probe/Guest ABI UML Workflow", () => 
   ]);
   assert.equal(driverUnit.id, "unit.example-driver-core");
   assert.deepEqual(driverUnit.workflow.map((step) => step.kind), kernel.workflow.map((step) => step.kind));
-  assert.deepEqual(driverUnit.workflow[3].details.tests, ["examples/linux-driver-unit/test/example_driver_core_test.c"]);
+  assert.deepEqual(driverUnit.workflow[3].details.tests, ["examples/linux-driver-unit/test/**/*_test.c"]);
 
   const driver = planConfig(driverUmlSmokeConfig(prerequisites))[0];
   assert.equal(driver.id, "integration.uml.driver-probe-smoke");
@@ -71,6 +71,6 @@ test("真实入口展开 Kernel 与 Driver/Probe/Guest ABI UML Workflow", () => 
   ]);
   assert.equal(driver.workflow[2].name, "cautest_probe");
   assert.equal(driver.workflow[3].name, "example_driver");
-  assert.deepEqual(driver.workflow[4].details.tests, ["examples/linux-driver/guest/driver_abi_test.c"]);
+  assert.deepEqual(driver.workflow[4].details.tests, ["examples/linux-driver/guest/**/*_test.c"]);
   assert.deepEqual(driver.workflow[7].details.selection.include, ["driver_api/read_reaches_driver_boundary"]);
 });

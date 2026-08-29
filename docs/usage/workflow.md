@@ -74,4 +74,6 @@ cd examples/workflow
 
 `composeJobWorkflows()` 按 `prepare → build → provision → run → collect` 重排多个来源的 Step，同时保留同一 Phase 内的声明顺序。任一普通 Step 出错后，后续普通 Step 不再运行，但 `always`/`on-failure` Collect 和 LIFO Cleanup 仍会执行。
 
-不要把两个拥有独立 Kernel/UML Backbone 的 Job 直接合并，否则 Artifact、Resource 和 State 名称可能冲突。只复用部分能力时使用 `standardJobFragment()` 按 Phase、Kind 或 Name 选择；精确类型查看 `lib/config/index.d.ts`。
+示例中的 Native 来源保持最小输入只是为了突出 Workflow 组合；真实来源 Job 可以像[组织典型项目](project-organization.md)一样使用多个源码、测试文件和 Suite。
+
+不要把两个拥有独立 Kernel/UML Backbone 的 Job 直接合并，否则 Artifact、Resource 和 State 名称可能冲突。只复用部分能力时使用 `standardJobFragment()` 按 Phase、Kind 或 Name 选择。`StandardJobFragmentSelection`、`WorkflowFragment` 和 `TestJobInput` 由 `lib/config/index.d.ts` 导出；完整函数地图见[配置 API 索引](config-reference.md)。

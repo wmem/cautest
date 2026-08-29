@@ -2,14 +2,30 @@
 
 Driver ABI Test 会真实构建并加载产品 Driver，在 UML Guest Userspace 运行 C Test，通过设备节点验证公开 ABI。需要观察 Driver 内部事件时，可以同时启用 Cautest test-only Probe。它适合接口集成测试，不替代只针对内部算法的 [Driver Unit Test](linux-driver-unit.md)。
 
-完整示例位于 `examples/linux-driver/`：
+最小 Job 需要 UML Environment、至少一个 Driver Module 和一个 Guest 测试源码：
+
+```js
+driverAbiCTestJob({
+  id: "integration.driver",
+  environment,
+  drivers: [{ name: "driver", sourceDir: "driver", output: "driver.ko" }],
+  guest: { tests: ["test/driver_abi_test.c"] },
+});
+```
+
+小而典型的多文件示例位于 `examples/linux-driver/`：
 
 ```text
 examples/linux-driver/
 ├── cautest.config.mjs
-├── driver/Makefile
-├── driver/example_driver.c
-├── guest/driver_abi_test.c
+├── driver/
+│   ├── Makefile
+│   ├── example_driver_internal.h
+│   ├── example_driver_main.c
+│   └── example_driver_value.c
+├── guest/
+│   ├── driver_abi_test.c
+│   └── driver_contract_test.c
 └── include/example_driver_abi.h
 ```
 
@@ -37,9 +53,9 @@ export function driverAbiJob(baseDir = ".") {
     probe: {},
     drivers: [{ name: "example_driver", sourceDir: fromExample("driver"), sandboxRoot: baseDir, output: "example_driver.ko" }],
     guest: {
-      tests: [fromExample("guest/driver_abi_test.c")],
-      headers: [fromExample("include/example_driver_abi.h")],
-      suites: ["driver_api"],
+      tests: [fromExample("guest/**/*_test.c")],
+      headers: [fromExample("include/**/*.h")],
+      suites: ["driver_api", "driver_contract"],
     },
   });
 }
@@ -61,8 +77,10 @@ cd examples/linux-driver
 ../../cautest.js run integration.example-driver
 ```
 
-成功结果包含 Kernel、Probe Module、产品 Driver、Guest Program、Rootfs、UML 日志和 `driver_api/read_reaches_driver_boundary`。Guest Test 的 Registry 和 `main()` 由 Cautest 生成，不需要 Guest Makefile。
+成功结果包含 Kernel、Probe Module、多源码产品 Driver、Guest Program、Rootfs、UML 日志，以及 `driver_api/read_reaches_driver_boundary`、`driver_contract/rejects_short_read_buffer`。Guest Test 的 Registry 和 `main()` 由 Cautest 生成，不需要 Guest Makefile。
+
+同一个 Driver ABI 和 Guest 生命周期下可以继续增加 Driver Kbuild 源码、Guest 测试文件和 Suite；设备、Kernel 配置、加载顺序或 CI 选择边界不同时再拆 Job。通用规则见[组织典型项目](project-organization.md)。
 
 `kernel.timeoutMs` 和 `busybox.timeoutMs` 分别控制对应 Build Step；示例为首次构建预留 20 分钟和 10 分钟，应根据机器性能和源码配置调整。CLI 的 `--run-timeout` 只控制 Guest 中的 C Test Run，不能解决 Kernel、BusyBox、Probe 或 Driver Module 的构建 Step 超时；这些 Step 需要在对应配置字段上单独设置 `timeoutMs`。
 
-如果 Driver Module 构建失败，先确认 `sourceDir`、`sandboxRoot`、`output` 与实际 Kbuild 一致。使用 Probe 时，Driver Makefile 必须包含 `$(CAUTEST_C_ROOT)/include` 和 `$(CAUTEST_C_ROOT)/platform/linux-kernel/include`。Driver 和 Guest 的精确配置查看 `lib/config/schema/driver.d.ts`；Probe ABI 以 `assets/cautest-c/platform/linux-kernel/include/cautest/probe.h` 和 `assets/cautest-c/agent/uml-guest-agent/probe_client.h` 为准。
+如果 Driver Module 构建失败，先确认 `sourceDir`、`sandboxRoot`、`output` 与实际 Kbuild 一致。使用 Probe 时，Driver Makefile 必须包含 `$(CAUTEST_C_ROOT)/include` 和 `$(CAUTEST_C_ROOT)/platform/linux-kernel/include`。`driverAbiCTestJob()` → `DriverAbiCTestJobInput` → `lib/config/schema/driver.d.ts`；公共 UML Environment 位于 `kernel.d.ts`。Probe ABI 以 `assets/cautest-c/platform/linux-kernel/include/cautest/probe.h` 和 `assets/cautest-c/agent/uml-guest-agent/probe_client.h` 为准，完整映射见[配置 API 索引](config-reference.md)。

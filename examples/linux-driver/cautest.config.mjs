@@ -19,9 +19,9 @@ export function driverAbiJob(baseDir = ".") {
     probe: {},
     drivers: [{ name: "example_driver", sourceDir: fromExample("driver"), sandboxRoot: baseDir, output: "example_driver.ko" }],
     guest: {
-      tests: [fromExample("guest/driver_abi_test.c")],
-      headers: [fromExample("include/example_driver_abi.h")],
-      suites: ["driver_api"],
+      tests: [fromExample("guest/**/*_test.c")],
+      headers: [fromExample("include/**/*.h")],
+      suites: ["driver_api", "driver_contract"],
     },
   });
 }

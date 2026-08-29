@@ -15,6 +15,7 @@ export function driverUnitJob(baseDir = ".") {
       sourceDir: process.env.BUSYBOX_SRC ?? fromExample("vendor/busybox"),
       timeoutMs: 10 * 60_000,
     },
+    moduleDefaults: { timeoutMs: 5 * 60_000 },
   });
 
   const driverUnitTest = kernelCTestJobFactory({
@@ -24,10 +25,10 @@ export function driverUnitJob(baseDir = ".") {
 
   return driverUnitTest({
     id: "unit.example-driver-core",
-    tests: [fromExample("test/example_driver_core_test.c")],
-    sources: [fromExample("driver/example_driver_core.c")],
-    headers: [fromExample("include/example_driver_core.h")],
-    suites: ["example_driver_core"],
+    tests: [fromExample("test/**/*_test.c")],
+    sources: [fromExample("driver/**/*.c")],
+    headers: [fromExample("include/**/*.h")],
+    suites: ["example_driver_core", "example_driver_state"],
   });
 }
 

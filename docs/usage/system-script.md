@@ -2,11 +2,21 @@
 
 Script System Test 适合从进程外部验证服务、CLI 或系统集成行为。Workflow 可以启动被测进程、等待 Ready 条件、执行 JavaScript Case，最后无论成功或失败都收集日志并清理资源。
 
-完整示例位于 `examples/system-script/`：
+只执行已有 Script Test 文件时，最小 Job 是：
+
+```js
+scriptSystemTestJob({
+  id: "system.api",
+  file: "test/system/api.test.mjs",
+});
+```
+
+小而典型的服务生命周期示例位于 `examples/system-script/`：
 
 ```text
 examples/system-script/
 ├── cautest.config.mjs
+├── client.mjs
 ├── server.mjs
 └── system.test.mjs
 ```
@@ -49,12 +59,19 @@ export default testConfig({ jobs: [systemExampleJob()] });
 
 ```js
 import { defineScriptTest } from "@cautest/config.js";
+import { getJson } from "./client.mjs";
 
 export default defineScriptTest(async ({ test, signal, env }) => {
   await test.case("health endpoint returns ok", async (t) => {
-    const response = await fetch(`${env.CAUTEST_EXAMPLE_URL}/health`, { signal });
+    const response = await getJson(`${env.CAUTEST_EXAMPLE_URL}/health`, signal);
     t.assertEqual(200, response.status);
-    t.expectEqual('{"status":"ok"}\n', await response.text());
+    t.expectEqual("ok", response.body.status);
+  });
+
+  await test.case("version endpoint returns release", async (t) => {
+    const response = await getJson(`${env.CAUTEST_EXAMPLE_URL}/version`, signal);
+    t.assertEqual(200, response.status);
+    t.expectEqual("1.0.0", response.body.version);
   });
 });
 ```
@@ -69,4 +86,6 @@ cd examples/system-script
 ../../cautest.js run system.example-api
 ```
 
-成功时 `health endpoint returns ok` Case 为 PASS，服务 stdout/stderr 作为 Artifact 保存；进程由 Resource 生命周期自动关闭。服务没有 Ready 时先检查 `processStart.ready` 的 URL、状态、响应体和超时。Script Test 上下文和 System Step 的精确接口位于 `lib/config/index.d.ts`、`lib/config/schema/system.d.ts`。
+成功时两个 Endpoint Case 都为 PASS，服务 stdout/stderr 作为 Artifact 保存；进程由 Resource 生命周期自动关闭。一个 Script Test 文件可以组织共享环境和生命周期的多个 Case，并把通用请求代码放在普通 `.mjs` 模块中；需要独立服务、环境变量、超时或 CI 选择时再拆成多个 Job。通用边界见[组织典型项目](project-organization.md)。
+
+服务没有 Ready 时先检查 `processStart.ready` 的 URL、状态、响应体和超时。`scriptSystemTestJob()` → `ScriptSystemTestJobInput` → `lib/config/schema/system.d.ts`；`defineScriptTest()` 和 System Step 位于 `lib/config/index.d.ts` 导出的相应声明文件，完整映射见[配置 API 索引](config-reference.md)。

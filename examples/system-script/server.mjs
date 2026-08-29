@@ -7,6 +7,11 @@ const server = http.createServer((request, response) => {
     response.end('{"status":"ok"}\n');
     return;
   }
+  if (request.method === "GET" && request.url === "/version") {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end('{"version":"1.0.0"}\n');
+    return;
+  }
   response.writeHead(404, { "content-type": "application/json" });
   response.end('{"status":"not-found"}\n');
 });

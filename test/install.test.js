@@ -123,9 +123,9 @@ export default testConfig({ jobs: [
   }
 
   for (const [example, jobId, level, tags, expectedCases] of [
-    ["c-lib", "unit.example-math", "unit", ["unit"], ["adds_two_numbers"]],
-    ["mcu-sim", "component.mcu-sim", "component", ["component", "mcu"], ["passes"]],
-    ["system-script", "system.example-api", "system", ["system", "script"], ["health endpoint returns ok"]],
+    ["c-lib", "unit.example-math", "unit", ["unit"], ["adds_two_numbers", "clamps_to_range"]],
+    ["mcu-sim", "component.mcu-sim", "component", ["component", "mcu"], ["adds_values", "clamps_values"]],
+    ["system-script", "system.example-api", "system", ["system", "script"], ["health endpoint returns ok", "version endpoint returns release"]],
     ["workflow", "system.composed-local", "system", [], ["adds_two_numbers", "server is ready"]],
   ]) {
     const exampleConfig = path.join(destination, `examples/${example}/cautest.config.mjs`);

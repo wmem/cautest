@@ -7,9 +7,9 @@ export function mcuSimJob(baseDir = ".") {
     firmware: {
       kind: "host-simulated",
       output: ".cautest/generated/mcu-sim-target",
-      sources: [fromExample("firmware_cases.c")],
+      sources: [fromExample("src/**/*.c"), fromExample("test/**/*.c")],
+      headers: [fromExample("include/**/*.h")],
     },
-    run: { include: ["mcu_example/passes"] },
   });
 }
 
