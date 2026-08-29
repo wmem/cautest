@@ -15,7 +15,7 @@ async function prepareBuildInfo() {
   await exec(process.execPath, ["dist/build-info.js"], { cwd: projectRoot });
 }
 
-test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", async () => {
+test("安装器生成仅含运行 JS 和公开声明的自包含便携目录", async () => {
   await prepareBuildInfo();
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-install-"));
   const destination = path.join(temporary, "tools/cautest");
@@ -27,7 +27,7 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   assert.ok(!rootEntries.includes("usage"));
   assert.ok(rootEntries.includes("examples"));
   assert.ok(!rootEntries.includes("node_modules"));
-  assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.d.ts", "cli.d.ts.map", "cli.js", "cli.js.map", "direct-session.d.ts", "direct-session.d.ts.map", "direct-session.js", "direct-session.js.map", "environment.d.ts", "environment.d.ts.map", "environment.js", "environment.js.map", "interrupt.d.ts", "interrupt.d.ts.map", "interrupt.js", "interrupt.js.map", "process.d.ts", "process.d.ts.map", "process.js", "process.js.map"]);
+  assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.js", "direct-session.js", "environment.js", "interrupt.js", "process.js"]);
   await assert.rejects(lstat(path.join(destination, "lib/vendor")));
   assert.equal((await readFile(path.join(destination, "lib/pattern/glob.js"), "utf8")).includes("globMatcher"), true);
   assert.match(await readFile(path.join(destination, "README.md"), "utf8"), /\[使用指南\]\(docs\/usage\/index\.md\)/u);
@@ -39,6 +39,10 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
   await assert.rejects(lstat(path.join(destination, "docs/usage/installed.md")));
   await assert.rejects(lstat(path.join(destination, "docs/index.md")));
   await assert.rejects(lstat(path.join(destination, "docs/specifications")));
+  await assert.rejects(lstat(path.join(destination, "lib/doctor/index.d.ts")));
+  await assert.rejects(lstat(path.join(destination, "lib/runtime/cli.d.ts")));
+  assert.equal((await lstat(path.join(destination, "lib/config/index.d.ts"))).isFile(), true);
+  assert.equal((await lstat(path.join(destination, "lib/config/schema/native.d.ts"))).isFile(), true);
 
   const cBuild = path.join(temporary, "c-kit-build");
   const cPrefix = path.join(temporary, "c-kit-prefix");
@@ -60,6 +64,35 @@ test("安装器生成无 TypeScript 和 node_modules 的自包含便携目录", 
     }
   }
   await visit(destination);
+
+  async function visitLibrary(directory) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const location = path.join(directory, entry.name);
+      if (entry.isDirectory()) await visitLibrary(location);
+      else assert.ok(entry.name.endsWith(".js") || entry.name.endsWith(".d.ts"), `lib 包含非运行或声明文件: ${location}`);
+    }
+  }
+  await visitLibrary(path.join(destination, "lib"));
+
+  const typedConfig = path.join(temporary, "typed.config.mjs");
+  const typedProject = path.join(temporary, "jsconfig.json");
+  await writeFile(typedConfig, `import { nativeCTestJob, testConfig } from '@cautest/config.js';
+export default testConfig({ jobs: [nativeCTestJob({ id: 'unit.typed', tests: ['test/**/*_test.c'] })] });
+`);
+  await writeFile(typedProject, `${JSON.stringify({
+    compilerOptions: {
+      checkJs: true,
+      noEmit: true,
+      module: "NodeNext",
+      moduleResolution: "NodeNext",
+      baseUrl: ".",
+      paths: { "@cautest/config.js": [path.join(destination, "lib/config/index.d.ts")] },
+      types: ["node"],
+      typeRoots: [path.join(projectRoot, "node_modules/@types")],
+    },
+    include: [typedConfig],
+  }, null, 2)}\n`);
+  await exec(process.execPath, [path.join(projectRoot, "node_modules/typescript/bin/tsc"), "-p", typedProject], { cwd: temporary });
 
   const config = path.join(temporary, "cautest.config.mjs");
   await writeFile(config, `import { defineStep, testConfig, testJob } from '@cautest/config.js';

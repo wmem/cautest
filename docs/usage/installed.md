@@ -16,4 +16,4 @@ CAUTEST=./tools/cautest/cautest.js
 "$CAUTEST" doctor
 ```
 
-项目配置必须通过这个便携目录中的 `cautest.js` 加载。安装目录内的 `lib/config/index.d.ts` 和 `lib/config/schema/*.d.ts` 提供 JavaScript 配置类型，`assets/cautest-c/` 提供 C Runtime 和公共头文件。
+项目配置必须通过这个便携目录中的 `cautest.js` 加载，并统一从 `@cautest/config.js` 导入配置 API。`lib/` 保存运行所需 JavaScript 和该公开入口可达的 `.d.ts`，内部目录结构不是导入接口；精确类型从 `lib/config/index.d.ts` 和 `lib/config/schema/*.d.ts` 查询。`assets/cautest-c/` 提供 C Runtime 和公共头文件。

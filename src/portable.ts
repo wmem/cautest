@@ -13,6 +13,41 @@ export interface BuildInfo {
 }
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const distRoot = path.join(packageRoot, "dist");
+const declarationReference = /(?:\bfrom\s+|\bimport\s*\(\s*)["'](\.[^"']+)["']/gu;
+
+async function collectPublicDeclarations(): Promise<ReadonlySet<string>> {
+  const declarations = new Set<string>();
+  async function visit(relative: string): Promise<void> {
+    const normalized = relative.split(path.sep).join("/");
+    if (declarations.has(normalized)) return;
+    declarations.add(normalized);
+    const location = path.join(distRoot, normalized);
+    const contents = await readFile(location, "utf8");
+    for (const match of contents.matchAll(declarationReference)) {
+      const specifier = match[1];
+      if (specifier === undefined) continue;
+      const resolved = path.resolve(path.dirname(location), specifier.endsWith(".js") ? `${specifier.slice(0, -3)}.d.ts` : specifier);
+      const dependency = path.relative(distRoot, resolved);
+      if (dependency === ".." || dependency.startsWith(`..${path.sep}`) || path.isAbsolute(dependency)) {
+        throw new Error(`公共声明引用 dist 之外的文件: ${specifier}`);
+      }
+      await visit(dependency);
+    }
+  }
+  await visit("config/index.d.ts");
+  return declarations;
+}
+
+function portableLibraryFilter(publicDeclarations: ReadonlySet<string>): (source: string) => boolean {
+  return (source) => {
+    const name = path.basename(source);
+    if (!name.includes(".")) return true;
+    if (name.endsWith(".js")) return true;
+    if (!name.endsWith(".d.ts")) return false;
+    return publicDeclarations.has(path.relative(distRoot, source).split(path.sep).join("/"));
+  };
+}
 
 export async function readBuildInfo(): Promise<BuildInfo> {
   const value: unknown = JSON.parse(await readFile(path.join(packageRoot, "dist/build-info.json"), "utf8"));
@@ -49,12 +84,14 @@ export async function collectPortableFiles(root: string, relative = ""): Promise
 }
 
 export async function createPortableTree(root: string, build: BuildInfo): Promise<void> {
+  const publicDeclarations = await collectPublicDeclarations();
+  const libraryFilter = portableLibraryFilter(publicDeclarations);
   await mkdir(path.join(root, "lib"), { recursive: true });
   for (const directory of ["cache", "config", "doctor", "integration", "jobs", "kernel", "model", "pattern", "protocol", "reporters", "result", "steps", "system", "uml", "workflow"]) {
-    await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true });
+    await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true, filter: libraryFilter });
   }
   await mkdir(path.join(root, "lib/runtime"));
-  for (const file of ["cli.js", "cli.js.map", "cli.d.ts", "cli.d.ts.map", "direct-session.js", "direct-session.js.map", "direct-session.d.ts", "direct-session.d.ts.map", "environment.js", "environment.js.map", "environment.d.ts", "environment.d.ts.map", "interrupt.js", "interrupt.js.map", "interrupt.d.ts", "interrupt.d.ts.map", "process.js", "process.js.map", "process.d.ts", "process.d.ts.map"]) {
+  for (const file of ["cli.js", "direct-session.js", "environment.js", "interrupt.js", "process.js"]) {
     await cp(path.join(packageRoot, `dist/runtime/${file}`), path.join(root, `lib/runtime/${file}`));
   }
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
