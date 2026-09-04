@@ -22,6 +22,6 @@ Cautest 把不同目标环境的准备、构建、运行和收集过程统一为
 - [C Test API](specifications/c-test-api.md)
 - [CTP3 协议](specifications/ctp3.md)
 
-修改多个实现责任之间的协作时阅读[执行架构](architecture/overview.md)；维护独立 C Runtime 交付时阅读 [C Kit](architecture/c-kit.md)。准备验证变更或特殊环境时阅读[测试策略](tests/testing.md)。
+修改多个实现责任之间的协作时阅读[执行架构](architecture/overview.md)；维护独立 C Runtime 交付时阅读 [C Kit](architecture/c-kit.md)。准备验证变更或特殊环境时阅读[测试策略](tests/testing.md)，查看发布历史和兼容性基线时阅读[版本记录](changelog.md)。
 
 这些文档按 Project Docs V2 组织：Capability 描述面向场景的系统行为，Specification 保存需要精确查阅的规则，Architecture 解释实现责任如何协作，Test 保存长期验证知识。同一事实只在一个位置精确定义，其他页面通过上下文和自然链接连接。

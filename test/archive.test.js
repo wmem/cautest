@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
+import { CAUTEST_RELEASE_VERSION } from "../dist/config/index.js";
 
 const exec = promisify(execFile);
 const projectRoot = path.resolve(new URL("..", import.meta.url).pathname);
@@ -44,7 +45,7 @@ test("便携包可解压、校验并直接运行", async (t) => {
   await exec("tar", ["-xzf", output, "-C", extracted]);
   const executable = path.join(extracted, "cautest/cautest.js");
   assert.notEqual((await lstat(executable)).mode & 0o111, 0);
-  assert.match((await exec(executable, ["--version"])).stdout, /^Cautest 0\.2\.0 \(commit /u);
+  assert.match((await exec(executable, ["--version"])).stdout, new RegExp(`^Cautest ${CAUTEST_RELEASE_VERSION.replaceAll(".", "\\.")} \\(commit `, "u"));
 
   const example = path.join(extracted, "cautest/examples/c-lib/cautest.config.mjs");
   const run = await exec(executable, ["--config", example, "run", "--json"], { cwd: temporary });

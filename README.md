@@ -55,6 +55,7 @@ tar -xzf cautest-<版本>-<commit>.tar.gz -C ./tools
 ## 下一步
 
 - 第一次使用或需要选择测试类型，从[使用指南](docs/usage/index.md)开始；
-- 开发、维护或诊断 Cautest 本身，从[开发者文档](docs/index.md)开始。
+- 开发、维护或诊断 Cautest 本身，从[开发者文档](docs/index.md)开始；
+- 评估升级影响或准备发布时，查看[版本记录](docs/changelog.md)和[版本维护流程](docs/tests/testing.md#版本维护与发布)。
 
 安装目录会携带 `docs/usage/`、可运行的 `examples/`、配置 `.d.ts` 和 C 公共头文件；架构、协议与测试策略等开发者资料只保留在源码仓库中。

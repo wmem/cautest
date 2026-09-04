@@ -3,6 +3,7 @@ import { access, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { CAUTEST_RELEASE_VERSION } from "../dist/config/index.js";
 import { runCli } from "../dist/runtime/cli.js";
 
 const configModule = new URL("../dist/config/index.js", import.meta.url).href;
@@ -166,7 +167,7 @@ test("--version 和 -V 无需配置即可显示 Release 与 Commit", async () =>
   for (const option of ["--version", "-V"]) {
     const io = streams();
     assert.equal(await runCli([option], io.streams), 0);
-    assert.match(io.value.stdout, /^Cautest 0\.2\.0 \(commit /u);
+    assert.match(io.value.stdout, new RegExp(`^Cautest ${CAUTEST_RELEASE_VERSION.replaceAll(".", "\\.")} \\(commit `, "u"));
   }
 });
 

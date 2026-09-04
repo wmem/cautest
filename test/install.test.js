@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
+import { CAUTEST_RELEASE_VERSION } from "../dist/config/index.js";
 
 const exec = promisify(execFile);
 const projectRoot = path.resolve(new URL("..", import.meta.url).pathname);
@@ -109,7 +110,7 @@ export default testConfig({ jobs: [
   const planned = await exec(path.join(destination, "cautest.js"), ["--config", config, "plan", "unit.example"], { cwd: temporary });
   assert.match(planned.stdout, /01-prepare-prepareFixture-prepareFixture/u);
   assert.match(planned.stdout, /02-run-runFixture-runFixture/u);
-  assert.match((await exec(path.join(destination, "cautest.js"), ["--version"])).stdout, /^Cautest 0\.2\.0 \(commit /u);
+  assert.match((await exec(path.join(destination, "cautest.js"), ["--version"])).stdout, new RegExp(`^Cautest ${CAUTEST_RELEASE_VERSION.replaceAll(".", "\\.")} \\(commit `, "u"));
   assert.equal((await lstat(path.join(destination, "cautest.js"))).mode & 0o111, 0o111);
   assert.equal(JSON.parse(await readFile(path.join(destination, "manifest.json"), "utf8")).product, "cautest-portable");
 

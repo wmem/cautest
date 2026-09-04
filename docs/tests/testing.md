@@ -29,6 +29,34 @@ KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:driver:uml
 
 真实硬件 MCU 不属于默认仓库门禁；项目 Adapter 负责 Flash、Reset、Transport 和物理环境稳定性，Cautest 公共测试使用 Host Simulation 与 External Adapter Contract 覆盖其边界。
 
-## 版本变更
+## 版本维护与发布
 
-`versions.json` 是 Release 与所有协议、ABI、Schema、Manifest、Cache 版本的唯一权威来源。修改版本后运行 `pnpm versions:sync`，它同步 TypeScript 版本模块和 C `version.h`；`pnpm build`、`pnpm test`、安装器与便携包构建都会先执行漂移检查。`package.json.version` 也必须与 `versions.json.release` 一致，否则构建立即失败。
+[`versions.json`](../../versions.json) 是当前 Release 与所有协议、ABI、Schema、Manifest、Cache 版本的唯一机器可读权威来源。[版本记录](../changelog.md)保存各版本对使用者可见的变化和历史兼容性基线，两者职责不同：代码和构建读取前者，维护者和使用者查阅后者。
+
+### 何时升级版本
+
+| 版本维度 | 升级条件 |
+| --- | --- |
+| Release Major | 已发布的公共配置、CLI、结果或运行行为发生不兼容变化 |
+| Release Minor | 增加向后兼容的能力或公共接口 |
+| Release Patch | 修复缺陷，或只调整向后兼容的文档、构建和交付内容 |
+| C API、CTP、Kernel ABI、Probe ABI Major | 现有调用方或通信对端必须修改才能继续工作 |
+| C API、CTP、Kernel ABI、Probe ABI Minor | 增加旧调用方或旧对端可以忽略的兼容能力 |
+| Schema | 持久化或对外数据的结构、含义发生变化，读取方需要据此区分格式 |
+| Cache | 指纹输入、Manifest 结构或产物有效性假设变化，旧缓存可能被错误复用 |
+
+一次修改可以同时升级多个维度。例如，兼容地增加协议能力通常升级 Release Minor 和 CTP Minor；仅改变缓存键构造则升级对应 Cache 版本，并按交付影响选择 Release 版本。无法确定兼容性时，应先补充新旧版本交互测试，再决定版本号。
+
+### 准备发布
+
+发布准备按以下顺序进行：
+
+1. 在[版本记录](../changelog.md)顶部建立“未发布”章节，记录使用者可见的变化和所有协议、ABI、Schema、Cache 版本迁移。
+2. 修改 `versions.json` 中受影响的版本。Release 变化时，同时修改根 `package.json`、`assets/cautest-c/package.json` 和 `assets/cautest-c/Makefile` 中的 Release 版本。
+3. 运行 `pnpm versions:sync`，生成 `src/config/versions.ts` 和 `assets/cautest-c/include/cautest/version.h`。该命令不会替维护者修改 Package Manifest 或 Makefile；它会在这些文件漂移时失败。
+4. 至少执行 `pnpm versions:check` 和 `pnpm test`。涉及真实 Kernel UML 或 Driver 行为时，按变更范围追加 `pnpm test:uml`、`pnpm test:driver:uml`；涉及 Git 安装链时追加 `pnpm test:e2e`。
+5. 验证通过后，将“未发布”改为 `X.Y.Z — YYYY-MM-DD`，提交完整的发布候选变更，并确认工作树干净。
+6. 在该 Commit 上运行 `pnpm pack:portable`，检查归档文件名包含目标版本和 Commit，校验 `.sha256`，并从解压目录执行 `cautest.js --version`。
+7. 确认归档对应已验证的 Commit 后，创建 annotated tag `vX.Y.Z`。推送发布 Commit、tag 和分发归档属于显式发布动作，不由构建脚本自动执行。
+
+`pnpm build`、`pnpm test`、安装器与便携包构建都会执行版本漂移检查。发布记录、tag、归档中的版本和 Commit 必须指向同一份已验证源码；带 `-dirty` 的归档只能用于本地检查，不能作为正式发布产物。
