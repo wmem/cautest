@@ -14,6 +14,7 @@ Cautest 是面向 Native C、Linux Kernel/Driver、MCU 和系统脚本的工程�
 
 ```bash
 npx --yes 'git+ssh://<Cautest Git URL>#<完整 Commit>' ./tools/cautest
+npx --yes 'git+ssh://git@gitlab.kunyi.local:mem-tools/cautest.git' ./tools/cautest
 ```
 
 pnpm 11 需要显式允许安装脚本：
