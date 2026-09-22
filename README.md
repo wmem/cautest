@@ -8,6 +8,17 @@ Cautest 是面向 Native C、Linux Kernel/Driver、MCU 和系统脚本的工程�
 - Native C 示例需要可用的 C99 Compiler；
 - Kernel UML 和 Linux Driver 示例还需要 Linux Kernel、BusyBox 源码及 UML 构建依赖。
 
+## npm 开发方式
+
+源码仓库使用 npm 与 `package-lock.json`，不需要 pnpm。首次检出后执行：
+
+```bash
+npm ci
+npm test
+```
+
+`npm ci` 的 `prepare` 会检查版本、编译 TypeScript 并生成 Build Info；如果显式使用 `--ignore-scripts`，随后执行 `npm run prepare`。只有开发依赖需要安装，便携包运行时没有 npm 依赖；离线开发需要预先缓存锁文件中的依赖，不会自动改用其他包管理器。
+
 ## 从 Git 安装到项目
 
 安装器会创建一个自包含目录。Git URL 应固定到完整 Commit，使开发环境和 CI 使用同一版本：
@@ -15,13 +26,6 @@ Cautest 是面向 Native C、Linux Kernel/Driver、MCU 和系统脚本的工程�
 ```bash
 npx --yes 'git+ssh://<Cautest Git URL>#<完整 Commit>' ./tools/cautest
 npx --yes 'git+ssh://git@gitlab.kunyi.local:mem-tools/cautest.git' ./tools/cautest
-```
-
-pnpm 11 需要显式允许安装脚本：
-
-```bash
-cautest_spec='git+ssh://<Cautest Git URL>#<完整 Commit>'
-pnpm dlx --allow-build="cautest@${cautest_spec}" "${cautest_spec}" ./tools/cautest
 ```
 
 目标目录必须不存在或为空，安装器不会覆盖已有内容。建议把生成的 `tools/cautest/` 加入 `.gitignore`，只提交项目配置和测试源码。
@@ -40,8 +44,8 @@ pnpm dlx --allow-build="cautest@${cautest_spec}" "${cautest_spec}" ./tools/caute
 维护者可在仓库中生成带 SHA-256 校验文件的便携包：
 
 ```bash
-pnpm install
-pnpm pack:portable
+npm ci
+npm run pack:portable
 ```
 
 将归档解压到目标项目即可运行：

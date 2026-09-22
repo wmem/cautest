@@ -14,4 +14,4 @@ Driver 构建、Module 装载、设备准备、Guest Program 和 CTP3 Session �
 
 测试作者从[运行 Linux Driver ABI 与 Probe 测试](../usage/linux-driver-abi.md)开始；内部算法测试见 [Linux Driver Unit](../usage/linux-driver-unit.md)。精确配置由 `DriverAbiCTestJobInput`、`DriverGuestCTestInput` 和 `DriverProbeInput` 定义，见源码 `src/config/schema/driver.ts` 或安装后的 `lib/config/schema/driver.d.ts`。
 
-仓库维护者设置 `KERNEL_SRC`、`BUSYBOX_SRC` 后可用 `pnpm test:driver:uml` 验证真实 Driver、可选 Probe、Guest ABI、Rootfs、UML 和结果收集闭环；缺少外部源码树时入口以 `BLOCKED`/77 结束。
+仓库维护者设置 `KERNEL_SRC`、`BUSYBOX_SRC` 后可用 `npm run test:driver:uml` 验证真实 Driver、可选 Probe、Guest ABI、Rootfs、UML 和结果收集闭环；缺少外部源码树时入口以 `BLOCKED`/77 结束。

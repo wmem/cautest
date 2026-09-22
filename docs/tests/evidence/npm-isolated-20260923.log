@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: npm scripts and lockfile no longer require a pnpm installation
+ok 1 - npm scripts and lockfile no longer require a pnpm installation
+  ---
+  duration_ms: 5.585936
+  type: 'test'
+  ...
+# Subtest: npm tarball installs and runs in an empty consumer offline without dev dependencies
+ok 2 - npm tarball installs and runs in an empty consumer offline without dev dependencies
+  ---
+  duration_ms: 5137.677371
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5192.898027

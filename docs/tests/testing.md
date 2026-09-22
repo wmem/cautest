@@ -4,21 +4,21 @@ Cautest 同时测试 Host 编排和真实 C Target 行为。只通过 TypeScript
 
 | 入口 | 覆盖重点 |
 | --- | --- |
-| `pnpm typecheck` | TypeScript 实现与公开 `.d.ts` 一致性 |
-| `pnpm test:c` | C Core、Assertion、CTP3、Freestanding、Kernel ABI/选择和 Probe 模型 |
-| `pnpm test` | 以上 C 门禁加 Node Workflow、Cache、Native、UML 组件、Driver、MCU、CLI、Reporter 和安装测试 |
-| `pnpm test:uml` | 真实 Linux UML、`examples/kernel-lib`、`examples/linux-driver-unit`、自动 Test Module、Rootfs、Guest Agent 和 CTP3 Case |
-| `pnpm test:driver:uml` | 真实 Linux UML、Driver Module、test-only Probe、Guest ABI Test 和 CTP3 Case |
-| `pnpm test:e2e` | 从固定 Git Commit 使用 npx 与 pnpm dlx 编译、安装和执行便携版本 |
-| `pnpm versions:check` | 校验 Release、C API、CTP、Kernel/Probe ABI、Result/Event/CLI/Manifest/Cache 版本没有漂移 |
+| `npm run typecheck` | TypeScript 实现与公开 `.d.ts` 一致性 |
+| `npm run test:c` | C Core、Assertion、CTP3、Freestanding、Kernel ABI/选择和 Probe 模型 |
+| `npm test` | 以上 C 门禁加 Node Workflow、Cache、Native、UML 组件、Driver、MCU、CLI、Reporter 和安装测试 |
+| `npm run test:uml` | 真实 Linux UML、`examples/kernel-lib`、`examples/linux-driver-unit`、自动 Test Module、Rootfs、Guest Agent 和 CTP3 Case |
+| `npm run test:driver:uml` | 真实 Linux UML、Driver Module、test-only Probe、Guest ABI Test 和 CTP3 Case |
+| `npm run test:e2e` | 从固定 Git Commit 使用 npx 与 npm exec 编译、安装和执行便携版本 |
+| `npm run versions:check` | 校验 Release、C API、CTP、Kernel/Probe ABI、Result/Event/CLI/Manifest/Cache 版本没有漂移 |
 
 默认 Node 测试使用临时目录和伪 Make 隔离外部成本，但不会用伪输出替代关键行为：Native/Driver Guest/MCU Firmware 会真实编译并执行；Kernel Module 测试会验证源码树前后文件集合、损坏 Manifest 重建和不同 ARCH/Kernel 并发。
 
 两个真实 UML 入口都必须显式提供 `KERNEL_SRC` 与 `BUSYBOX_SRC`，不使用开发者机器的私有默认路径：
 
 ```bash
-KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:uml
-KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:driver:uml
+KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox npm run test:uml
+KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox npm run test:driver:uml
 ```
 
 前者在一次共享环境中执行 `examples/kernel-lib` 与 `examples/linux-driver-unit` 的 Kernel Test Module 闭环；后者执行 `examples/linux-driver` 的 Driver、可选 Probe 和 Guest ABI 闭环。源码树缺失或结构不正确时，入口输出 `status: "BLOCKED"`、`code: "uml_prerequisites_missing"` 并以 77 结束；该结果表示外部环境未就绪，不表示测试通过。
@@ -52,11 +52,15 @@ KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox pnpm test:driver:uml
 发布准备按以下顺序进行：
 
 1. 在[版本记录](../changelog.md)顶部建立“未发布”章节，记录使用者可见的变化和所有协议、ABI、Schema、Cache 版本迁移。
-2. 修改 `versions.json` 中受影响的版本。Release 变化时，同时修改根 `package.json`、`assets/cautest-c/package.json` 和 `assets/cautest-c/Makefile` 中的 Release 版本。
-3. 运行 `pnpm versions:sync`，生成 `src/config/versions.ts` 和 `assets/cautest-c/include/cautest/version.h`。该命令不会替维护者修改 Package Manifest 或 Makefile；它会在这些文件漂移时失败。
-4. 至少执行 `pnpm versions:check` 和 `pnpm test`。涉及真实 Kernel UML 或 Driver 行为时，按变更范围追加 `pnpm test:uml`、`pnpm test:driver:uml`；涉及 Git 安装链时追加 `pnpm test:e2e`。
+2. 修改 `versions.json` 中受影响的版本。Release 变化时，同时修改根 `package.json`、`assets/cautest-c/package.json` 、`package-lock.json` 根条目和 `assets/cautest-c/Makefile` 中的 Release 版本。
+3. 运行 `npm run versions:sync`，生成 `src/config/versions.ts` 和 `assets/cautest-c/include/cautest/version.h`。该命令不会替维护者修改 Package Manifest 或 Makefile；它会在这些文件漂移时失败。
+4. 至少执行 `npm run versions:check` 和 `npm test`。涉及真实 Kernel UML 或 Driver 行为时，按变更范围追加 `npm run test:uml`、`npm run test:driver:uml`；涉及 Git 安装链时追加 `npm run test:e2e`。
 5. 验证通过后，将“未发布”改为 `X.Y.Z — YYYY-MM-DD`，提交完整的发布候选变更，并确认工作树干净。
-6. 在该 Commit 上运行 `pnpm pack:portable`，检查归档文件名包含目标版本和 Commit，校验 `.sha256`，并从解压目录执行 `cautest.js --version`。
+6. 在该 Commit 上运行 `npm run pack:portable`，检查归档文件名包含目标版本和 Commit，校验 `.sha256`，并从解压目录执行 `cautest.js --version`。
 7. 确认归档对应已验证的 Commit 后，创建 annotated tag `vX.Y.Z`。推送发布 Commit、tag 和分发归档属于显式发布动作，不由构建脚本自动执行。
 
-`pnpm build`、`pnpm test`、安装器与便携包构建都会执行版本漂移检查。发布记录、tag、归档中的版本和 Commit 必须指向同一份已验证源码；带 `-dirty` 的归档只能用于本地检查，不能作为正式发布产物。
+`npm run build`、`npm test`、安装器与便携包构建都会执行版本漂移检查。发布记录、tag、归档中的版本和 Commit 必须指向同一份已验证源码；带 `-dirty` 的归档只能用于本地检查，不能作为正式发布产物。
+
+## npm 工具链迁移
+
+开发使用 `npm ci` 和 `npm test`。完整门禁包含空消费项目中的离线 npm tarball 安装、`npm exec` 安装器与实际 Workflow 运行；固定 Git Commit 的安装另用 `npm run test:e2e`。本轮环境、原始基线与离线验证边界见 [npm 迁移验证](npm-migration.md)。

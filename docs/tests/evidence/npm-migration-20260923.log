@@ -1,0 +1,670 @@
+
+> cautest@0.2.1 test
+> npm run build && npm run test:types && npm run test:c && node --test test/version.test.js test/interrupt.test.js test/schema.test.js test/config.test.js test/factory.test.js test/glob.test.js test/workflow.test.js test/protocol.test.js test/session.test.js test/cache.test.js test/native.test.js test/kernel.test.js test/kernel-build.test.js test/kernel-module.test.js test/uml.test.js test/driver.test.js test/mcu.test.js test/system.test.js test/script-test.test.js test/system-steps.test.js test/reporters.test.js test/cli.test.js test/install.test.js test/archive.test.js test/docs.test.js test/integration-entry.test.js test/npm.test.js
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+
+> cautest@0.2.1 test:types
+> tsc --noEmit --strict --exactOptionalPropertyTypes --target ES2022 --module NodeNext --moduleResolution NodeNext test/types/config.mts
+
+
+> cautest@0.2.1 test:c
+> sh scripts/test-c-runtime.sh
+
+cautest C Common Core: 全部测试通过
+CTP/3 C 测试通过
+kernel ABI/parser smoke: PASS
+kernel selection model: PASS
+probe ABI/queue model: PASS
+C Runtime、CTP3、Kernel ABI 与 Probe 测试通过
+TAP version 13
+# Subtest: npm 发布包包含安装器运行时输入
+ok 1 - npm 发布包包含安装器运行时输入
+  ---
+  duration_ms: 3846.724509
+  type: 'test'
+  ...
+# Subtest: 便携包可解压、校验并直接运行
+ok 2 - 便携包可解压、校验并直接运行
+  ---
+  duration_ms: 2904.985467
+  type: 'test'
+  ...
+# Subtest: Fingerprint 对键和文件顺序稳定并感知内容变化
+ok 3 - Fingerprint 对键和文件顺序稳定并感知内容变化
+  ---
+  duration_ms: 14.164524
+  type: 'test'
+  ...
+# Subtest: Cache 覆盖 Miss/Hit、缺失输出、损坏和 Disable
+ok 4 - Cache 覆盖 Miss/Hit、缺失输出、损坏和 Disable
+  ---
+  duration_ms: 23.563923
+  type: 'test'
+  ...
+# Subtest: Cache 原子发布并接受并发同内容 Writer
+ok 5 - Cache 原子发布并接受并发同内容 Writer
+  ---
+  duration_ms: 31.341406
+  type: 'test'
+  ...
+# Subtest: resolveCautestC 返回同版本只读平台资产
+ok 6 - resolveCautestC 返回同版本只读平台资产
+  ---
+  duration_ms: 0.637251
+  type: 'test'
+  ...
+# Subtest: run --json 保持 stdout 结构化并实时写 stderr
+ok 7 - run --json 保持 stdout 结构化并实时写 stderr
+  ---
+  duration_ms: 118.767842
+  type: 'test'
+  ...
+# Subtest: doctor 和 run 预检失败使用基础设施错误码且不创建 Run 结果目录
+ok 8 - doctor 和 run 预检失败使用基础设施错误码且不创建 Run 结果目录
+  ---
+  duration_ms: 30.680891
+  type: 'test'
+  ...
+# Subtest: doctor 警告 Kernel 和 BusyBox Build 继承通用 60 秒超时
+ok 9 - doctor 警告 Kernel 和 BusyBox Build 继承通用 60 秒超时
+  ---
+  duration_ms: 41.8751
+  type: 'test'
+  ...
+# Subtest: doctor 检查 Toolchain、静态链接、UML ptrace、受管目录和 Kernel 污染
+ok 10 - doctor 检查 Toolchain、静态链接、UML ptrace、受管目录和 Kernel 污染
+  ---
+  duration_ms: 55.124291
+  type: 'test'
+  ...
+# Subtest: clean --all 只删除配置声明的受管目录
+ok 11 - clean --all 只删除配置声明的受管目录
+  ---
+  duration_ms: 7.867047
+  type: 'test'
+  ...
+# Subtest: clean 支持选择性范围且不删除未选择目录
+ok 12 - clean 支持选择性范围且不删除未选择目录
+  ---
+  duration_ms: 9.765129
+  type: 'test'
+  ...
+# Subtest: run 子命令提供独立帮助
+ok 13 - run 子命令提供独立帮助
+  ---
+  duration_ms: 0.44701
+  type: 'test'
+  ...
+# Subtest: --version 和 -V 无需配置即可显示 Release 与 Commit
+ok 14 - --version 和 -V 无需配置即可显示 Release 与 Commit
+  ---
+  duration_ms: 8.044137
+  type: 'test'
+  ...
+# Subtest: CLI Profile 生成 Reporter，并支持 level/tag/Glob 筛选
+ok 15 - CLI Profile 生成 Reporter，并支持 level/tag/Glob 筛选
+  ---
+  duration_ms: 26.185767
+  type: 'test'
+  ...
+# Subtest: CLI Profile Env 实际覆盖标准 Native Job 的构建期闭包环境
+ok 16 - CLI Profile Env 实际覆盖标准 Native Job 的构建期闭包环境
+  ---
+  duration_ms: 351.83018
+  type: 'test'
+  ...
+# Subtest: CLI C Test 覆盖、显式 Reporter、输出目录和 Direct Process Session
+ok 17 - CLI C Test 覆盖、显式 Reporter、输出目录和 Direct Process Session
+  ---
+  duration_ms: 433.789179
+  type: 'test'
+  ...
+# Subtest: describe 支持公开 Job Factory/Preset 概要
+ok 18 - describe 支持公开 Job Factory/Preset 概要
+  ---
+  duration_ms: 3.987825
+  type: 'test'
+  ...
+# Subtest: describe.sources 覆盖中间汇总和公共 Factory 模块
+ok 19 - describe.sources 覆盖中间汇总和公共 Factory 模块
+  ---
+  duration_ms: 25.684887
+  type: 'test'
+  ...
+# Subtest: CLI 稳定区分 FAIL、ERROR、参数错误和显式空选择
+ok 20 - CLI 稳定区分 FAIL、ERROR、参数错误和显式空选择
+  ---
+  duration_ms: 64.054013
+  type: 'test'
+  ...
+# Subtest: testConfig 只接受 TestJob 数组并生成稳定线性计划
+ok 21 - testConfig 只接受 TestJob 数组并生成稳定线性计划
+  ---
+  duration_ms: 2.60075
+  type: 'test'
+  ...
+# Subtest: testConfig 拒绝普通对象、重复 ID 和未知字段
+ok 22 - testConfig 拒绝普通对象、重复 ID 和未知字段
+  ---
+  duration_ms: 0.668467
+  type: 'test'
+  ...
+# Subtest: Workflow 拒绝 Phase 逆序和非 collect 失败路径
+ok 23 - Workflow 拒绝 Phase 逆序和非 collect 失败路径
+  ---
+  duration_ms: 0.44012
+  type: 'test'
+  ...
+# Subtest: plan 按 ID 选择并拒绝不存在的 Job
+ok 24 - plan 按 ID 选择并拒绝不存在的 Job
+  ---
+  duration_ms: 0.237811
+  type: 'test'
+  ...
+# Subtest: 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+ok 25 - 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+  ---
+  duration_ms: 36.56611
+  type: 'test'
+  ...
+# Subtest: Usage 提供按需入口并绑定完整可执行示例
+ok 26 - Usage 提供按需入口并绑定完整可执行示例
+  ---
+  duration_ms: 20.807763
+  type: 'test'
+  ...
+# Subtest: 开发者索引覆盖 Project Docs 核心阅读路径
+ok 27 - 开发者索引覆盖 Project Docs 核心阅读路径
+  ---
+  duration_ms: 1.186962
+  type: 'test'
+  ...
+# Subtest: 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+ok 28 - 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+  ---
+  duration_ms: 2.94113
+  type: 'test'
+  ...
+# Subtest: Driver ABI Job 使用唯一 Schema 展开 Driver、Guest 和 UML Workflow
+ok 29 - Driver ABI Job 使用唯一 Schema 展开 Driver、Guest 和 UML Workflow
+  ---
+  duration_ms: 3.371225
+  type: 'test'
+  ...
+# Subtest: Linux Driver 示例同时引入公共版本与 Kernel Probe Header
+ok 30 - Linux Driver 示例同时引入公共版本与 Kernel Probe Header
+  ---
+  duration_ms: 5.322566
+  type: 'test'
+  ...
+# Subtest: Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3
+ok 31 - Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3
+  ---
+  duration_ms: 431.342087
+  type: 'test'
+  ...
+# Subtest: Linux Driver 典型示例的多个 Guest 测试文件可以共同构建
+ok 32 - Linux Driver 典型示例的多个 Guest 测试文件可以共同构建
+  ---
+  duration_ms: 500.61635
+  type: 'test'
+  ...
+# Subtest: Driver Guest 构建兑现自定义缓存目录、禁用缓存和 fingerprintEnv
+ok 33 - Driver Guest 构建兑现自定义缓存目录、禁用缓存和 fingerprintEnv
+  ---
+  duration_ms: 2887.753709
+  type: 'test'
+  ...
+# Subtest: 公共默认项与命名空间只展开为普通 Test Job
+ok 34 - 公共默认项与命名空间只展开为普通 Test Job
+  ---
+  duration_ms: 2.084376
+  type: 'test'
+  ...
+# Subtest: Fragment 可嵌套，并能按 Phase 合并标准 Job Workflow
+ok 35 - Fragment 可嵌套，并能按 Phase 合并标准 Job Workflow
+  ---
+  duration_ms: 3.217398
+  type: 'test'
+  ...
+# Subtest: 标准 Job Fragment 暴露 Native/Kernel/BusyBox/Module/Guest/Rootfs/UML/MCU 能力
+ok 36 - 标准 Job Fragment 暴露 Native/Kernel/BusyBox/Module/Guest/Rootfs/UML/MCU 能力
+  ---
+  duration_ms: 2.306604
+  type: 'test'
+  ...
+# Subtest: 文件 Pattern 支持 Glob、排除、排序和逐项空匹配检查
+ok 37 - 文件 Pattern 支持 Glob、排除、排序和逐项空匹配检查
+  ---
+  duration_ms: 15.499234
+  type: 'test'
+  ...
+# Subtest: configHash 覆盖配置片段内容和最终解析结果且不依赖检出位置
+ok 38 - configHash 覆盖配置片段内容和最终解析结果且不依赖检出位置
+  ---
+  duration_ms: 142.474781
+  type: 'test'
+  ...
+# Subtest: 内置 Glob 覆盖路径、Globstar、字符组、花括号和正则特殊字符
+ok 39 - 内置 Glob 覆盖路径、Globstar、字符组、花括号和正则特殊字符
+  ---
+  duration_ms: 1.246139
+  type: 'test'
+  ...
+# Subtest: Glob 静态遍历根不会越过第一个元字符
+ok 40 - Glob 静态遍历根不会越过第一个元字符
+  ---
+  duration_ms: 0.443906
+  type: 'test'
+  ...
+# Subtest: 安装器生成仅含运行 JS 和公开声明的自包含便携目录
+ok 41 - 安装器生成仅含运行 JS 和公开声明的自包含便携目录
+  ---
+  duration_ms: 11978.905623
+  type: 'test'
+  ...
+# Subtest: 安装器拒绝非空目录且不覆盖内容
+ok 42 - 安装器拒绝非空目录且不覆盖内容
+  ---
+  duration_ms: 108.222589
+  type: 'test'
+  ...
+# Subtest: 真实 UML 入口缺少源码时以 BLOCKED/77 结束且不回退到私有路径
+ok 43 - 真实 UML 入口缺少源码时以 BLOCKED/77 结束且不回退到私有路径
+  ---
+  duration_ms: 153.196053
+  type: 'test'
+  ...
+# Subtest: UML 前置检查验证 Kernel UML 与 BusyBox 源码树结构
+ok 44 - UML 前置检查验证 Kernel UML 与 BusyBox 源码树结构
+  ---
+  duration_ms: 5.60337
+  type: 'test'
+  ...
+# Subtest: 真实入口展开 Kernel 与 Driver/Probe/Guest ABI UML Workflow
+ok 45 - 真实入口展开 Kernel 与 Driver/Probe/Guest ABI UML Workflow
+  ---
+  duration_ms: 3.422681
+  type: 'test'
+  ...
+# Subtest: SIGINT 首次触发 Abort，第二次强制退出 130，并可移除监听
+ok 46 - SIGINT 首次触发 Abort，第二次强制退出 130，并可移除监听
+  ---
+  duration_ms: 1.585781
+  type: 'test'
+  ...
+# Subtest: Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目录
+ok 47 - Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目录
+  ---
+  duration_ms: 880.345239
+  type: 'test'
+  ...
+# Subtest: Kernel Module 只在 Sandbox 构建，完整校验发布 Artifact 并支持并发
+ok 48 - Kernel Module 只在 Sandbox 构建，完整校验发布 Artifact 并支持并发
+  ---
+  duration_ms: 227.992971
+  type: 'test'
+  ...
+# Subtest: Kernel Environment 独立复用并展开自动 Test Module Workflow
+ok 49 - Kernel Environment 独立复用并展开自动 Test Module Workflow
+  ---
+  duration_ms: 4.082926
+  type: 'test'
+  ...
+# Subtest: Kernel Job 拒绝手写 Environment
+ok 50 - Kernel Job 拒绝手写 Environment
+  ---
+  duration_ms: 0.497764
+  type: 'test'
+  ...
+# Subtest: Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+ok 51 - Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+  ---
+  duration_ms: 360.151006
+  type: 'test'
+  ...
+# Subtest: External MCU Adapter 通过统一 CTP3 Transport 执行
+ok 52 - External MCU Adapter 通过统一 CTP3 Transport 执行
+  ---
+  duration_ms: 14.887131
+  type: 'test'
+  ...
+# Subtest: Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+ok 53 - Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+  ---
+  duration_ms: 1891.221795
+  type: 'test'
+  ...
+# Subtest: External MCU 校验 Reset 返回的 Boot ID
+ok 54 - External MCU 校验 Reset 返回的 Boot ID
+  ---
+  duration_ms: 7.412851
+  type: 'test'
+  ...
+# Subtest: Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+ok 55 - Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+  ---
+  duration_ms: 546.630461
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+ok 56 - 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+  ---
+  duration_ms: 253.383033
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+ok 57 - 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+  ---
+  duration_ms: 255.482282
+  type: 'test'
+  ...
+# Subtest: External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+ok 58 - External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+  ---
+  duration_ms: 4.245206
+  type: 'test'
+  ...
+# Subtest: Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓存命中
+ok 59 - Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓存命中
+  ---
+  duration_ms: 858.704273
+  type: 'test'
+  ...
+# Subtest: Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性
+ok 60 - Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性
+  ---
+  duration_ms: 1177.104681
+  type: 'test'
+  ...
+# Subtest: Native Header 与 fingerprintEnv 进入指纹，自定义 Cache 根受边界保护
+ok 61 - Native Header 与 fingerprintEnv 进入指纹，自定义 Cache 根受边界保护
+  ---
+  duration_ms: 895.321203
+  type: 'test'
+  ...
+# Subtest: Profile Env 覆盖 Native Job Env，并进入构建、运行和 Cache 指纹
+ok 62 - Profile Env 覆盖 Native Job Env，并进入构建、运行和 Cache 指纹
+  ---
+  duration_ms: 713.928708
+  type: 'test'
+  ...
+# Subtest: Native Crash/Timeout 映射 ERROR 且后续 Case 继续
+ok 63 - Native Crash/Timeout 映射 ERROR 且后续 Case 继续
+  ---
+  duration_ms: 495.537365
+  type: 'test'
+  ...
+# Subtest: Native 保留 FAIL/SKIP/ERROR，并让 Suite Fixture 使用同一初始快照
+ok 64 - Native 保留 FAIL/SKIP/ERROR，并让 Suite Fixture 使用同一初始快照
+  ---
+  duration_ms: 433.110133
+  type: 'test'
+  ...
+# Subtest: Native Suite Setup 错误保留 Session 诊断并映射基础设施 ERROR
+ok 65 - Native Suite Setup 错误保留 Session 诊断并映射基础设施 ERROR
+  ---
+  duration_ms: 405.772597
+  type: 'test'
+  ...
+# Subtest: npm scripts and lockfile no longer require a pnpm installation
+ok 66 - npm scripts and lockfile no longer require a pnpm installation
+  ---
+  duration_ms: 6.971389
+  type: 'test'
+  ...
+# Subtest: npm tarball installs and runs in an empty consumer offline without dev dependencies
+ok 67 - npm tarball installs and runs in an empty consumer offline without dev dependencies
+  ---
+  duration_ms: 5742.414159
+  type: 'test'
+  ...
+# Subtest: CTP3 Command 使用 LF 且受 64 B 上限约束
+ok 68 - CTP3 Command 使用 LF 且受 64 B 上限约束
+  ---
+  duration_ms: 1.749682
+  type: 'test'
+  ...
+# Subtest: LineDecoder 支持任意分片、CRLF 及超长行恢复
+ok 69 - LineDecoder 支持任意分片、CRLF 及超长行恢复
+  ---
+  duration_ms: 1.29423
+  type: 'test'
+  ...
+# Subtest: 字段转义和解析保持逗号、换行和反斜线
+ok 70 - 字段转义和解析保持逗号、换行和反斜线
+  ---
+  duration_ms: 0.667125
+  type: 'test'
+  ...
+# Subtest: StreamTransport 从任意 Chunk 还原完整协议行
+ok 71 - StreamTransport 从任意 Chunk 还原完整协议行
+  ---
+  duration_ms: 1.991409
+  type: 'test'
+  ...
+# Subtest: Console/JUnit/HTML Reporter 保留 Case、基础设施错误、时间线和 Artifact
+ok 72 - Console/JUnit/HTML Reporter 保留 Case、基础设施错误、时间线和 Artifact
+  ---
+  duration_ms: 21.132549
+  type: 'test'
+  ...
+# Subtest: TypeScript 声明保留公共 Schema 和 JSDoc
+ok 73 - TypeScript 声明保留公共 Schema 和 JSDoc
+  ---
+  duration_ms: 5.947457
+  type: 'test'
+  ...
+# Subtest: Script Test 聚合 EXPECT、ASSERT、SKIP 和异常
+ok 74 - Script Test 聚合 EXPECT、ASSERT、SKIP 和异常
+  ---
+  duration_ms: 4.443949
+  type: 'test'
+  ...
+# Subtest: Script Case Timeout 记为 ERROR
+ok 75 - Script Case Timeout 记为 ERROR
+  ---
+  duration_ms: 6.042789
+  type: 'test'
+  ...
+# Subtest: Script 顶层异常传播且每次执行获得隔离只读 Env
+ok 76 - Script 顶层异常传播且每次执行获得隔离只读 Env
+  ---
+  duration_ms: 1.343182
+  type: 'test'
+  ...
+# Subtest: Script Test 支持 assertEqual/fail/attach、Case 级 timeout 和统一事件
+ok 77 - Script Test 支持 assertEqual/fail/attach、Case 级 timeout 和统一事件
+  ---
+  duration_ms: 7.051907
+  type: 'test'
+  ...
+# Subtest: Host Filter 与执行规划区分 Suite 和 Case 模式
+ok 78 - Host Filter 与执行规划区分 Suite 和 Case 模式
+  ---
+  duration_ms: 3.139483
+  type: 'test'
+  ...
+# Subtest: Session 生成 Case 结果并将 Target Log 外置
+ok 79 - Session 生成 Case 结果并将 Target Log 外置
+  ---
+  duration_ms: 4.719004
+  type: 'test'
+  ...
+# Subtest: Execution Timeout 关闭连接且不发送 CANCEL
+ok 80 - Execution Timeout 关闭连接且不发送 CANCEL
+  ---
+  duration_ms: 12.368684
+  type: 'test'
+  ...
+# Subtest: ASSERT2 保留字符串 expected/actual 结构化类型
+ok 81 - ASSERT2 保留字符串 expected/actual 结构化类型
+  ---
+  duration_ms: 1.32815
+  type: 'test'
+  ...
+# Subtest: Suite Fixture 错误形成执行错误且不伪造 Case
+ok 82 - Suite Fixture 错误形成执行错误且不伪造 Case
+  ---
+  duration_ms: 0.699903
+  type: 'test'
+  ...
+# Subtest: Session 拒绝无法关联到当前 Case 的日志 ID
+ok 83 - Session 拒绝无法关联到当前 Case 的日志 ID
+  ---
+  duration_ms: 0.724239
+  type: 'test'
+  ...
+# Subtest: TARGET Scope 日志可在 HELLO 之前实时到达
+ok 84 - TARGET Scope 日志可在 HELLO 之前实时到达
+  ---
+  duration_ms: 0.893159
+  type: 'test'
+  ...
+# Subtest: Ready Probe 支持 Process、File、TCP 和 HTTP
+ok 85 - Ready Probe 支持 Process、File、TCP 和 HTTP
+  ---
+  duration_ms: 33.868145
+  type: 'test'
+  ...
+# Subtest: processStart Ready 后收集日志且 Cleanup 不泄漏进程
+ok 86 - processStart Ready 后收集日志且 Cleanup 不泄漏进程
+  ---
+  duration_ms: 101.340944
+  type: 'test'
+  ...
+# Subtest: Ready 失败仍收集启动日志并立即 Cleanup
+ok 87 - Ready 失败仍收集启动日志并立即 Cleanup
+  ---
+  duration_ms: 110.695159
+  type: 'test'
+  ...
+# Subtest: Attach Ownership 决定是否清理
+ok 88 - Attach Ownership 决定是否清理
+  ---
+  duration_ms: 1.369661
+  type: 'test'
+  ...
+# Subtest: External JUnit/JSON Adapter 保持 FAIL 与 ERROR Case 语义
+ok 89 - External JUnit/JSON Adapter 保持 FAIL 与 ERROR Case 语义
+  ---
+  duration_ms: 71.792074
+  type: 'test'
+  ...
+# Subtest: Script System Job 产生结构化 Case 结果
+ok 90 - Script System Job 产生结构化 Case 结果
+  ---
+  duration_ms: 7.627556
+  type: 'test'
+  ...
+# Subtest: Script System Job 可加载 defineScriptTest 渐进 API
+ok 91 - Script System Job 可加载 defineScriptTest 渐进 API
+  ---
+  duration_ms: 5.39969
+  type: 'test'
+  ...
+# Subtest: Script System 顶层 exec/env/signal 和 Case Event 进入 Workflow
+ok 92 - Script System 顶层 exec/env/signal 和 Case Event 进入 Workflow
+  ---
+  duration_ms: 40.34333
+  type: 'test'
+  ...
+# Subtest: UML Control Channel 将 Agent Endpoint 复用为统一 CTP3 Transport
+ok 93 - UML Control Channel 将 Agent Endpoint 复用为统一 CTP3 Transport
+  ---
+  duration_ms: 7.474361
+  type: 'test'
+  ...
+# Subtest: Rootfs 真实生成 Agent、Catalog、Module 和 initramfs
+ok 94 - Rootfs 真实生成 Agent、Catalog、Module 和 initramfs
+  ---
+  duration_ms: 423.40796
+  type: 'test'
+  ...
+# Subtest: UML Guest Program 使用独立可关闭的构建缓存
+ok 95 - UML Guest Program 使用独立可关闭的构建缓存
+  ---
+  duration_ms: 118.706492
+  type: 'test'
+  ...
+# Subtest: UML 启动、日志收集和清理进入统一 Resource/Artifact 生命周期
+ok 96 - UML 启动、日志收集和清理进入统一 Resource/Artifact 生命周期
+  ---
+  duration_ms: 541.772847
+  type: 'test'
+  ...
+# Subtest: 版本表统一约束 Package、TypeScript、C Header 和 Build Info
+ok 97 - 版本表统一约束 Package、TypeScript、C Header 和 Build Info
+  ---
+  duration_ms: 87.406243
+  type: 'test'
+  ...
+# Subtest: Workflow 严格顺序执行并在错误后只运行失败路径 Collect
+ok 98 - Workflow 严格顺序执行并在错误后只运行失败路径 Collect
+  ---
+  duration_ms: 4.722179
+  type: 'test'
+  ...
+# Subtest: Step timeout 产生 ERROR 并向 Executor 发送 Abort
+ok 99 - Step timeout 产生 ERROR 并向 Executor 发送 Abort
+  ---
+  duration_ms: 10.449991
+  type: 'test'
+  ...
+# Subtest: 结构化测试失败保持 FAIL，并执行失败路径 Collect
+ok 100 - 结构化测试失败保持 FAIL，并执行失败路径 Collect
+  ---
+  duration_ms: 0.856514
+  type: 'test'
+  ...
+# Subtest: Step 返回 ERROR 时保留已取得测试结果和诊断
+ok 101 - Step 返回 ERROR 时保留已取得测试结果和诊断
+  ---
+  duration_ms: 0.745319
+  type: 'test'
+  ...
+# Subtest: Case FAIL 默认不阻断后续 Step，stopOnTestFailure 可显式停止
+ok 102 - Case FAIL 默认不阻断后续 Step，stopOnTestFailure 可显式停止
+  ---
+  duration_ms: 1.317323
+  type: 'test'
+  ...
+# Subtest: Workflow Context 统一管理 Artifact、Resource、Result、Event 和 LIFO Cleanup
+ok 103 - Workflow Context 统一管理 Artifact、Resource、Result、Event 和 LIFO Cleanup
+  ---
+  duration_ms: 1.105722
+  type: 'test'
+  ...
+# Subtest: 空结果由统一 allowEmpty 策略聚合
+ok 104 - 空结果由统一 allowEmpty 策略聚合
+  ---
+  duration_ms: 0.738459
+  type: 'test'
+  ...
+# Subtest: executeRun 和结果目录保留事件、Job 快照及失败索引
+ok 105 - executeRun 和结果目录保留事件、Job 快照及失败索引
+  ---
+  duration_ms: 13.386754
+  type: 'test'
+  ...
+1..105
+# tests 105
+# suites 0
+# pass 105
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18621.672026
+
+> cautest@0.2.1 typecheck
+> tsc -p tsconfig.json --noEmit
+

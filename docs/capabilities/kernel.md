@@ -16,4 +16,4 @@ Rootfs Catalog 把 Kernel Endpoint 绑定到当前 Build ID；Host 在 Ready、H
 
 测试作者从[在 Kernel UML 中运行 C 测试](../usage/kernel-uml.md)开始；Driver 内部源码测试可沿用[关联单元测试](../usage/linux-driver-unit.md)。精确配置由 `UmlKernelEnvironmentInput`、`LinuxKernelBuildInput`、`BusyBoxBuildInput`、`KernelModuleDefaultsInput` 和 `KernelCTestJobInput` 定义，见源码 `src/config/schema/kernel.ts` 或安装后的 `lib/config/schema/kernel.d.ts`。
 
-仓库维护者设置 `KERNEL_SRC`、`BUSYBOX_SRC` 后可用 `pnpm test:uml` 验证真实 Kernel、Test Module、Rootfs、Guest Agent 和 CTP3 闭环。
+仓库维护者设置 `KERNEL_SRC`、`BUSYBOX_SRC` 后可用 `npm run test:uml` 验证真实 Kernel、Test Module、Rootfs、Guest Agent 和 CTP3 闭环。

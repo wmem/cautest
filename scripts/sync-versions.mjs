@@ -6,6 +6,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const versionsFile = path.join(root, "versions.json");
 const versions = JSON.parse(await readFile(versionsFile, "utf8"));
 const manifest = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+const lockfile = JSON.parse(await readFile(path.join(root, "package-lock.json"), "utf8"));
 const cManifest = JSON.parse(await readFile(path.join(root, "assets/cautest-c/package.json"), "utf8"));
 
 function uint(value, label) {
@@ -24,11 +25,13 @@ for (const name of ["cApi", "ctp", "kernelAbi", "probeAbi"]) pair(versions[name]
 for (const [name, value] of Object.entries(versions.schemas ?? {})) uint(value, `schemas.${name}`);
 for (const [name, value] of Object.entries(versions.caches ?? {})) uint(value, `caches.${name}`);
 if (manifest.version !== versions.release) throw new Error(`Release 版本漂移: versions.json=${versions.release}, package.json=${String(manifest.version)}`);
+if (lockfile.lockfileVersion !== 3 || lockfile.version !== versions.release || lockfile.packages?.[""]?.version !== versions.release) throw new Error("npm 锁文件版本漂移: package-lock.json");
+if (JSON.stringify(lockfile.packages[""].devDependencies) !== JSON.stringify(manifest.devDependencies)) throw new Error("npm 锁文件开发依赖漂移: package-lock.json");
 if (cManifest.version !== versions.release) throw new Error(`C Kit 版本漂移: versions.json=${versions.release}, assets/cautest-c/package.json=${String(cManifest.version)}`);
 const makefile = await readFile(path.join(root, "assets/cautest-c/Makefile"), "utf8");
 if (!makefile.includes(`CAUTEST_C_VERSION := ${versions.release}\n`)) throw new Error(`C Kit Makefile 版本漂移: expected=${versions.release}`);
 
-const ts = `/** 由 versions.json 生成；请运行 \`pnpm versions:sync\`，不要手工修改。 */
+const ts = `/** 由 versions.json 生成；请运行 \`npm run versions:sync\`，不要手工修改。 */
 export const CAUTEST_VERSIONS = Object.freeze({
   release: ${JSON.stringify(versions.release)},
   cApi: ${JSON.stringify(versions.cApi)},
@@ -52,7 +55,7 @@ export const CAUTEST_CACHE_VERSIONS = CAUTEST_VERSIONS.caches;
 const c = `#ifndef CAUTEST_VERSION_H
 #define CAUTEST_VERSION_H
 
-/* 由 versions.json 生成；请运行 \`pnpm versions:sync\`，不要手工修改。 */
+/* 由 versions.json 生成；请运行 \`npm run versions:sync\`，不要手工修改。 */
 #define CAUTEST_RELEASE_VERSION ${JSON.stringify(versions.release)}
 #define CAUTEST_C_API_MAJOR ${versions.cApi.major}U
 #define CAUTEST_C_API_MINOR ${versions.cApi.minor}U
@@ -77,6 +80,6 @@ for (const [file, expected] of generated) {
   if (write) await writeFile(file, expected);
   else {
     const actual = await readFile(file, "utf8").catch(() => "");
-    if (actual !== expected) throw new Error(`版本生成文件漂移: ${path.relative(root, file)}；请运行 pnpm versions:sync`);
+    if (actual !== expected) throw new Error(`版本生成文件漂移: ${path.relative(root, file)}；请运行 npm run versions:sync`);
   }
 }

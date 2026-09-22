@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 import { createPortableTree, readBuildInfo, verifyPortableTree } from "./portable.js";
 
 const execFileAsync = promisify(execFile);
-const usage = `用法: pnpm pack:portable [--output <归档路径>] [--force]
+const usage = `用法: npm run pack:portable [--output <归档路径>] [--force]
 
 生成解压后可直接使用的 Cautest .tar.gz 便携包和 .sha256 校验文件。
 

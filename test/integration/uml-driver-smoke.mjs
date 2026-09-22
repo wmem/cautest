@@ -6,7 +6,7 @@ import { executeRealUml, inspectUmlPrerequisites, reportBlockedUml } from "./uml
 const project = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const prerequisites = await inspectUmlPrerequisites();
 if (!prerequisites.ok) {
-  reportBlockedUml(prerequisites, "pnpm test:driver:uml");
+  reportBlockedUml(prerequisites, "npm run test:driver:uml");
 } else {
   await executeRealUml(driverUmlSmokeConfig(prerequisites), project);
 }

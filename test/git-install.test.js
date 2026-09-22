@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { cp, mkdtemp, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -13,7 +13,7 @@ async function createGitSnapshot() {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-git-"));
   const repository = path.join(temporary, "repository");
   await mkdir(repository);
-  for (const entry of ["assets", "docs", "examples", "scripts", "src", "package.json", "pnpm-lock.yaml", "README.md", "tsconfig.json", "versions.json"]) {
+  for (const entry of ["assets", "docs", "examples", "scripts", "src", "package.json", "package-lock.json", "README.md", "tsconfig.json", "versions.json"]) {
     await cp(path.join(projectRoot, entry), path.join(repository, entry), { recursive: true });
   }
   await exec("git", ["init", "-b", "main"], { cwd: repository });
@@ -42,12 +42,13 @@ export default testConfig({ jobs: [testJob({ id: 'system.git', level: 'system', 
   assert.match(build.commit, /^[0-9a-f]{40}$/u);
 }
 
-test("npx 和 pnpm dlx 都可从 Git Commit 编译并安装", { timeout: 360_000 }, async () => {
+test("npx 和 npm exec 都可从 Git Commit 编译并安装", { timeout: 360_000 }, async (t) => {
   const snapshot = await createGitSnapshot();
+  t.after(() => rm(snapshot.temporary, { recursive: true, force: true }));
   const npxDestination = path.join(snapshot.temporary, "npx-project/tools/cautest");
-  const pnpmDestination = path.join(snapshot.temporary, "pnpm-project/tools/cautest");
+  const npmDestination = path.join(snapshot.temporary, "npm-project/tools/cautest");
   await mkdir(path.dirname(path.dirname(npxDestination)), { recursive: true });
-  await mkdir(path.dirname(path.dirname(pnpmDestination)), { recursive: true });
+  await mkdir(path.dirname(path.dirname(npmDestination)), { recursive: true });
 
   await exec("npx", ["--yes", snapshot.url, npxDestination], {
     cwd: path.join(snapshot.temporary, "npx-project"),
@@ -56,10 +57,10 @@ test("npx 和 pnpm dlx 都可从 Git Commit 编译并安装", { timeout: 360_000
   });
   await verifyPortable(npxDestination);
 
-  await exec("pnpm", ["dlx", `--allow-build=cautest@${snapshot.url}`, snapshot.url, pnpmDestination], {
-    cwd: path.join(snapshot.temporary, "pnpm-project"),
+  await exec("npm", ["exec", "--yes", `--package=${snapshot.url}`, "--", "cautest-install", npmDestination], {
+    cwd: path.join(snapshot.temporary, "npm-project"),
     timeout: 180_000,
     maxBuffer: 10 * 1024 * 1024,
   });
-  await verifyPortable(pnpmDestination);
+  await verifyPortable(npmDestination);
 });
