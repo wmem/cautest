@@ -29,3 +29,6 @@ export { CacheClient } from "../cache/client.js";
 export { createFingerprint, hashBytes, hashFile, stableSerialize } from "../cache/fingerprint.js";
 export { resolveCautestC } from "../integration/cautest-c.js";
 export type * from "./schema/index.js";
+
+export { selectJobs } from "./select.js";
+export type { JobSelectionInput } from "./select.js";

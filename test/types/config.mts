@@ -1,4 +1,6 @@
 import {
+  selectJobs,
+  type JobSelectionInput,
   defineStep,
   defineFragment,
   standardJobFragment,
@@ -76,3 +78,10 @@ configured({ id: "unit.missing" });
 
 // @ts-expect-error definitions 的 Schema 必须与 factory 输入一致。
 jobNamespace({ namespace: "unit.invalid", source: import.meta.url, factory: configured, definitions: [{ name: "bad" }] });
+
+const selection: JobSelectionInput = { selectors: ["unit.*"], levels: ["unit"], tags: ["native"], includeDisabled: true };
+const selected = selectJobs([configured({ id: "unit.selection", source: "selection.c" })], selection);
+// @ts-expect-error The public selector returns an immutable collection.
+selected.push(configured({ id: "unit.invalid.push", source: "selection.c" }));
+// @ts-expect-error Scalar tags are not silently converted into a list.
+selectJobs([], { tags: "native" });

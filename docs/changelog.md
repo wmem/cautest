@@ -6,6 +6,8 @@
 
 ## 未发布
 
+- 抽出无副作用的公共 `selectJobs()`，旧 CLI 共用相同 ID/Level/Tag/enabled 规则；不改变 Suite/Case 覆盖语义。
+
 - 开发、构建、安装与便携打包统一使用 npm；以 npm v3 `package-lock.json` 替代 pnpm 锁文件，保留原有依赖版本和完整性摘要。
 - 保留固定 Git Commit 的 `npx` 安装器及旧 JS 配置入口；不改变 CTP、C API、ABI、结果和缓存版本。
 

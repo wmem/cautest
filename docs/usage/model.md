@@ -38,6 +38,23 @@ Level 固定为：
 | `integration` | Driver ABI、外部接口或多个组件协作 |
 | `system` | 从进程或系统外部验证完整行为 |
 
+### Job 选择的精确语义
+
+同一维度内，多个 Job ID Pattern 为 OR，多个 Level 为 OR，多个 Tag 为 AND；三个维度之间为 AND。Level 是类别，选择 `integration` 不会包含 `unit`。重复 Pattern 不重复执行 Job，结果保持配置顺序。
+
+| 条件 | 语义 |
+| --- | --- |
+| ID `unit.*`、`component.*` | 匹配任意一个 ID Pattern |
+| Level `unit`、`component` | Level 为其中一个 |
+| Tag `native`、`fast` | 同时包含两个 Tag |
+| 无筛选条件的 run | 所有 enabled Job，可能包括真实硬件测试 |
+| 显式指定 disabled Job 的 ID | run 仍不执行；无匹配时 CLI 退出 4 |
+| list / plan / doctor | 可选择 disabled Job；不会执行其 Workflow Step |
+
+旧 JS CLI 使用重复参数，例如 `--level unit --level component --tag native --tag fast`。共享 `selectJobs(jobs, options)` 接收数组，不拆分逗号；规划中的 Xmake CLI 负责自己的逗号语法，不修改旧 CLI。
+
+`selectJobs()` 返回原 Job 对象组成的只读数组，不加载配置、构建或运行 Step。检查用途需要显式传 `includeDisabled: true`，默认按执行语义排除 disabled Job。
+
 一个 Job 可以包含多个测试源码、产品源码和 Suite。何时合并或拆分见[组织典型项目](project-organization.md)。
 
 ## Workflow 是严格有序的执行计划
@@ -56,7 +73,7 @@ prepare → build → provision → run → collect
 
 C Test 源文件用 `CAUTEST_CASE`/`CAUTEST_PARAM_CASE` 声明 Case，用 `CAUTEST_SUITE` 组合 Case。Native、Kernel Test Module 和 Driver Guest Job 根据配置的 `suites` 生成 Registry；MCU/Freestanding 通常由 Firmware 显式声明 Registry。
 
-CLI 可以按 Suite、Case 和 Parameter 覆盖标准 C Test Run 的选择，但不会改变 Job 的构建输入。Script System Test 使用 `defineScriptTest()` 声明 JavaScript Case，并产生相同的结构化 PASS、FAIL、SKIP、ERROR 结果。
+`suites` 是构建期 Registry 中的合法 C 符号，不能写通配符；`run.suite` 才是运行时选择。CLI 可以按 Suite、Case 和 Parameter 按字段覆盖标准 C Test Run 的选择；未覆盖字段仍来自配置，不把配置中的 Suite 选择当作不可突破的隔离边界，也不修改 Registry。Script System Test 使用 `defineScriptTest()` 声明 JavaScript Case，并产生相同的结构化 PASS、FAIL、SKIP、ERROR 结果。
 
 ## 每种测试使用什么构造函数
 

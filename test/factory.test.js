@@ -131,3 +131,27 @@ test("configHash 覆盖配置片段内容和最终解析结果且不依赖检出
   assert.deepEqual(first.sources.map((source) => path.basename(source)).sort(), ["cautest.config.mjs", "factory.mjs", "index.mjs", "jobs.mjs"]);
   assert.equal((await readFile(first.sources[1], "utf8")).length > 0, true);
 });
+
+test("XT-001: common defaults remain shallow and explicit tags replace helper defaults", () => {
+  const base = withJobDefaults(testJob, { level: "unit", env: { KEEP: "base", REPLACE: "base" }, tags: ["base"], workflow: [run] });
+  const job = base({ id: "unit.shallow", env: { REPLACE: "local" }, tags: ["local"] });
+  assert.deepEqual(job.env, { REPLACE: "local" });
+  assert.deepEqual(job.tags, ["local"]);
+  assert.equal(job.enabled, true);
+  assert.deepEqual(job.policy, { stopOnTestFailure: false, allowEmpty: false });
+  assert.deepEqual(nativeCTestJob({ id: "unit.default", tests: ["unused.c"] }).tags, ["unit"]);
+  const native = nativeCTestJob({ id: "integration.native", level: "integration", tests: ["unused.c"] });
+  assert.equal(native.level, "integration");
+  assert.deepEqual(native.tags, ["integration"]);
+  const mcu = mcuCTestJob({ id: "unit.mcu", level: "unit", firmware: { kind: "existing", file: "unused.bin" } });
+  assert.equal(mcu.level, "unit");
+  // This historical default is intentionally not normalized by the new selector.
+  assert.deepEqual(mcu.tags, ["component", "mcu"]);
+  assert.deepEqual(mcuCTestJob({ id: "unit.mcu.explicit", tags: ["spi"], firmware: { kind: "existing", file: "unused.bin" } }).tags, ["spi"]);
+});
+
+test("XT-001: C registry symbols and runtime Suite patterns are separate contracts", () => {
+  assert.throws(() => nativeCTestJob({ id: "unit.invalid.registry", tests: ["unused.c"], suites: ["math_*"] }), /C 标识符/u);
+  const job = nativeCTestJob({ id: "unit.valid.registry", tests: ["unused.c"], suites: ["math_suite"], run: { suite: ["math_*"] } });
+  assert.deepEqual(job.workflow.find((step) => step.kind === "cTestRun").details.selection.suite, ["math_*"]);
+});

@@ -7,7 +7,7 @@ import type { CTestRunOverrides, SuitePolicy, TestJob } from "../config/schema/c
 import { CAUTEST_CLI_SCHEMA_VERSION } from "../config/versions.js";
 import { doctorJobs } from "../doctor/index.js";
 import { CautestError } from "../model/error.js";
-import { globMatcher } from "../pattern/glob.js";
+import { selectJobs } from "../config/select.js";
 import { executeRun, writeRunDirectory } from "../result/run.js";
 import { formatConsoleReport, writeReports } from "../reporters/index.js";
 import { executeDirectSession, type DirectSessionMode } from "./direct-session.js";
@@ -223,11 +223,6 @@ async function versionText(): Promise<string> {
   return `Cautest ${String(value.version)} (commit ${String(value.commit)}${value.dirty === true ? ", dirty" : ""})`;
 }
 
-function selectedJobs(jobs: readonly TestJob[], parsed: ParsedArguments): readonly TestJob[] {
-  for (const level of parsed.levels) if (!["unit", "component", "integration", "system"].includes(level)) throw new CautestError(`--level 无效: ${level}`, { code: "config_error" });
-  const matchers = parsed.selectors.map((selector) => globMatcher(selector));
-  return jobs.filter((job) => (parsed.command !== "run" || job.enabled) && (matchers.length === 0 || matchers.some((match) => match(job.id))) && (parsed.levels.length === 0 || parsed.levels.includes(job.level)) && parsed.tags.every((tag) => job.tags.includes(tag)));
-}
 
 function hasExplicitJobSelection(parsed: ParsedArguments): boolean {
   return parsed.selectors.length > 0 || parsed.levels.length > 0 || parsed.tags.length > 0;
@@ -353,7 +348,7 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams, options:
     streams.stdout.write(json({ preset }));
     return 0;
   }
-  const jobs = selectedJobs(loaded.config.jobs, parsed);
+  const jobs = selectJobs(loaded.config.jobs, { selectors: parsed.selectors, levels: parsed.levels, tags: parsed.tags, includeDisabled: parsed.command !== "run" });
   const selectedIds = new Set(jobs.map((job) => job.id));
   const planned = planConfig(loaded.config).filter((job) => selectedIds.has(job.id));
   if (jobs.length === 0 && parsed.command !== "clean" && parsed.command !== "describe" && (parsed.command !== "list" || hasExplicitJobSelection(parsed))) {
