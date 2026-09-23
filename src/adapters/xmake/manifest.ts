@@ -4,7 +4,7 @@ import { CautestError } from "../../model/error.js";
 import { validateArtifactRef, validateBuildContext, type BuildContext } from "../../artifacts/index.js";
 import type { CTestRunInput, TestConfigDefaultsInput, TestProfileInput, TestJobCommonInput } from "../../config/schema/common.js";
 export const XMAKE_MANIFEST_VERSION=CAUTEST_VERSIONS.schemas.xmakeManifest;
-export interface ProviderReference {readonly module:string;readonly export:string}
+export interface ProviderReference {readonly module:string;readonly export:string;readonly inputs?:readonly string[]}
 export interface Origin {readonly file:string;readonly declaration:number;readonly includeChain:readonly string[]}
 export interface ManifestJob extends TestJobCommonInput {
  readonly kind:"native"|"mcu"|"kernel"|"driver"|"workflow";
@@ -31,7 +31,7 @@ function fail(message:string):never{throw new CautestError(message,{code:"config
 function absolute(value:unknown,label:string):asserts value is string{if(typeof value!=="string"||!path.isAbsolute(value))fail(`${label} must be absolute`);}
 function strings(value:unknown,label:string):asserts value is readonly string[]{if(!Array.isArray(value)||value.some(x=>typeof x!=="string"||!x.length))fail(`${label} must be a string array`);}
 function origin(value:unknown):asserts value is Origin{const v=record(value,["file","declaration","includeChain"],"origin");absolute(v.file,"origin.file");if(!Number.isInteger(v.declaration)||(v.declaration as number)<1)fail("origin.declaration must be positive");strings(v.includeChain,"origin.includeChain");}
-function provider(value:unknown,label:string):asserts value is ProviderReference{const v=record(value,["module","export"],label);absolute(v.module,`${label}.module`);if(typeof v.export!=="string"||!v.export.length)fail(`${label}.export is required`);}
+function provider(value:unknown,label:string):asserts value is ProviderReference{const v=record(value,["module","export","inputs"],label);if(v.inputs!==undefined){strings(v.inputs,`${label}.inputs`);for(const input of v.inputs)absolute(input,`${label}.inputs`);}absolute(v.module,`${label}.module`);if(typeof v.export!=="string"||!v.export.length)fail(`${label}.export is required`);}
 export function validateRun(value:unknown,label:string):asserts value is CTestRunInput{
  const v=record(value,["include","exclude","suite","case","parameter","caseTimeoutMs","runTimeoutMs","session","suitePolicy","expectedBuildId","stepTimeoutMs"],label);
  for(const key of ["include","exclude","suite","case","parameter"]){if(v[key]===undefined)continue;if(["suite","case","parameter"].includes(key)&&typeof v[key]==="string"&&v[key])continue;strings(v[key],`${label}.${key}`);}

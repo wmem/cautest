@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: static ESM snapshot follows imports/re-exports/cycles without evaluating any top-level provider code
+ok 1 - static ESM snapshot follows imports/re-exports/cycles without evaluating any top-level provider code
+  ---
+  duration_ms: 67.456901
+  type: 'test'
+  ...
+# Subtest: lazy Board snapshot includes transitive ESM and explicit dynamic data; changed inputs stop before factory/flash
+ok 2 - lazy Board snapshot includes transitive ESM and explicit dynamic data; changed inputs stop before factory/flash
+  ---
+  duration_ms: 291.619461
+  type: 'test'
+  ...
+# Subtest: late owned Board factory cannot flash after timeout and closes exactly once; borrowed remains borrowed
+ok 3 - late owned Board factory cannot flash after timeout and closes exactly once; borrowed remains borrowed
+  ---
+  duration_ms: 956.374661
+  type: 'test'
+  ...
+# Subtest: real Xmake Kernel/Driver declarations are side-effect-free and the independent static guest rule builds and speaks CTP
+ok 4 - real Xmake Kernel/Driver declarations are side-effect-free and the independent static guest rule builds and speaks CTP
+  ---
+  duration_ms: 4227.29163
+  type: 'test'
+  ...
+# Subtest: Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields
+ok 5 - Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields
+  ---
+  duration_ms: 1.572753
+  type: 'test'
+  ...
+# Subtest: Xmake manifest duplicates identify both origins; driver outputs are explicit references
+ok 6 - Xmake manifest duplicates identify both origins; driver outputs are explicit references
+  ---
+  duration_ms: 0.614763
+  type: 'test'
+  ...
+# Subtest: Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load
+ok 7 - Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load
+  ---
+  duration_ms: 104.680609
+  type: 'test'
+  ...
+# Subtest: MCU board factories stay lazy for list/plan and validate named resources
+ok 8 - MCU board factories stay lazy for list/plan and validate named resources
+  ---
+  duration_ms: 69.43508
+  type: 'test'
+  ...
+# Subtest: real Xmake MCU firmware artifact, split serial CTP, shared build and physical alias identity
+ok 9 - real Xmake MCU firmware artifact, split serial CTP, shared build and physical alias identity
+  ---
+  duration_ms: 3210.385491
+  type: 'test'
+  ...
+# Subtest: MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong HELLO build identity fails
+ok 10 - MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong HELLO build identity fails
+  ---
+  duration_ms: 7206.871867
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11219.120986

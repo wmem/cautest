@@ -250,3 +250,47 @@ environment, not Lua Job/profile `env`: declared configuration values intentiona
 appear in saved execution manifests and may appear in CLI descriptions. Cautest
 does not dump the complete inherited environment; user build/provider commands
 remain responsible for not printing their own secrets.
+
+### Provider dependency snapshots
+
+Board factories remain lazy: `list`, `plan` and `doctor` do not import/evaluate
+Board modules or call their factories. A parse-only Node subprocess discovers
+static ESM imports and re-exports (including cycles) before any build/provision.
+Source bytes are included in the configuration hash and checked again before
+constructing the Board and before flashing. Changed or missing inputs abort the
+run rather than deploying from a mixed definition.
+
+Dynamic `import()`, CommonJS `require()`, native add-on dependencies and data read
+by a factory are not inferable from static ESM imports. Declare those inputs:
+
+```lua
+ctest.board {
+    id = "board", resourceId = "probe:serial-number",
+    provider = {
+        module = "board.mjs", export = "create",
+        inputs = {"board-settings.json", "board-support/**.mjs"}
+    }
+}
+```
+
+Input patterns are relative to the declaring Lua file and must remain inside the
+project root. Required patterns matching nothing fail configuration. The optional
+`provider.inputs` field also works for Environment and Workflow providers.
+A `.cjs`, `.node` or JSON file reached through a static import is hashed without
+being evaluated; its further dynamic dependencies must be declared explicitly.
+The parse-only subprocess uses the running Node executable and its VM-module
+parser; no npm package is installed and no provider code is executed there.
+
+### Concurrent Linux builds
+
+On the supported Linux host, Cautest locks the complete cache transaction
+(validate → invalidate → build → publish) with kernel `flock`, and serializes the
+Xmake build → artifact-query → receipt transaction per project. Locks live in the
+user's temporary lock directory, outside artifacts; they are never unlinked while
+in use and are released by the OS after an owning process dies. All cooperating
+processes must use the same `CAUTEST_LOCK_DIR` (or leave it unset).
+
+This does not lock arbitrary external `xmake f` calls. A configuration or source
+change during a run is an error, not permission to silently switch configurations.
+Different Guest output names have different cache identities. Cross-process build
+locking on non-Linux hosts is not part of the verified support matrix.

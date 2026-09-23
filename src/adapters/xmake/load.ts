@@ -1,3 +1,5 @@
+import {staticProviderSources} from "../../config/static-sources.js";
+import {expandFilePatterns} from "../../config/file-pattern.js";
 import {readFile} from "node:fs/promises";
 import path from "node:path";
 import {pathToFileURL} from "node:url";
@@ -28,16 +30,19 @@ async function factory(ref:ProviderReference,args:unknown,origin:string):Promise
   return await create(args);
  }catch(cause){throw new CautestError(`${origin}: provider ${ref.module}#${ref.export}: ${cause instanceof Error?cause.message:String(cause)}`,{code:"config_error",cause});}
 }
-function lazyBoard(resource:ManifestResource,manifest:XmakeManifest,signal:()=>AbortSignal|undefined):McuBoardAdapter{
+function lazyBoard(resource:ManifestResource,manifest:XmakeManifest,signal:()=>AbortSignal|undefined,validateSources:()=>Promise<void>):McuBoardAdapter{
  let adapter:McuBoardAdapter|undefined;
  const close=async()=>{const current=adapter;adapter=undefined;await current?.close?.();};
  const loaded=()=>{if(!adapter)throw new CautestError("Board was not initialized",{code:"provision_error"});return adapter;};
  return {
   async flash(artifact){
+   await validateSources();
    const created=await factory(resource.provider,{projectRoot:manifest.projectRoot,options:resource.options??{},origin:resource.origin,signal:signal()},resource.origin.file);
    if(typeof created!=="object"||created===null||!["flash","reset","openTransport"].every(k=>typeof (created as Record<string,unknown>)[k]==="function"))throw new CautestError(`${resource.origin.file}: Board provider must implement flash/reset/openTransport`,{code:"config_error"});
    adapter=created as McuBoardAdapter;
    if(signal()?.aborted){if(resource.ownership!=="borrowed")await close();signal()?.throwIfAborted();}
+   await validateSources();
+   signal()?.throwIfAborted();
    await adapter.flash(artifact);
   },
   async reset(){return await loaded().reset();},
@@ -56,11 +61,22 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
  for(const source of [...sourceSet].sort())sourceHashes.set(source,await hashFile(source));
  const provider=options.provider??new XmakeBuildProvider(manifest.xmake,manifest.buildContext,sourceHashes);
  const jobs:TestJob[]=[];enableConfigSourceTracking();
+ const snapshots=new Map<string,Promise<readonly string[]>>();
+ const snapshot=async(ref:ProviderReference)=>{
+  let sources=snapshots.get(ref.module);
+  if(!sources){sources=staticProviderSources(ref.module);snapshots.set(ref.module,sources);}
+  for(const source of await sources)sourceSet.add(source);
+  if(ref.inputs?.length)for(const source of await expandFilePatterns(ref.inputs.map(input=>path.relative(manifest.projectRoot,input)),{baseDir:manifest.projectRoot,label:`${ref.module}: provider.inputs`}))sourceSet.add(path.resolve(manifest.projectRoot,source));
+ };
+ const validateSources=async()=>{
+  for(const [source,digest] of sourceHashes)if(await hashFile(source)!==digest)throw new CautestError(`Definition changed during run: ${source}; re-run xmake ct`,{code:"build_error"});
+ };
  const environmentCache=new Map<string,Promise<UmlKernelEnvironment>>();
  const environment=async(id:string):Promise<UmlKernelEnvironment>=>{
   const resource=manifest.environments.find(r=>r.id===id);if(!resource)throw new Error(`Unknown environment ${id}`);
   let value=environmentCache.get(id);
   if(!value){value=(async()=>{
+   await snapshot(resource.provider);
    const created=await factory(resource.provider,{projectRoot:manifest.projectRoot,options:resource.options??{},origin:resource.origin},resource.origin.file);
    // Environment providers are declarative factories, never booted resources.
    environmentValue(created as UmlKernelEnvironment);
@@ -77,13 +93,14 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
    if(declaration.kind==="native")job=nativeArtifactJob({...shared,artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})}});
    else if(declaration.kind==="mcu"){
     const board=manifest.boards.find(r=>r.id===declaration.board);if(!board)throw new Error(`Unknown board ${declaration.board}`);
-    sourceSet.add(board.provider.module);
+    await snapshot(board.provider);
     let activeContext:StepExecutionContext|undefined;
-    job=mcuArtifactJob({...shared,boardName:declaration.id,artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})},board:{kind:"external",adapter:lazyBoard(board,manifest,()=>activeContext?.signal),ownership:board.ownership??"owned"},
+    job=mcuArtifactJob({...shared,boardName:declaration.id,artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})},board:{kind:"external",adapter:lazyBoard(board,manifest,()=>activeContext?.signal,validateSources),ownership:board.ownership??"owned"},
      ...(declaration.reconnects===undefined?{}:{reconnects:declaration.reconnects}),...(declaration.recoverTimeouts===undefined?{}:{recoverTimeouts:declaration.recoverTimeouts})},{onProvision(context){activeContext=context;}});
     const lock=physicalResourceStep({name:declaration.id,resourceId:board.resourceId!,...(board.lockTimeoutMs===undefined?{}:{timeoutMs:board.lockTimeoutMs})});
     job=testJob({...job,workflow:[job.workflow[0]!,lock,...job.workflow.slice(1)]});
    }else if(declaration.kind==="workflow"){
+    await snapshot(declaration.provider!);
     const raw=await factory(declaration.provider!,{projectRoot:manifest.projectRoot,origin:declaration.origin,options:declaration.options??{},artifacts:declaration.artifacts??{},getArtifact:(context:StepExecutionContext,name:string)=>getArtifact(context,name)},declaration.origin.file);
     const elements=flattenWorkflow((Array.isArray(raw)?raw:[raw]) as readonly (WorkflowStep|WorkflowFragment)[]);
     const builds=Object.entries(declaration.artifacts??{}).map(([name,ref])=>artifactBuildStep({name,ref,provider,context:manifest.buildContext,protocolRequired:false,...(declaration.buildTimeoutMs===undefined?{}:{timeoutMs:declaration.buildTimeoutMs})}));

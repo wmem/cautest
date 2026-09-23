@@ -45,6 +45,14 @@ interp_add_scopeapis({values = {{"cautest_initialize", function (interp)
             copy.provider = table.clone(copy.provider)
             if not check(type(copy.provider.module) == "string", file .. ": provider.module is required") then return end
             copy.provider.module = path.absolute(copy.provider.module, path.directory(file))
+            if copy.provider.inputs then
+                if not check(type(copy.provider.inputs) == "table", file .. ": provider.inputs must be a list of file patterns") then return end
+                copy.provider.inputs = table.clone(copy.provider.inputs)
+                for index, pattern in ipairs(copy.provider.inputs) do
+                    if not check(type(pattern) == "string" and #pattern > 0, file .. ": invalid provider.inputs pattern") then return end
+                    copy.provider.inputs[index] = path.absolute(pattern, path.directory(file))
+                end
+            end
         end
         table.insert(state[category], copy)
     end
