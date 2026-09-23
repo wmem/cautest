@@ -726,7 +726,7 @@ static const struct file_operations cautest_fops = {
 	.poll = cautest_poll,
 	.unlocked_ioctl = cautest_ioctl,
 	.compat_ioctl = cautest_ioctl,
-	.llseek = no_llseek,
+	.llseek = NULL,
 };
 
 static struct miscdevice cautest_device = {

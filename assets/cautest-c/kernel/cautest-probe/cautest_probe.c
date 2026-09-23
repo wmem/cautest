@@ -445,7 +445,7 @@ static const struct file_operations cautest_probe_file_operations = {
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = cautest_probe_ioctl,
 #endif
-	.llseek = no_llseek,
+	.llseek = NULL,
 };
 
 static struct miscdevice cautest_probe_device = {
