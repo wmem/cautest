@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+ok 1 - real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+  ---
+  duration_ms: 10882.898304
+  type: 'test'
+  ...
+# Subtest: portable Kernel/Driver factory plans and static Guest builds without source dist or dependencies (NO UML boot)
+ok 2 - portable Kernel/Driver factory plans and static Guest builds without source dist or dependencies (NO UML boot)
+  ---
+  duration_ms: 2612.350595
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13566.058672
