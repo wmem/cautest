@@ -6,6 +6,7 @@ export function createEnvironment({projectRoot, options}) {
   return umlKernelEnvironment({
     kernel: {
       sourceDir: path.resolve(projectRoot, options.kernelSource ?? process.env.KERNEL_SRC ?? 'vendor/linux'),
+      configFragments: ['uml-host.config'],
       arch: 'um', jobs: options.jobs ?? 4, timeoutMs: 20 * 60_000,
     },
     busybox: {

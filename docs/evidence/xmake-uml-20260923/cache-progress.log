@@ -1,0 +1,48 @@
+START Job integration.driver.abi
+START Step integration.driver.abi/build/kernelBuild:integration-driver-abi
+END Step integration.driver.abi/kernelBuild:integration-driver-abi SUCCESS 20066ms CACHE HIT
+START Step integration.driver.abi/build/busyboxBuild:integration-driver-abi
+END Step integration.driver.abi/busyboxBuild:integration-driver-abi SUCCESS 671ms CACHE HIT
+START Step integration.driver.abi/build/kernelArtifactContext:integration-driver-abi
+END Step integration.driver.abi/kernelArtifactContext:integration-driver-abi SUCCESS 124ms
+START Step integration.driver.abi/build/artifactBuild:driver-1
+END Step integration.driver.abi/artifactBuild:driver-1 SUCCESS 2828ms
+START Step integration.driver.abi/build/kernelArtifactValidate:driver-1
+END Step integration.driver.abi/kernelArtifactValidate:driver-1 SUCCESS 1ms
+START Step integration.driver.abi/build/artifactBuild:driver-guest
+END Step integration.driver.abi/artifactBuild:driver-guest SUCCESS 438ms
+START Step integration.driver.abi/build/driverGuestArtifactValidate:driver-guest
+END Step integration.driver.abi/driverGuestArtifactValidate:driver-guest SUCCESS 2ms
+START Step integration.driver.abi/build/umlRootfsBuild:integration-driver-abi
+END Step integration.driver.abi/umlRootfsBuild:integration-driver-abi SUCCESS 306ms CACHE MISS
+START Step integration.driver.abi/provision/umlStart:integration-driver-abi
+END Step integration.driver.abi/umlStart:integration-driver-abi SUCCESS 209ms
+START Step integration.driver.abi/run/cTestRun:integration-driver-abi
+END Step integration.driver.abi/cTestRun:integration-driver-abi SUCCESS 50ms
+START Step integration.driver.abi/collect/umlLogs:integration-driver-abi
+END Step integration.driver.abi/umlLogs:integration-driver-abi SUCCESS 8ms
+END Job integration.driver.abi SUCCESS 24706ms
+START Job unit.kernel.math
+START Step unit.kernel.math/build/kernelBuild:unit_kernel_math
+END Step unit.kernel.math/kernelBuild:unit_kernel_math SUCCESS 19878ms CACHE HIT
+START Step unit.kernel.math/build/busyboxBuild:unit_kernel_math
+END Step unit.kernel.math/busyboxBuild:unit_kernel_math SUCCESS 1604ms CACHE HIT
+START Step unit.kernel.math/build/kernelArtifactContext:unit_kernel_math
+END Step unit.kernel.math/kernelArtifactContext:unit_kernel_math SUCCESS 263ms
+START Step unit.kernel.math/build/kernelModuleBuild:cautest_kernel
+END Step unit.kernel.math/kernelModuleBuild:cautest_kernel SUCCESS 92ms CACHE HIT
+START Step unit.kernel.math/build/kernelRuntimeSymbols:unit_kernel_math
+END Step unit.kernel.math/kernelRuntimeSymbols:unit_kernel_math SUCCESS 0ms
+START Step unit.kernel.math/build/artifactBuild:test-module
+END Step unit.kernel.math/artifactBuild:test-module SUCCESS 3176ms
+START Step unit.kernel.math/build/kernelArtifactValidate:test-module
+END Step unit.kernel.math/kernelArtifactValidate:test-module SUCCESS 1ms
+START Step unit.kernel.math/build/umlRootfsBuild:unit_kernel_math
+END Step unit.kernel.math/umlRootfsBuild:unit_kernel_math SUCCESS 278ms CACHE MISS
+START Step unit.kernel.math/provision/umlStart:unit_kernel_math
+END Step unit.kernel.math/umlStart:unit_kernel_math SUCCESS 287ms
+START Step unit.kernel.math/run/cTestRun:unit_kernel_math
+END Step unit.kernel.math/cTestRun:unit_kernel_math SUCCESS 14ms
+START Step unit.kernel.math/collect/umlLogs:unit_kernel_math
+END Step unit.kernel.math/umlLogs:unit_kernel_math SUCCESS 8ms
+END Job unit.kernel.math SUCCESS 25607ms
