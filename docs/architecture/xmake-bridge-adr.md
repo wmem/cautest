@@ -23,3 +23,13 @@ collector diagnostics, artifact identity and build-reuse acceptance must be
 verified separately before the corresponding gates are marked PASS.
 
 Run with `CAUTEST_XMAKE=/absolute/path/xmake node --test test/xmake-poc.test.js`.
+
+## Shared cancellation correction
+
+The pre-adapter command runner terminated only the direct child. It now starts
+a POSIX process group and terminates/escalates the entire group on cancellation,
+including descendants that close stdio or ignore SIGTERM. This is shared by the
+old helpers and new Xmake provider, not a second adapter-only cancellation engine.
+Linux process-tree, pre-abort, spawn-error, old interrupt/Native/MCU regressions:
+18/18 passed; see the process-tree evidence in `docs/tests/evidence/`. Windows
+uses the previous direct-child fallback and is not in the Xmake support matrix.
