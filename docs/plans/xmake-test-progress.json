@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
-  "status": "partial-blocked",
+  "status": "partial-verified-native-mcu-simulation",
   "baselineCommit": "062044d66d582781033393422a555b0c30195cc9",
   "execution": {
-    "startedAt": "2026-09-23T07:46:49+08:00",
-    "deadlineAt": "2026-09-23T08:46:49+08:00",
-    "implementationStoppedAt": "2026-09-23T08:06:58+08:00",
-    "reason": "XT-002 requires a real Xmake executable; referenced binary has no authorized materialization path and no system xmake is installed.",
-    "timeLimitExceeded": false
+    "startedAt": "2026-09-23T10:12:13+09:00",
+    "deadlineAt": "2026-09-23T11:12:13+09:00",
+    "implementationStoppedAt": "2026-09-23T11:03:26+09:00",
+    "reason": "Stop new features with time reserved for complete regression, fresh bundle clone and delivery. Physical MCU and real UML gates remain blocked; missing artifact-backed Kernel/Driver workflows are explicitly unimplemented.",
+    "timeLimitExceeded": false,
+    "featureHead": "cb9bd54"
   },
   "requirements": {
     "firstPriority": "npm migration",
@@ -36,23 +37,21 @@
     }
   ],
   "gates": {
-    "G0": "not-passed",
-    "G1": "not-passed",
-    "G2": "not-passed",
-    "G3": "not-passed",
-    "G4": "not-passed",
-    "G5": "not-passed",
-    "G6": "not-passed",
-    "G7": "not-passed"
+    "G0": "partial: real Xmake PoC PASS; complete platform contract/reuse matrix not frozen",
+    "G1": "partial: Native/MCU/workflow artifact backend PASS; Kernel/Driver Environment factory pending",
+    "G2": "PASS: declarative collection/list/plan and provenance",
+    "G3": "PASS: real multi-module/suite Native loop",
+    "G4": "partial: extensive Native reliability/compatibility/1000-job tests PASS; full toolchain/visibility/concurrency/memory matrix incomplete",
+    "G5": "blocked: simulation and physical lock tests PASS, physical SPI not run",
+    "G6": "blocked: Kbuild artifacts compiled, no artifact-backed UML runtime/Driver ABI acceptance",
+    "G7": "not-passed: vendored/portable incremental package verified, full platform release incomplete"
   },
   "notImplemented": [
-    "root xmake.lua",
-    "ctest.* Lua DSL",
-    "xmake ct commands",
-    "execution manifest / artifact receipt",
-    "Xmake build provider / native rule",
-    "Xmake MCU adapter",
-    "Xmake kernel/driver adapter"
+    "artifact-backed Kernel Test and Driver ABI runtime split (XT-023)",
+    "single shared UML Environment factory for Xmake Kernel/Driver",
+    "real Linux 6.6.157 + BusyBox UML acceptance (XT-024)",
+    "physical MCU startup/linker-script variants and real SPI gate (XT-021)",
+    "full all-platform release/acceptance (XT-027)"
   ],
   "verification": {
     "node": "22.16.0",
@@ -62,18 +61,33 @@
     "publicTypes": "passed",
     "cRuntime": "passed",
     "defaultNodeTests": {
-      "passed": 118,
+      "passed": 133,
       "failed": 0,
       "skipped": 0
     },
     "selectionTruthTableCombinations": 8192,
     "cleanRegistryNpmCi": "not-run; offline dependency cache incomplete",
     "gitSourceNpxE2e": "not-run; may require registry cache",
-    "realXmake": "blocked",
-    "realMcuSpi": "not-run; hardware not supplied",
-    "realUml": "not-run; G0 blocked and BusyBox source not supplied",
-    "finalFullEvidence": "../tests/evidence/pre-bundle-full-20260923.log",
-    "archivedPlanLinkChecks": "passed; fenced source excerpts are literal text, original plan files preserved unchanged"
+    "realXmake": "PASS: supplied 3.1.1+HEAD.3ba37a0 Linux x86_64",
+    "realMcuSpi": "blocked: no physical MCU/probe/SPI fixture",
+    "realUml": "blocked: missing BusyBox source, flex/bison/bc/libelf headers; Xmake Kernel/Driver artifact runtimes not implemented",
+    "finalFullEvidence": "../tests/evidence/xmake-final-default-20260923.log",
+    "archivedPlanLinkChecks": "passed; fenced source excerpts are literal text, original plan files preserved unchanged",
+    "realXmakeTests": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "realKbuildTests": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "kbuildKernel": "preinstalled linux-headers-6.12.96+deb13-amd64; NOT supplied Linux 6.6.157 and NOT booted/loaded",
+    "xmakeEvidence": "../tests/evidence/xmake-final-integration-20260923.log",
+    "kbuildEvidence": "../tests/evidence/xmake-final-kbuild-20260923.log",
+    "portable": "PASS: Native and MCU simulation from relocated lib-only tree; no dist/node_modules; manifest unchanged",
+    "freshBundleClone": "recorded in external cautest-bundle-verification.log after packaging"
   },
   "tasks": [
     {
@@ -83,7 +97,8 @@
       "dependsOn": [],
       "status": "completed",
       "commit": "b9aceb1",
-      "evidence": "../architecture/xmake-compatibility.md"
+      "evidence": "../architecture/xmake-compatibility.md",
+      "notes": "Compatibility baseline retained; final default regression 133 PASS."
     },
     {
       "id": "XT-002",
@@ -92,8 +107,9 @@
       "dependsOn": [
         "XT-001"
       ],
-      "status": "blocked",
-      "blocker": "xmake-executable-unavailable"
+      "status": "completed",
+      "notes": "Real supplied Xmake DSL/nested same-project build/options/errors; b62364e adds actual outer SIGINT process-tree verification.",
+      "commit": "eda42de"
     },
     {
       "id": "XT-003",
@@ -103,7 +119,9 @@
         "XT-001",
         "XT-002"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Static-library macro counterexample, shared sources, mocks, generated-header first-build fence and conditional sources verified. Full public/interface/cross-linker/MCU startup matrix remains.",
+      "commit": "b62364e"
     },
     {
       "id": "XT-004",
@@ -113,7 +131,9 @@
         "XT-002",
         "XT-003"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Strict manifest/receipt v1 shipped for Native, MCU, workflow. Kernel/Driver Environment runtime details not frozen.",
+      "commit": "5b436a9"
     },
     {
       "id": "XT-005",
@@ -124,7 +144,8 @@
       ],
       "status": "completed",
       "commit": "b9aceb1",
-      "evidence": "../architecture/xmake-compatibility.md"
+      "evidence": "../architecture/xmake-compatibility.md",
+      "notes": "8192 baseline selection combinations retained and used by new adapter."
     },
     {
       "id": "XT-006",
@@ -133,7 +154,9 @@
       "dependsOn": [
         "XT-004"
       ],
-      "status": "not-started"
+      "status": "completed",
+      "notes": "Public ArtifactRef/BuildContext/BuildProvider, strict receipt versions/roles/context/digests and failure cases verified.",
+      "commit": "cacef6d"
     },
     {
       "id": "XT-007",
@@ -142,7 +165,9 @@
       "dependsOn": [
         "XT-006"
       ],
-      "status": "not-started"
+      "status": "completed",
+      "notes": "Native/MCU share exact existing runtime/CTP lifecycle with legacy helpers, verified with real C binaries.",
+      "commit": "cacef6d"
     },
     {
       "id": "XT-008",
@@ -153,7 +178,9 @@
         "XT-005",
         "XT-007"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Manifest creates actual Jobs/Steps; workflow and lazy Board providers verified. Environment provider is pending; Board transitive-import pre-run snapshot incomplete.",
+      "commit": "1201fc1"
     },
     {
       "id": "XT-009",
@@ -163,7 +190,9 @@
         "XT-002",
         "XT-004"
       ],
-      "status": "not-started"
+      "status": "completed",
+      "notes": "Root vendoring entry, table DSL/rule/task registration and repeat-includes verified.",
+      "commit": "5b436a9"
     },
     {
       "id": "XT-010",
@@ -172,7 +201,9 @@
       "dependsOn": [
         "XT-009"
       ],
-      "status": "not-started"
+      "status": "completed",
+      "notes": "Sorted explicit patterns, required/optional includes, duplicate/cycle diagnostics and provenance verified. Provenance ordinal is not a Lua line number.",
+      "commit": "5b436a9"
     },
     {
       "id": "XT-011",
@@ -182,7 +213,9 @@
         "XT-008",
         "XT-010"
       ],
-      "status": "not-started"
+      "status": "completed",
+      "notes": "ct list/plan/doctor/describe/run, comma filters, profiles and fixed Node bridge implemented using old CLI.",
+      "commit": "5b436a9"
     },
     {
       "id": "XT-012",
@@ -193,7 +226,9 @@
         "XT-006",
         "XT-011"
       ],
-      "status": "not-started"
+      "status": "completed",
+      "notes": "Real Xmake build/query receipts, multiple declared roles, run-scoped reuse and failures verified; Kbuild example adds actual phony multi-output evidence.",
+      "commit": "5b436a9"
     },
     {
       "id": "XT-013",
@@ -204,7 +239,9 @@
         "XT-009",
         "XT-012"
       ],
-      "status": "not-started"
+      "status": "completed",
+      "notes": "Actual Native Runtime + explicit Registry + entry generation, fenced first-build/same-second relink and real HELLO identity verified on Linux x86_64 GCC/ELF.",
+      "commit": "b62364e"
     },
     {
       "id": "XT-014",
@@ -217,7 +254,9 @@
         "XT-012",
         "XT-013"
       ],
-      "status": "not-started"
+      "status": "completed",
+      "notes": "Two modules, three suites, real CTP and JSON/JUnit plus case selection/negative fixtures.",
+      "commit": "5b436a9"
     },
     {
       "id": "XT-015",
@@ -228,7 +267,9 @@
         "XT-013",
         "XT-014"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Minimal shared-source rule/product-library example verified; broader reusable components/presets deferred.",
+      "commit": "5b436a9"
     },
     {
       "id": "XT-016",
@@ -238,7 +279,9 @@
         "XT-012",
         "XT-014"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Real target dedup, corruption rebuild, same-second updates, mode/env isolation and failed-build behavior verified. Complete simultaneous cross-config/toolchain matrix remains.",
+      "commit": "b62364e"
     },
     {
       "id": "XT-017",
@@ -247,7 +290,9 @@
       "dependsOn": [
         "XT-014"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "133 default tests, legacy parity, real PASS/FAIL/ERROR/SKIP, cancellation and reports pass; not full future Kernel/Driver error matrix.",
+      "commit": "b62364e"
     },
     {
       "id": "XT-018",
@@ -259,7 +304,9 @@
         "XT-016",
         "XT-017"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "100/1000 deterministic jobs, fragment edits, cwd/path scope and digest stability verified. Memory/high-case-count and all multi-project stress cases remain.",
+      "commit": "b62364e"
     },
     {
       "id": "XT-019",
@@ -270,7 +317,9 @@
         "XT-012",
         "XT-016"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Real host simulated MCU firmware output/protocol identity separated from digest; embedded Board hardware ELF/BIN/toolchain variants not verified.",
+      "commit": "1201fc1"
     },
     {
       "id": "XT-020",
@@ -280,7 +329,9 @@
         "XT-008",
         "XT-019"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Actual Linux flock aliases/busy/cancel/owner death and owned/borrowed cleanup/late factory tested; full real flash/reset/open/cancel matrix still needs hardware.",
+      "commit": "cb9bd54"
     },
     {
       "id": "XT-021",
@@ -290,7 +341,9 @@
         "XT-019",
         "XT-020"
       ],
-      "status": "not-started"
+      "status": "partial-blocked",
+      "notes": "Real host C firmware + fragmented serial/disconnect, stale Build ID and wrong Boot ID PASS. Real physical SPI blocked.",
+      "commit": "1201fc1"
     },
     {
       "id": "XT-022",
@@ -300,7 +353,9 @@
         "XT-012",
         "XT-016"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Real external-module Kbuild product target, 4 roles, symbols/vermagic and no source pollution tested on 6.12.96 prepared headers. Full UML/kernel identity compatibility pending.",
+      "commit": "26b4c68"
     },
     {
       "id": "XT-023",
@@ -310,7 +365,8 @@
         "XT-008",
         "XT-022"
       ],
-      "status": "not-started"
+      "status": "not-started",
+      "notes": "Kernel/Driver declarations only list; doctor/run explicitly reject unsupported runtime. No .ko is launched as a program."
     },
     {
       "id": "XT-024",
@@ -319,7 +375,8 @@
       "dependsOn": [
         "XT-023"
       ],
-      "status": "not-started"
+      "status": "blocked",
+      "notes": "Depends on XT-023 plus Linux 6.6.157 build prerequisites and BusyBox. No real UML/Driver ABI acceptance performed."
     },
     {
       "id": "XT-025",
@@ -330,7 +387,9 @@
         "XT-021",
         "XT-024"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "npm content and relocated lib-only portable Native/MCU pass; final source bundle independently cloned. Cold Registry npm ci and arbitrary native-addon deployment not verified.",
+      "commit": "26b4c68"
     },
     {
       "id": "XT-026",
@@ -342,7 +401,9 @@
         "XT-024",
         "XT-025"
       ],
-      "status": "not-started"
+      "status": "partial",
+      "notes": "Native/MCU/Kbuild scope, commands, dependency requirements and non-skipping real gate runners documented; final all-platform CI/docs pending.",
+      "commit": "26b4c68"
     },
     {
       "id": "XT-027",
@@ -351,7 +412,8 @@
       "dependsOn": [
         "XT-026"
       ],
-      "status": "not-started"
+      "status": "not-started",
+      "notes": "Blocked by remaining platform gates; this is an incremental delivery, not the full release candidate."
     },
     {
       "id": "XT-028",
@@ -381,5 +443,20 @@
       ],
       "status": "deferred-as-planned"
     }
+  ],
+  "previousExecution": {
+    "startedAt": "2026-09-23T07:46:49+08:00",
+    "deadlineAt": "2026-09-23T08:46:49+08:00",
+    "implementationStoppedAt": "2026-09-23T08:06:58+08:00",
+    "reason": "XT-002 requires a real Xmake executable; referenced binary has no authorized materialization path and no system xmake is installed.",
+    "timeLimitExceeded": false
+  },
+  "knownLimitations": [
+    "Only Xmake 3.1.1 Linux x86_64 and GNU-compatible ELF linkage verified; one pinned private filename accessor remains.",
+    "Explicit Lua Job/profile env is saved configuration: pass secrets through inherited process env instead.",
+    "Advisory Linux resource locks coordinate same-user cooperating tools with the same resourceId/lock directory.",
+    "Provider cancellation is cooperative; user factories must clean up resources allocated before a rejection.",
+    "No absolute-path-independent reproducible binary claim; moving a project may intentionally change build identity.",
+    "No broad all-platform gate is passed by simulated or substituted-kernel tests."
   ]
 }

@@ -1,0 +1,4 @@
+
+> cautest@0.2.1 typecheck
+> tsc -p tsconfig.json --noEmit
+
