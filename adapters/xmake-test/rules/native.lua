@@ -8,3 +8,13 @@ rule("cautest.native")
         import("native", {rootdir = moduledir}).generate(target, toolroot)
     end)
 rule_end()
+
+-- Host simulation only: real MCU firmware targets remain owned by the application.
+rule("cautest.mcu-simulated")
+    on_load(function (target)
+        import("native", {rootdir = moduledir}).configure(target, toolroot, true)
+    end)
+    before_build(function (target)
+        import("native", {rootdir = moduledir}).generate(target, toolroot)
+    end)
+rule_end()

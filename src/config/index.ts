@@ -36,3 +36,5 @@ export { nativeArtifactJob, mcuArtifactJob } from "../jobs/artifact.js";
 export type { ArtifactJobInput } from "../jobs/artifact.js";
 export { artifactBuildStep, getArtifact, resolveArtifact } from "../artifacts/index.js";
 export type { ArtifactRef, BuildContext, ArtifactReceipt, ArtifactOutput, BuildProvider, ResolvedArtifact } from "../artifacts/index.js";
+
+export {acquirePhysicalResource, physicalResourceStep, type PhysicalResourceLock} from "../integration/resource-lock.js";

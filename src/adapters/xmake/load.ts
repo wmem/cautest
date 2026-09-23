@@ -2,6 +2,7 @@ import {readFile} from "node:fs/promises";
 import path from "node:path";
 import {pathToFileURL} from "node:url";
 import {validateManifest,type ManifestJob,type ManifestResource,type ProviderReference,type XmakeManifest} from "./manifest.js";
+import {physicalResourceStep} from "../../integration/resource-lock.js";
 import {XmakeBuildProvider} from "./build.js";
 import {testConfig,testJob} from "../../config/define.js";
 import {setJobOrigin} from "../../config/provenance.js";
@@ -26,14 +27,16 @@ async function factory(ref:ProviderReference,args:unknown,origin:string):Promise
   return await create(args);
  }catch(cause){throw new CautestError(`${origin}: provider ${ref.module}#${ref.export}: ${cause instanceof Error?cause.message:String(cause)}`,{code:"config_error",cause});}
 }
-function lazyBoard(resource:ManifestResource,manifest:XmakeManifest):McuBoardAdapter{
+function lazyBoard(resource:ManifestResource,manifest:XmakeManifest,signal:()=>AbortSignal|undefined):McuBoardAdapter{
  let adapter:McuBoardAdapter|undefined;
  const loaded=()=>{if(!adapter)throw new CautestError("Board was not initialized",{code:"provision_error"});return adapter;};
  return {
   async flash(artifact){
-   const created=await factory(resource.provider,{projectRoot:manifest.projectRoot,options:resource.options??{},origin:resource.origin},resource.origin.file);
+   const created=await factory(resource.provider,{projectRoot:manifest.projectRoot,options:resource.options??{},origin:resource.origin,signal:signal()},resource.origin.file);
    if(typeof created!=="object"||created===null||!["flash","reset","openTransport"].every(k=>typeof (created as Record<string,unknown>)[k]==="function"))throw new CautestError(`${resource.origin.file}: Board provider must implement flash/reset/openTransport`,{code:"config_error"});
-   adapter=created as McuBoardAdapter;await adapter.flash(artifact);
+   adapter=created as McuBoardAdapter;
+   if(signal()?.aborted){if(resource.ownership!=="borrowed")await adapter.close?.();signal()?.throwIfAborted();}
+   await adapter.flash(artifact);
   },
   async reset(){return await loaded().reset();},
   async openTransport(options){return await loaded().openTransport(options);},
@@ -60,8 +63,11 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
    else if(declaration.kind==="mcu"){
     const board=manifest.boards.find(r=>r.id===declaration.board);if(!board)throw new Error(`Unknown board ${declaration.board}`);
     sourceSet.add(board.provider.module);
-    job=mcuArtifactJob({...shared,artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})},board:{kind:"external",adapter:lazyBoard(board,manifest),ownership:board.ownership??"owned"},
-     ...(declaration.reconnects===undefined?{}:{reconnects:declaration.reconnects}),...(declaration.recoverTimeouts===undefined?{}:{recoverTimeouts:declaration.recoverTimeouts})});
+    let activeContext:StepExecutionContext|undefined;
+    job=mcuArtifactJob({...shared,boardName:declaration.id,artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})},board:{kind:"external",adapter:lazyBoard(board,manifest,()=>activeContext?.signal),ownership:board.ownership??"owned"},
+     ...(declaration.reconnects===undefined?{}:{reconnects:declaration.reconnects}),...(declaration.recoverTimeouts===undefined?{}:{recoverTimeouts:declaration.recoverTimeouts})},{onProvision(context){activeContext=context;}});
+    const lock=physicalResourceStep({name:declaration.id,resourceId:board.resourceId!,...(board.lockTimeoutMs===undefined?{}:{timeoutMs:board.lockTimeoutMs})});
+    job=testJob({...job,workflow:[job.workflow[0]!,lock,...job.workflow.slice(1)]});
    }else if(declaration.kind==="workflow"){
     const raw=await factory(declaration.provider!,{projectRoot:manifest.projectRoot,origin:declaration.origin,options:declaration.options??{},artifacts:declaration.artifacts??{},getArtifact:(context:StepExecutionContext,name:string)=>getArtifact(context,name)},declaration.origin.file);
     const elements=flattenWorkflow((Array.isArray(raw)?raw:[raw]) as readonly (WorkflowStep|WorkflowFragment)[]);

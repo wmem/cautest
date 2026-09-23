@@ -80,21 +80,25 @@ async function firmware(input: McuCTestJobInput, context: Parameters<Parameters<
 /** Existing and external artifact builds share these exact Board/CTP/cleanup steps. */
 export function mcuRuntimeSteps(input: Omit<McuCTestJobInput, "firmware">, options: {
   readonly artifact: (context: StepExecutionContext) => FirmwareArtifact | undefined;
+  readonly onProvision?: (context: StepExecutionContext) => void;
 }): readonly WorkflowStep[] {
   const firmwareName = input.firmwareName ?? "firmware";
   const boardName = input.boardName ?? "board";
   const board = defineStep({
     kind: "mcuBoardStart", name: boardName, phase: "provision", details: { kind: input.board?.kind ?? "simulated" },
     async execute(context) {
+      options.onProvision?.(context);
       const artifact = options.artifact(context);
       if (artifact === undefined) throw new CautestError("Firmware Artifact 不存在", { code: "provision_error" });
       const boardInput = input.board;
       const kind = boardInput?.kind ?? "simulated";
       const adapter = boardInput?.kind === "external" ? boardInput.adapter : new SimulatedMcuBoard(boardInput?.kind === "simulated" ? boardInput : {});
       const ownership = boardInput?.kind === "external" ? boardInput.ownership ?? "owned" : "owned";
-      if (ownership !== "borrowed") context.defer(async () => await adapter.close?.(), `close-mcu-board:${boardName}`);
+      if (ownership !== "borrowed") context.defer(async () => { try { await adapter.close?.(); } finally { if(context.resources.has("mcu-board",boardName))context.resources.close("mcu-board",boardName); } }, `close-mcu-board:${boardName}`);
       await adapter.flash(artifact);
+      context.signal.throwIfAborted();
       const bootId = await adapter.reset();
+      context.signal.throwIfAborted();
       if (typeof bootId !== "string" || bootId.length === 0) throw new CautestError("MCU Reset 必须返回非空 Boot ID", { code: "provision_error" });
       context.state.set(`board:${boardName}`, Object.freeze({ kind, bootId, adapter }) satisfies BoardState);
       context.resources.publish({ kind: "mcu-board", name: boardName, handle: adapter, metadata: { kind, bootId, ownership } });

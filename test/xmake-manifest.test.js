@@ -29,6 +29,6 @@ test('Xmake loader constructs existing workflows, preserves Lua provenance and d
 });
 test('MCU board factories stay lazy for list/plan and validate named resources',async()=>{
  const dir=await mkdtemp(path.join(tmpdir(),'ct-lazy-board-'));
- try{const module=path.join(dir,'board.mjs');await writeFile(module,'throw new Error("MUST_NOT_IMPORT_BOARD_WHILE_LISTING");');const file=path.join(dir,'manifest.json');const value=manifest();value.jobs=[{kind:'mcu',id:'component.spi',target:'fw',board:'board',origin}];value.boards=[{kind:'board',id:'board',provider:{module,export:'create'},origin}];await writeFile(file,JSON.stringify(value));assert.equal((await loadManifest(file)).config.jobs[0].id,'component.spi');value.boards=[];await writeFile(file,JSON.stringify(value));await assert.rejects(loadManifest(file),/Unknown board/);
+ try{const module=path.join(dir,'board.mjs');await writeFile(module,'throw new Error("MUST_NOT_IMPORT_BOARD_WHILE_LISTING");');const file=path.join(dir,'manifest.json');const value=manifest();value.jobs=[{kind:'mcu',id:'component.spi',target:'fw',board:'board',origin}];value.boards=[{kind:'board',id:'board',resourceId:'fixture-probe',provider:{module,export:'create'},origin}];await writeFile(file,JSON.stringify(value));assert.equal((await loadManifest(file)).config.jobs[0].id,'component.spi');value.boards=[];await writeFile(file,JSON.stringify(value));await assert.rejects(loadManifest(file),/Unknown board/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });

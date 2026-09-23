@@ -16,7 +16,7 @@ export interface ManifestJob extends TestJobCommonInput {
  readonly guest?:{readonly target:string;readonly output?:string};
  readonly reconnects?:number;readonly recoverTimeouts?:boolean;
 }
-export interface ManifestResource {readonly kind:"board"|"environment";readonly id:string;readonly provider:ProviderReference;readonly options?:Readonly<Record<string,unknown>>;readonly origin:Origin;readonly ownership?:"owned"|"borrowed";readonly resourceId?:string}
+export interface ManifestResource {readonly kind:"board"|"environment";readonly id:string;readonly provider:ProviderReference;readonly options?:Readonly<Record<string,unknown>>;readonly origin:Origin;readonly ownership?:"owned"|"borrowed";readonly resourceId?:string;readonly lockTimeoutMs?:number}
 export interface XmakeManifest {
  readonly schemaVersion:1;readonly kind:"cautest.xmake-manifest";readonly projectRoot:string;readonly xmake:string;readonly buildContext:BuildContext;
  readonly project:{readonly defaults?:TestConfigDefaultsInput;readonly profiles?:readonly TestProfileInput[]};
@@ -70,6 +70,6 @@ export function validateManifest(value:unknown):asserts value is XmakeManifest{
  }
  for(const [key,kind] of [["boards","board"],["environments","environment"]] as const){
   if(!Array.isArray(v[key]))fail(`${key} must be an array`);const names=new Set<string>();
-  for(const raw of v[key]){const r=record(raw,["id","kind","provider","options","origin","ownership","resourceId"],kind);origin(r.origin);if(r.kind!==kind||typeof r.id!=="string"||!r.id.length||names.has(r.id))fail(`Invalid/duplicate ${kind} ID`);names.add(r.id);provider(r.provider,`${r.origin.file}: ${kind}.${r.id}`);if(r.options!==undefined)record(r.options,undefined,`${kind}.options`);if(r.ownership!==undefined&&r.ownership!=="owned"&&r.ownership!=="borrowed")fail("Invalid resource ownership");if(r.resourceId!==undefined&&(typeof r.resourceId!=="string"||!r.resourceId.length))fail("Invalid resourceId");}
+  for(const raw of v[key]){const r=record(raw,["id","kind","provider","options","origin","ownership","resourceId","lockTimeoutMs"],kind);origin(r.origin);if(r.kind!==kind||typeof r.id!=="string"||!r.id.length||names.has(r.id))fail(`Invalid/duplicate ${kind} ID`);names.add(r.id);provider(r.provider,`${r.origin.file}: ${kind}.${r.id}`);if(r.options!==undefined)record(r.options,undefined,`${kind}.options`);if(r.ownership!==undefined&&r.ownership!=="owned"&&r.ownership!=="borrowed")fail("Invalid resource ownership");if(kind==="board"&&r.resourceId===undefined)fail("board.resourceId is required: aliases must share the same physical ID");if(r.lockTimeoutMs!==undefined&&(typeof r.lockTimeoutMs!=="number"||!Number.isFinite(r.lockTimeoutMs)||r.lockTimeoutMs<=0))fail("Invalid lockTimeoutMs");if(r.resourceId!==undefined&&(typeof r.resourceId!=="string"||!r.resourceId.length))fail("Invalid resourceId");}
  }
 }

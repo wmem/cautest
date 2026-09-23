@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: receipt strictly validates version/target/output/context/bytes and separates protocol identity
+ok 1 - receipt strictly validates version/target/output/context/bytes and separates protocol identity
+  ---
+  duration_ms: 10.024495
+  type: 'test'
+  ...
+# Subtest: Native artifact provider and legacy compiler use identical real CTP runtime and case results
+ok 2 - Native artifact provider and legacy compiler use identical real CTP runtime and case results
+  ---
+  duration_ms: 351.281836
+  type: 'test'
+  ...
+# Subtest: provider errors and missing CTP identities block every downstream Native run
+ok 3 - provider errors and missing CTP identities block every downstream Native run
+  ---
+  duration_ms: 3.967942
+  type: 'test'
+  ...
+# Subtest: MCU registers owned cleanup before flash/reset; borrowed boards remain untouched
+ok 4 - MCU registers owned cleanup before flash/reset; borrowed boards remain untouched
+  ---
+  duration_ms: 18.704059
+  type: 'test'
+  ...
+# Subtest: MCU artifact provider consumes the same real simulated firmware and runtime as legacy builder
+ok 5 - MCU artifact provider consumes the same real simulated firmware and runtime as legacy builder
+  ---
+  duration_ms: 312.281535
+  type: 'test'
+  ...
+# Subtest: Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+ok 6 - Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+  ---
+  duration_ms: 288.437815
+  type: 'test'
+  ...
+# Subtest: External MCU Adapter 通过统一 CTP3 Transport 执行
+ok 7 - External MCU Adapter 通过统一 CTP3 Transport 执行
+  ---
+  duration_ms: 15.857434
+  type: 'test'
+  ...
+# Subtest: Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+ok 8 - Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+  ---
+  duration_ms: 1760.007018
+  type: 'test'
+  ...
+# Subtest: External MCU 校验 Reset 返回的 Boot ID
+ok 9 - External MCU 校验 Reset 返回的 Boot ID
+  ---
+  duration_ms: 9.414072
+  type: 'test'
+  ...
+# Subtest: Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+ok 10 - Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+  ---
+  duration_ms: 530.913403
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+ok 11 - 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+  ---
+  duration_ms: 254.313313
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+ok 12 - 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+  ---
+  duration_ms: 240.4704
+  type: 'test'
+  ...
+# Subtest: External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+ok 13 - External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+  ---
+  duration_ms: 6.449921
+  type: 'test'
+  ...
+# Subtest: real flock serializes physical aliases, times out busy, cancels wait and never unlinks a held inode
+ok 14 - real flock serializes physical aliases, times out busy, cancels wait and never unlinks a held inode
+  ---
+  duration_ms: 212.347542
+  type: 'test'
+  ...
+# Subtest: OS lock is released when owner process is killed, without unsafe stale-PID deletion
+ok 15 - OS lock is released when owner process is killed, without unsafe stale-PID deletion
+  ---
+  duration_ms: 137.649639
+  type: 'test'
+  ...
+# Subtest: physical lock cleanup is last and survives a failing adapter cleanup
+ok 16 - physical lock cleanup is last and survives a failing adapter cleanup
+  ---
+  duration_ms: 83.650031
+  type: 'test'
+  ...
+# Subtest: Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields
+ok 17 - Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields
+  ---
+  duration_ms: 1.470355
+  type: 'test'
+  ...
+# Subtest: Xmake manifest duplicates identify both origins; driver outputs are explicit references
+ok 18 - Xmake manifest duplicates identify both origins; driver outputs are explicit references
+  ---
+  duration_ms: 0.589808
+  type: 'test'
+  ...
+# Subtest: Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load
+ok 19 - Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load
+  ---
+  duration_ms: 56.677208
+  type: 'test'
+  ...
+# Subtest: MCU board factories stay lazy for list/plan and validate named resources
+ok 20 - MCU board factories stay lazy for list/plan and validate named resources
+  ---
+  duration_ms: 4.085709
+  type: 'test'
+  ...
+# Subtest: real Xmake MCU firmware artifact, split serial CTP, shared build and physical alias identity
+ok 21 - real Xmake MCU firmware artifact, split serial CTP, shared build and physical alias identity
+  ---
+  duration_ms: 2642.866364
+  type: 'test'
+  ...
+# Subtest: MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong HELLO build identity fails
+ok 22 - MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong HELLO build identity fails
+  ---
+  duration_ms: 6708.458322
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10093.74203

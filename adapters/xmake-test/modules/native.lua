@@ -13,6 +13,7 @@ function directory(target)
     return path.absolute(path.join(target:autogendir(), "cautest"), os.projectdir())
 end
 function generate(target, toolroot)
+    local simulated = target:data("cautest.simulated") == true
     local suites = table.wrap(target:values("cautest.registry.suites"))
     assert(#suites > 0, target:name() .. ": cautest.registry.suites must contain explicit C symbols")
     local seen = {}
@@ -45,7 +46,7 @@ function generate(target, toolroot)
     assert(type(workspace)=="number" and workspace>0 and workspace==math.floor(workspace), "cautest.workspaceSize must be a positive integer")
     assert(type(timeout)=="number" and timeout>0 and timeout==math.floor(timeout), "cautest.caseTimeoutMs must be a positive integer")
     -- Stable input identity is distinct from the SHA-256 of the final linked output.
-    local parts = {"cautest-native-v1", target:name(), config.get("plat") or os.host(), config.get("arch") or os.arch(), config.get("mode") or "release", table.concat(suites,","), tostring(workspace), tostring(timeout)}
+    local parts = {simulated and "cautest-mcu-simulation-v1" or "cautest-native-v1", target:name(), config.get("plat") or os.host(), config.get("arch") or os.arch(), config.get("mode") or "release", table.concat(suites,","), tostring(workspace), tostring(timeout)}
     for _, key in ipairs({"defines","undefines","cxflags","cflags","ldflags","links","languages","includedirs","toolchains"}) do
         table.insert(parts, key .. "=" .. json.encode(target:get(key) or {}))
     end
@@ -57,32 +58,39 @@ function generate(target, toolroot)
     end
     if os.isfile(config.filepath()) then table.insert(parts,hash.sha256(config.filepath())) end
     for _, file in ipairs(files) do table.insert(parts,file);table.insert(parts,hash.sha256(file)) end
-    local id = hash.sha256(bytes(table.concat(parts,"\0"))):lower()
+    local input_id = hash.sha256(bytes(table.concat(parts,"\0"))):lower()
+    -- Reference MCU storage is 32 bytes; preserve its ABI with a 24-hex identity.
+    local id = simulated and input_id:sub(1,24) or input_id
     target:data_set("cautest.protocolBuildId",id)
     -- Content-sensitive command line also invalidates Xmake's timestamp cache
     -- when two generated/source updates occur in the same filesystem second.
-    target:add("defines", 'CAUTEST_INPUT_ID="' .. id .. '"')
+    target:add("defines", 'CAUTEST_INPUT_ID="' .. input_id .. '"')
+    if simulated then target:add("defines", 'CAUTEST_MCU_BUILD_ID="' .. id .. '"') end
     -- Force the linker dependency key as well: same-second object updates
     -- otherwise let timestamp-based incremental linking retain an old binary.
-    target:add("ldflags", "-Wl,--build-id=0x" .. id, {force=true})
+    target:add("ldflags", "-Wl,--build-id=0x" .. input_id, {force=true})
     write_changed(path.join(dir,"identity.json"), json.encode({protocolBuildId=id}))
     local registry = {"#include <cautest/cautest.h>\n"}
     for _, suite in ipairs(suites) do table.insert(registry,"CAUTEST_SUITE_DECLARE(" .. suite .. ");\n") end
-    table.insert(registry,"\nCAUTEST_REGISTRY(cautest_generated_registry,\n")
+    table.insert(registry,"\nCAUTEST_REGISTRY(" .. (simulated and "cautest_mcu_registry" or "cautest_generated_registry") .. ",\n")
     local references = {}
     for _, suite in ipairs(suites) do table.insert(references,"    CAUTEST_SUITE_REF(" .. suite .. ")") end
     table.insert(registry,table.concat(references,",\n") .. ");\n")
     write_changed(path.join(dir,"registry.c"),table.concat(registry))
-    write_changed(path.join(dir,"entry.c"),string.format('#include "posix_target.h"\nextern const struct cautest_registry cautest_generated_registry;\nint main(void) {\n  const struct cautest_posix_target_config config = {"%s", %dUL, %dUL};\n  return cautest_posix_target_main(&cautest_generated_registry, &config);\n}\n',id,workspace,timeout))
+    if not simulated then write_changed(path.join(dir,"entry.c"),string.format('#include "posix_target.h"\nextern const struct cautest_registry cautest_generated_registry;\nint main(void) {\n  const struct cautest_posix_target_config config = {"%s", %dUL, %dUL};\n  return cautest_posix_target_main(&cautest_generated_registry, &config);\n}\n',id,workspace,timeout)) end
 end
-function configure(target, toolroot)
+function configure(target, toolroot, simulated)
+    target:data_set("cautest.simulated", simulated == true)
     assert(target:kind()=="binary", "cautest.native requires an explicit binary target, not automatic target cloning")
     assert(os.host()=="linux" and os.arch()=="x86_64" and target:plat()=="linux" and target:arch()=="x86_64", "cautest.native currently supports Linux x86_64 host targets only; cross-config targets must use another provider")
     local identity = path.join(directory(target),"identity.json")
     if os.isfile(identity) then target:data_set("cautest.protocolBuildId",json.decode(io.readfile(identity)).protocolBuildId) end
     local kit = path.join(toolroot,"assets/cautest-c")
-    for _, source in ipairs(runtime_sources) do target:add("files",path.join(kit,source)) end
-    for _, include in ipairs({"include","platform/posix","target/posix"}) do target:add("includedirs",path.join(kit,include)) end
+    local sources = simulated and {"core/cautest.c", "protocol/ctp3.c", "platform/freestanding/cautest_freestanding.c", "target/mcu-reference/mcu_reference.c", "target/mcu-reference/mcu_sim_target.c"} or runtime_sources
+    for _, source in ipairs(sources) do target:add("files",path.join(kit,source)) end
+    local includes = simulated and {"include","platform/freestanding","target/mcu-reference"} or {"include","platform/posix","target/posix"}
+    for _, include in ipairs(includes) do target:add("includedirs",path.join(kit,include)) end
     target:add("files",path.join(directory(target),"registry.c"),{always_added=true})
-    target:add("files",path.join(directory(target),"entry.c"),{always_added=true})
+    if simulated then target:add("cflags","-ffreestanding","-fno-builtin")
+    else target:add("files",path.join(directory(target),"entry.c"),{always_added=true}) end
 end

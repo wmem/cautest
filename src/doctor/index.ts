@@ -65,6 +65,7 @@ async function hostChecks(jobs: readonly TestJob[], configDir: string, defaults:
   let ptrace: { job: TestJob; step: WorkflowStep } | undefined;
   for (const job of jobs) for (const step of job.workflow) {
     const details = step.details;
+    if(step.kind==="physicalResourceLock")tools.set("flock",{program:"flock",job,step,label:"Linux flock"});
     if (["kernelBuild", "busyboxBuild", "kernelModuleBuild", "generatedKernelTestModule"].includes(step.kind)) tools.set(`make:${String(details.make ?? "make")}`, { program: String(details.make ?? "make"), job, step, label: "Make" });
     if (["nativeCompile", "driverGuestCTestBuild", "umlGuestProgramBuild", "mcuFirmwareBuild"].includes(step.kind)) {
       const compiler = String(details.compiler ?? "cc");

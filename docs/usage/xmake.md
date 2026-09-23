@@ -157,3 +157,41 @@ The implementation is verified on supplied Xmake 3.1.1 Linux x86_64. One pinned
 private accessor supplies the current Lua filename. Other versions/platforms,
 real MCU SPI and actual UML kernel/driver execution need their respective
 acceptance tests before being declared supported.
+
+## MCU artifact adapter and physical locking
+
+The [MCU Host simulation](../../examples/xmake/mcu-simulated/xmake.lua) builds
+real C firmware code with Xmake, then runs the existing freestanding reference
+MCU/CTP transport with fragmented I/O. `cautest.mcu-simulated` generates an
+explicit Registry and embeds a 24-hex protocol identity (the reference MCU
+storage is 32 bytes including termination). The full input SHA-256 still
+invalidates compilation/linking; the output file SHA-256 remains independent.
+This is **not** a real MCU target, real startup/linker-script verification or SPI
+acceptance. Real firmware is an application-owned target with explicitly
+exported firmware output and embedded protocol identity.
+
+Board factories receive `{projectRoot, options, origin, signal}`. They load only
+inside provision, after the build and physical lock, and must honor cancellation.
+Owned adapters close even after flash/reset failure; borrowed adapters are never
+closed by Cautest. Factories that reject after partially allocating resources
+must clean up those resources themselves. Arbitrary non-cooperative JavaScript
+cannot be forcibly canceled; do not start untracked asynchronous device work.
+A factory resolving after cancellation has its owned adapter closed before any
+flash. Per-Job board/log names prevent two aliases overwriting each other's logs.
+
+`resourceId` is **required** for a Board. Distinct aliases of one probe/serial
+number must use the same ID. Actual Linux `flock` serializes cooperating processes
+of the same OS user, independently of project location. The lock directory is
+`$CAUTEST_LOCK_DIR` or a per-user directory under the OS temp directory. All
+participants must use the same lock directory and physical ID. `lockTimeoutMs`
+defaults to 30000. Doctor checks for `flock`; waiting is cancelable; the kernel
+releases ownership after owner process death. Lockfiles are intentionally never
+unlinked, avoiding races between old and new lockfile inodes. Release runs after
+board/transport cleanup, even when an earlier cleanup fails. This is advisory
+coordination, not access control against other OS users or tools ignoring it.
+
+Tests cover real Xmake → firmware → MCU CTP, two aliases/one build, one-time
+serial disconnect recovery, owned/borrowed failure cleanup, stale board firmware,
+wrong Boot ID, busy-lock timeout, canceled wait and forced owner process death.
+No physical board was supplied; real flash/reset/power/serial/SPI acceptance
+remains outstanding. Kernel/Driver artifact runtimes remain explicitly unsupported.
