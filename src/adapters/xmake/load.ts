@@ -29,18 +29,19 @@ async function factory(ref:ProviderReference,args:unknown,origin:string):Promise
 }
 function lazyBoard(resource:ManifestResource,manifest:XmakeManifest,signal:()=>AbortSignal|undefined):McuBoardAdapter{
  let adapter:McuBoardAdapter|undefined;
+ const close=async()=>{const current=adapter;adapter=undefined;await current?.close?.();};
  const loaded=()=>{if(!adapter)throw new CautestError("Board was not initialized",{code:"provision_error"});return adapter;};
  return {
   async flash(artifact){
    const created=await factory(resource.provider,{projectRoot:manifest.projectRoot,options:resource.options??{},origin:resource.origin,signal:signal()},resource.origin.file);
    if(typeof created!=="object"||created===null||!["flash","reset","openTransport"].every(k=>typeof (created as Record<string,unknown>)[k]==="function"))throw new CautestError(`${resource.origin.file}: Board provider must implement flash/reset/openTransport`,{code:"config_error"});
    adapter=created as McuBoardAdapter;
-   if(signal()?.aborted){if(resource.ownership!=="borrowed")await adapter.close?.();signal()?.throwIfAborted();}
+   if(signal()?.aborted){if(resource.ownership!=="borrowed")await close();signal()?.throwIfAborted();}
    await adapter.flash(artifact);
   },
   async reset(){return await loaded().reset();},
   async openTransport(options){return await loaded().openTransport(options);},
-  async close(){await adapter?.close?.();adapter=undefined;},
+  close,
  };
 }
 /** Construct real Jobs, never deserialize CLI plan JSON or function source. */
