@@ -20,7 +20,20 @@ function issue(code: string, jobId: string, step: string, message: string, hint:
 }
 
 async function executable(program: string, cwd: string, env: NodeJS.ProcessEnv, jobId: string, step: string, label: string): Promise<DoctorIssue | undefined> {
-  try { await execFileAsync(program, ["--version"], { cwd, env, timeout: 5_000, maxBuffer: 1024 * 1024 }); return undefined; }
+  try {
+    if (label === "Linux bc") {
+      // --version is a GNU extension, not a calculator capability probe.
+      // The BusyBox bc applet is usable for kernel/time/timeconst.bc too.
+      const directory = await mkdtemp(path.join(os.tmpdir(), "cautest-bc-probe-"));
+      try {
+        const script = path.join(directory, "probe.bc");
+        await writeFile(script, "scale=0\n2^64\nquit\n");
+        const result = await execFileAsync(program, [script], {cwd, env, timeout: 5_000, maxBuffer: 1024 * 1024});
+        if (result.stdout.trim() !== "18446744073709551616") throw new Error("bc arbitrary-precision arithmetic probe returned an unexpected result");
+      } finally { await rm(directory, {recursive: true, force: true}); }
+    } else await execFileAsync(program, ["--version"], { cwd, env, timeout: 5_000, maxBuffer: 1024 * 1024 });
+    return undefined;
+  }
   catch (error) { return issue("CT-DOCTOR-TOOL-001", jobId, step, `${label} 不可执行: ${program} (${error instanceof Error ? error.message : String(error)})`, `安装 ${label} 或修正该 Step 的工具路径/PATH`); }
 }
 

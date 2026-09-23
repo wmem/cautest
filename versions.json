@@ -34,8 +34,8 @@
   "caches": {
     "nativeFingerprint": 1,
     "nativeManifest": 2,
-    "kernelFingerprint": 4,
-    "busyboxFingerprint": 3,
+    "kernelFingerprint": 5,
+    "busyboxFingerprint": 4,
     "mcuFingerprint": 1,
     "moduleFingerprint": 2,
     "moduleManifest": 4,

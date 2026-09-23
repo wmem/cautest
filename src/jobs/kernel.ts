@@ -111,10 +111,10 @@ export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInpu
   if (input.cache?.enabled !== false && await validBuildOutput(output, identity, requiredOutputs)) return {path: output, cacheHit: true};
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
-  const base = ["-C", source, `O=${output}`, `ARCH=${input.arch ?? "um"}`, ...(input.crossCompile === undefined ? [] : [`CROSS_COMPILE=${input.crossCompile}`])];
+  const base = ["-C", source, `O=${output}`, `ARCH=${input.arch ?? "um"}`, ...(input.crossCompile === undefined ? [] : [`CROSS_COMPILE=${input.crossCompile}`]), ...(input.makeArgs ?? [])];
   const commands = [[...base, input.configTarget ?? "x86_64_defconfig"]];
   if (fragmentContents.length > 0) commands.push([...base, "olddefconfig"]);
-  commands.push([...base, `-j${input.jobs ?? 4}`, ...(input.makeArgs ?? []), input.target ?? "linux"]);
+  commands.push([...base, `-j${input.jobs ?? 4}`, input.target ?? "linux"]);
   if (input.prepareModules !== false) commands.push([...base, `-j${input.jobs ?? 4}`, "modules"]);
   for (const [index, args] of commands.entries()) {
     const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });

@@ -6,7 +6,7 @@ export const CAUTEST_VERSIONS = Object.freeze({
   kernelAbi: {"major":3,"minor":0,"magic":"0xca7e57U"},
   probeAbi: {"major":1,"minor":0,"magic":"0xca7e50U"},
   schemas: {"config":2,"result":1,"event":1,"cli":1,"buildInfo":1,"portableManifest":1,"cacheManifest":1,"fingerprint":1,"xmakeManifest":1,"artifactReceipt":1,"kernelContext":1},
-  caches: {"nativeFingerprint":1,"nativeManifest":2,"kernelFingerprint":4,"busyboxFingerprint":3,"mcuFingerprint":1,"moduleFingerprint":2,"moduleManifest":4,"agentFingerprint":2,"guestFingerprint":4,"rootfsFingerprint":4,"umlManifest":1},
+  caches: {"nativeFingerprint":1,"nativeManifest":2,"kernelFingerprint":5,"busyboxFingerprint":4,"mcuFingerprint":1,"moduleFingerprint":2,"moduleManifest":4,"agentFingerprint":2,"guestFingerprint":4,"rootfsFingerprint":4,"umlManifest":1},
 } as const);
 
 export const CAUTEST_RELEASE_VERSION = CAUTEST_VERSIONS.release;

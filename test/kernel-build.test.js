@@ -53,7 +53,7 @@ const target = args.at(-1);
 mkdirSync(output, { recursive: true });
 mkdirSync(path.join(output, "include/config"), {recursive: true});
 writeFileSync(path.join(output, "include/config/kernel.release"), "fixture-only");
-appendFileSync(process.env.CAUTEST_FAKE_MAKE_LOG, JSON.stringify({ source, output, target, profile: process.env.CAUTEST_PROFILE_ENV ?? null }) + "\\n");
+appendFileSync(process.env.CAUTEST_FAKE_MAKE_LOG, JSON.stringify({ source, output, target, args, profile: process.env.CAUTEST_PROFILE_ENV ?? null }) + "\\n");
 if (target.endsWith("defconfig") && target !== "olddefconfig") writeFileSync(path.join(output, ".config"), "CONFIG_FAKE=y\\n");
 if (target === "linux") writeFileSync(path.join(output, "linux"), readFileSync(path.join(source, "source.c")));
 if (target === "modules") writeFileSync(path.join(output, "Module.symvers"), "symbols\\n");
@@ -67,7 +67,7 @@ if (target === "busybox") writeFileSync(path.join(output, "busybox"), readFileSy
     const log = path.join(project, "make.log");
     await writeFile(log, "");
     const ctx = context(project, profile === undefined ? {} : { CAUTEST_PROFILE_ENV: profile });
-    const environment = { kernel: { sourceDir: linux, make, env: { CAUTEST_FAKE_MAKE_LOG: log } }, busybox: { sourceDir: busybox, make, env: { CAUTEST_FAKE_MAKE_LOG: log } } };
+    const environment = { kernel: { sourceDir: linux, make, makeArgs: ["HOST_MARKER=kept"], env: { CAUTEST_FAKE_MAKE_LOG: log } }, busybox: { sourceDir: busybox, make, makeArgs: ["HOST_MARKER=kept"], env: { CAUTEST_FAKE_MAKE_LOG: log } } };
     const [kernelArtifact, busyboxArtifact] = await Promise.all([buildKernel(environment, ctx, "fixture"), buildBusyBox(environment.busybox, ctx)]);
     return { kernelArtifact, busyboxArtifact, calls: (await readFile(log, "utf8")).trim().split("\n").filter(Boolean).map(JSON.parse) };
   }
@@ -76,6 +76,7 @@ if (target === "busybox") writeFileSync(path.join(output, "busybox"), readFileSy
   for (const [project, result] of [[projectA, first], [projectB, second]]) {
     assert.equal(inside(path.join(project, ".cautest/cache"), result.kernelArtifact.path), true);
     assert.equal(inside(path.join(project, ".cautest/cache"), result.busyboxArtifact.path), true);
+    assert.ok(result.calls.every(call => call.args.includes("HOST_MARKER=kept")), "makeArgs must reach defconfig, olddefconfig, build and modules");
     assert.ok(result.calls.every((call) => inside(path.join(project, ".cautest/cache"), call.output)));
   }
   assert.notEqual(first.kernelArtifact.path, second.kernelArtifact.path);

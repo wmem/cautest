@@ -108,7 +108,7 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   }
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
-  const base = ["-C", source, `O=${output}`];
+  const base = ["-C", source, `O=${output}`, ...(input.makeArgs ?? [])];
   for (const args of [[...base, "defconfig"]]) {
     const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
     if (result.exitCode !== 0) throw new CautestError(`BusyBox 配置失败 (exit ${result.exitCode})`, { code: "build_error" });
@@ -117,7 +117,7 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   const fragmentText = (await Promise.all(fragments.map((item) => readFile(path.join(context.project.configDir, item), "utf8")))).join("\n");
   const configPath = path.join(output, ".config");
   await writeFile(configPath, mergeConfigText(await readFile(configPath, "utf8"), defaults + fragmentText));
-  for (const args of [[...base, "silentoldconfig"], [...base, `-j${input.jobs ?? 4}`, ...(input.makeArgs ?? []), "busybox"]]) {
+  for (const args of [[...base, "silentoldconfig"], [...base, `-j${input.jobs ?? 4}`, "busybox"]]) {
     const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
     if (result.exitCode !== 0) throw new CautestError(`BusyBox 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
   }

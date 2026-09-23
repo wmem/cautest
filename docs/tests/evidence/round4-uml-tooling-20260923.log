@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目录
+ok 1 - Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目录
+  ---
+  duration_ms: 2155.852228
+  type: 'test'
+  ...
+# Subtest: Kernel Environment 独立复用并展开自动 Test Module Workflow
+ok 2 - Kernel Environment 独立复用并展开自动 Test Module Workflow
+  ---
+  duration_ms: 4.351666
+  type: 'test'
+  ...
+# Subtest: Kernel Job 拒绝手写 Environment
+ok 3 - Kernel Job 拒绝手写 Environment
+  ---
+  duration_ms: 0.581344
+  type: 'test'
+  ...
+# Subtest: offline dependency collector requests installed packages through an empty APT status and rejects incomplete bundles
+ok 4 - offline dependency collector requests installed packages through an empty APT status and rejects incomplete bundles
+  ---
+  duration_ms: 788.163104
+  type: 'test'
+  ...
+# Subtest: Linux doctor probes bc arithmetic rather than a GNU-only version flag and rejects incorrect calculators
+ok 5 - Linux doctor probes bc arithmetic rather than a GNU-only version flag and rejects incorrect calculators
+  ---
+  duration_ms: 62.740537
+  type: 'test'
+  ...
+# Subtest: UML Control Channel 将 Agent Endpoint 复用为统一 CTP3 Transport
+ok 6 - UML Control Channel 将 Agent Endpoint 复用为统一 CTP3 Transport
+  ---
+  duration_ms: 12.59225
+  type: 'test'
+  ...
+# Subtest: Rootfs 真实生成 Agent、Catalog、Module 和 initramfs
+ok 7 - Rootfs 真实生成 Agent、Catalog、Module 和 initramfs
+  ---
+  duration_ms: 623.291373
+  type: 'test'
+  ...
+# Subtest: UML Guest Program 使用独立可关闭的构建缓存
+ok 8 - UML Guest Program 使用独立可关闭的构建缓存
+  ---
+  duration_ms: 213.627574
+  type: 'test'
+  ...
+# Subtest: UML 启动、日志收集和清理进入统一 Resource/Artifact 生命周期
+ok 9 - UML 启动、日志收集和清理进入统一 Resource/Artifact 生命周期
+  ---
+  duration_ms: 68.165306
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2257.721053

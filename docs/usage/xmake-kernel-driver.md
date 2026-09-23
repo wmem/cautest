@@ -111,3 +111,18 @@ UML 进程由启动步骤独占 POSIX 进程组。取消、Ready 超时、错误
 spawn 错误会回收所属进程与后代；停止操作幂等，collect/defer 共同调用同一个清理动作。
 控制通道的超时或取消等待器会移除，避免吞掉下一条命令的响应。
 这些失败路径通过真实 OS 进程和明确的 Agent 模拟器验证，不等同于真实 UML 启动验收。
+
+## 离线宿主依赖准备
+
+仓库提供 `scripts/collect-uml-deps.sh`，在联网的 Debian/Ubuntu amd64 主机执行：
+
+```bash
+sudo apt-get update
+bash tools/cautest/scripts/collect-uml-deps.sh --output "$PWD/cautest-uml-deps"
+```
+
+脚本只下载、不安装软件包；使用独立的空 dpkg 状态文件计算完整依赖闭包，避免普通 `apt install --download-only` 因软件已安装而漏掉 flex/bc。它校验七个指定软件包、体系结构和四个工具的实际文件，生成包清单及 SHA-256，再输出 `cautest-uml-deps.tar.gz`。支持 `--dry-run`，拒绝覆盖已有输出。联网更新索引和实际下载由提供依赖的人执行；仓库测试使用明确的离线 APT 替身及真实 `.deb` 解析，不声称验证了 Registry/镜像网络。
+
+包内 `activate.sh` 仅设置工具 PATH 与 Bison 数据目录，不把 Ubuntu glibc 整体放入 Debian 的 `LD_LIBRARY_PATH`。跨发行版二进制是否兼容仍需实际执行检查；缺少的共享库应逐个处理，不能仅凭发行版新旧推断兼容。
+
+Linux Doctor 使用任意精度算术而不是 GNU 专属 `bc --version` 检查计算器。Linux/BusyBox 的 `makeArgs` 现在贯穿 defconfig、配置更新、主体构建和 modules；变更这些参数会进入构建指纹。源码树仍保持只读，输出写入受管的 out-of-tree 缓存。
