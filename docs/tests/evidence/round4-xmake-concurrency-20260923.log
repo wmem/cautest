@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: four same-project Xmake sessions and a different project retain complete isolated receipts
+ok 1 - four same-project Xmake sessions and a different project retain complete isolated receipts
+  ---
+  duration_ms: 3316.834155
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3371.021686

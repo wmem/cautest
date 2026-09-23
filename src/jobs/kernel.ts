@@ -1,3 +1,4 @@
+import {withBuildLock} from "../cache/build-lock.js";
 import {validBuildOutput, publishBuildOutput} from "../cache/build-output.js";
 import { umlRuntimeSteps } from "./uml-runtime.js";
 import { createHash } from "node:crypto";
@@ -106,6 +107,7 @@ export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInpu
   const kernelRoot = path.resolve(context.project.configDir, input.cache?.enabled === false ? context.project.workDir : (input.cache?.directory ?? context.project.cacheDir));
   const output = path.join(kernelRoot, "kernel", identity);
   const requiredOutputs = [input.target ?? "linux", ".config", "include/config/kernel.release", ...(input.prepareModules === false ? [] : ["Module.symvers"])];
+  return await withBuildLock(output, context.signal, async () => {
   if (input.cache?.enabled !== false && await validBuildOutput(output, identity, requiredOutputs)) return {path: output, cacheHit: true};
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
@@ -121,6 +123,7 @@ export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInpu
   }
   await publishBuildOutput(output, identity, requiredOutputs);
   return { path: output, cacheHit: false };
+  });
 }
 
 async function generatedModule(input: KernelCTestJobInput, defaults: KernelModuleDefaultsInput, kernelOutput: string, context: Parameters<Parameters<typeof defineStep>[0]["execute"]>[0], dependencies: readonly string[]): Promise<KernelModuleArtifact> {

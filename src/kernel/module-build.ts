@@ -1,3 +1,4 @@
+import {withBuildLock} from "../cache/build-lock.js";
 import { createHash } from "node:crypto";
 import { copyFile, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -161,6 +162,7 @@ export async function buildIsolatedKernelModule(input: IsolatedKernelModuleBuild
   await mkdir(cacheRoot, { recursive: true });
   await mkdir(path.resolve(input.workDir), { recursive: true });
   const cachePath = path.join(cacheRoot, key);
+  return await withBuildLock(cachePath, input.signal, async () => {
   let outputs = cacheEnabled ? await validCache(cachePath, key) : undefined;
   const cacheHit = outputs !== undefined;
   if (outputs === undefined) {
@@ -204,4 +206,5 @@ export async function buildIsolatedKernelModule(input: IsolatedKernelModuleBuild
   }
   const byName = new Map(outputs.filter((output) => !["coverage", "coverageSource"].includes(output.name)).map((output) => [output.name, output.path]));
   return Object.freeze({ name: module.name, cacheKey: key, cacheHit, module: path.join(cachePath, byName.get("module") ?? ""), symbols: path.join(cachePath, byName.get("symbols") ?? ""), modulesOrder: path.join(cachePath, byName.get("modulesOrder") ?? ""), coverageNotes: Object.freeze(outputs.filter((output) => output.name === "coverage").map((output) => path.join(cachePath, output.path))), coverageSources: Object.freeze(outputs.filter((output) => output.name === "coverageSource" && output.originalPath !== undefined).map((output) => Object.freeze({ path: path.join(cachePath, output.path), originalPath: output.originalPath! }))) });
+  });
 }

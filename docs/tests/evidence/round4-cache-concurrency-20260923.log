@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: same-key real Guest compilation serializes six independent processes and validates one publication
+ok 1 - same-key real Guest compilation serializes six independent processes and validates one publication
+  ---
+  duration_ms: 888.957884
+  type: 'test'
+  ...
+# Subtest: cache locks survive aliases, release on exception and owner death, and do not release another owner after waiter cancellation
+ok 2 - cache locks survive aliases, release on exception and owner death, and do not release another owner after waiter cancellation
+  ---
+  duration_ms: 395.414604
+  type: 'test'
+  ...
+# Subtest: Guest names are part of cache identity and parallel different-name builds cannot delete each other
+ok 3 - Guest names are part of cache identity and parallel different-name builds cannot delete each other
+  ---
+  duration_ms: 693.117047
+  type: 'test'
+  ...
+# Subtest: Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目录
+ok 4 - Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目录
+  ---
+  duration_ms: 3026.891261
+  type: 'test'
+  ...
+# Subtest: Kernel Module 只在 Sandbox 构建，完整校验发布 Artifact 并支持并发
+ok 5 - Kernel Module 只在 Sandbox 构建，完整校验发布 Artifact 并支持并发
+  ---
+  duration_ms: 964.668082
+  type: 'test'
+  ...
+# Subtest: build-output manifests reject partial builds, same-size corruption, modes, missing outputs and path escapes
+ok 6 - build-output manifests reject partial builds, same-size corruption, modes, missing outputs and path escapes
+  ---
+  duration_ms: 17.238184
+  type: 'test'
+  ...
+# Subtest: real Guest ELF cache detects byte corruption and incomplete publish
+ok 7 - real Guest ELF cache detects byte corruption and incomplete publish
+  ---
+  duration_ms: 473.990497
+  type: 'test'
+  ...
+# Subtest: real Driver CTP Guest cache validates binary bytes before a hit
+ok 8 - real Driver CTP Guest cache validates binary bytes before a hit
+  ---
+  duration_ms: 885.271573
+  type: 'test'
+  ...
+# Subtest: real cpio and Agent cache: corruption, same-ID payload changes, endpoint and install-path changes cannot reuse an image
+ok 9 - real cpio and Agent cache: corruption, same-ID payload changes, endpoint and install-path changes cannot reuse an image
+  ---
+  duration_ms: 1573.636534
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4102.082598

@@ -1,3 +1,4 @@
+import {withBuildLock} from "../cache/build-lock.js";
 import {ownedProcessStop} from "../runtime/owned-process.js";
 import {validBuildOutput, publishBuildOutput} from "../cache/build-output.js";
 import { createHash } from "node:crypto";
@@ -101,6 +102,7 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (input.cache?.directory ?? context.project.cacheDir) : context.project.workDir);
   const output = path.join(cacheRoot, "busybox", key);
   const binary = path.join(output, "busybox");
+  return await withBuildLock(output, context.signal, async () => {
   if (cacheEnabled) {
     if (await validBuildOutput(output, key, ["busybox", ".config"])) return {path: binary, buildId: key, cacheHit: true};
   }
@@ -121,6 +123,7 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
   }
   await publishBuildOutput(output, key, ["busybox", ".config"]);
   return { path: binary, buildId: key, cacheHit: false };
+  });
 }
 
 async function buildAgent(context: StepExecutionContext): Promise<GuestProgramArtifact> {
@@ -131,6 +134,7 @@ async function buildAgent(context: StepExecutionContext): Promise<GuestProgramAr
   const key = await hashFiles([source, path.join(kitRoot, "include/cautest/version.h"), path.join(kitRoot, "platform/linux-kernel/include/cautest/kernel_abi.h")], { version: version.stdout, schema: CAUTEST_CACHE_VERSIONS.agentFingerprint, environment: declaredEnvironment(context) });
   const directory = path.join(context.project.cacheDir, "uml-agent", key);
   const target = path.join(directory, "agent");
+  return await withBuildLock(directory, context.signal, async () => {
   if (await validBuildOutput(directory, key, ["agent"])) return {name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit: true};
   await rm(directory, {recursive: true, force: true});
   await mkdir(directory, { recursive: true });
@@ -139,6 +143,7 @@ async function buildAgent(context: StepExecutionContext): Promise<GuestProgramAr
   await chmod(target, 0o755);
   await publishBuildOutput(directory, key, ["agent"]);
   return { name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit: false };
+  });
 }
 
 /** 编译直接放入 Rootfs 的 Guest Program。 */
@@ -155,6 +160,7 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
   const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, environment[key] ?? null]));
   const key = await hashFiles(locations, {
     schema: CAUTEST_CACHE_VERSIONS.guestFingerprint,
+    name: input.name,
     compiler: version.stdout,
     compilerTarget: targetIdentity.stdout,
     sources,
@@ -171,6 +177,7 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
   const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (input.cache?.directory ?? context.project.cacheDir) : context.project.workDir);
   const directory = path.join(cacheRoot, "guest-programs", key);
   const target = path.join(directory, input.name);
+  return await withBuildLock(directory, context.signal, async () => {
   if (cacheEnabled) {
     if (await validBuildOutput(directory, key, [input.name])) return {name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}`, cacheHit: true};
   }
@@ -183,6 +190,7 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
   await chmod(target, 0o755);
   await publishBuildOutput(directory, key, [input.name]);
   return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}`, cacheHit: false };
+  });
 }
 
 function registrySource(suites: readonly string[]): string { return `#include <cautest/cautest.h>\n${suites.map((suite) => `CAUTEST_SUITE_DECLARE(${suite});`).join("\n")}\nCAUTEST_REGISTRY(cautest_generated_registry,\n${suites.map((suite) => `    CAUTEST_SUITE_REF(${suite})`).join(",\n")});\n`; }
@@ -203,8 +211,10 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
   const product = [...tests, ...sources, ...headers].map((item) => path.join(context.project.configDir, item));
   const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c", "agent/uml-guest-agent/probe_client.c"].map((item) => path.join(kitRoot, item));
   const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, environment[key] ?? null]));
+  const name = input.name ?? jobId.replace(/[^A-Za-z0-9_-]/gu, "-");
   const key = await hashFiles([...product, path.join(kitRoot, "include/cautest/version.h"), ...kitSources], {
     schema: CAUTEST_CACHE_VERSIONS.guestFingerprint,
+    name,
     compiler: version.stdout,
     compilerTarget: targetIdentity.stdout,
     tests,
@@ -219,11 +229,11 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
     environment: declaredEnvironment(context),
     fingerprintEnvironment,
   });
-  const name = input.name ?? jobId.replace(/[^A-Za-z0-9_-]/gu, "-");
   const cacheEnabled = input.cache?.enabled !== false;
   const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (input.cache?.directory ?? context.project.cacheDir) : context.project.workDir);
   const directory = path.join(cacheRoot, "driver-guest", key);
   const target = path.join(directory, name);
+  return await withBuildLock(directory, context.signal, async () => {
   if (cacheEnabled) {
     if (await validBuildOutput(directory, key, [name])) return {name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}`, cacheHit: true};
   }
@@ -238,6 +248,7 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
   await chmod(target, 0o755);
   await publishBuildOutput(directory, key, [name]);
   return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}`, cacheHit: false };
+  });
 }
 
 async function cpio(root: string, target: string, program: string, signal: AbortSignal, environment: NodeJS.ProcessEnv): Promise<void> {
@@ -264,6 +275,7 @@ export async function buildRootfs(options: { readonly name: string; readonly env
   const directory = path.join(cacheRoot, key);
   const archive = path.join(directory, "rootfs.cpio");
   const endpoints = new Map<string, { type: "kernel" | "process"; buildId: string }>([["kernel", { type: "kernel", buildId: key }], ...(options.programs ?? []).map((item) => [item.endpoint, { type: "process" as const, buildId: item.buildId }] as const)]);
+  return await withBuildLock(directory, context.signal, async () => {
   if (cacheEnabled) {
     if (await validBuildOutput(directory, key, ["rootfs.cpio"])) return {kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints, cacheHit: true};
   }
@@ -289,6 +301,7 @@ export async function buildRootfs(options: { readonly name: string; readonly env
     try { await rename(temporary, directory); } catch (cause) { if (!await validBuildOutput(directory, key, ["rootfs.cpio"])) throw cause; }
   } finally { await rm(temporary, { recursive: true, force: true }); }
   return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints, cacheHit: false };
+  });
 }
 
 /** 启动 UML 并等待 Guest Agent 用 Catalog Build ID 报告 Ready。 */

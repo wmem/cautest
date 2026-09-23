@@ -1,3 +1,4 @@
+import {withBuildLock} from "../../cache/build-lock.js";
 import path from "node:path";
 import { mkdir, readFile, writeFile, rename, stat } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
@@ -44,6 +45,12 @@ export class XmakeBuildProvider implements BuildProvider {
     return receipt;
   }
   async #build(ref: ArtifactRef, context: StepExecutionContext): Promise<ArtifactReceipt> {
+    // Other hosts retain the existing behavior; only Linux has a verified
+    // cross-process transaction contract. Do not silently claim host parity.
+    if (process.platform !== "linux") return await this.#buildLocked(ref, context);
+    return await withBuildLock(path.join(this.#context.projectRoot, ".cautest/xmake/session"), context.signal, () => this.#buildLocked(ref, context));
+  }
+  async #buildLocked(ref: ArtifactRef, context: StepExecutionContext): Promise<ArtifactReceipt> {
     await this.#checkSources();
     const directory=path.join(context.project.resultDir,context.job.id);
     await mkdir(directory,{recursive:true});
