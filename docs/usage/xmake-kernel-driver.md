@@ -126,3 +126,12 @@ bash tools/cautest/scripts/collect-uml-deps.sh --output "$PWD/cautest-uml-deps"
 包内 `activate.sh` 仅设置工具 PATH 与 Bison 数据目录，不把 Ubuntu glibc 整体放入 Debian 的 `LD_LIBRARY_PATH`。跨发行版二进制是否兼容仍需实际执行检查；缺少的共享库应逐个处理，不能仅凭发行版新旧推断兼容。
 
 Linux Doctor 使用任意精度算术而不是 GNU 专属 `bc --version` 检查计算器。Linux/BusyBox 的 `makeArgs` 现在贯穿 defconfig、配置更新、主体构建和 modules；变更这些参数会进入构建指纹。源码树仍保持只读，输出写入受管的 out-of-tree 缓存。
+
+只有 BusyBox 源码而没有宿主 bc 时，可以先构建一个私有的静态 bc：
+
+```bash
+bash tools/cautest/scripts/build-busybox-bc.sh /absolute/busybox-1.36.1 "$PWD/busybox-bc"
+export PATH="$PWD/busybox-bc:$PATH"
+```
+
+该辅助脚本已用提供的 BusyBox 1.36.1 实际构建并检查任意精度整数运算，不安装系统文件，也不修改源码树。它仅解决 bc 工具，不解决 Linux Kconfig 所需的 flex/bison；不是“真实 UML 已通过”的证明。内核构建中还需以实际输出验证其所用的 bc 脚本，不能由一个算术探测推断所有 GNU 扩展兼容。
