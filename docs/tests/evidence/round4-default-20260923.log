@@ -1,0 +1,978 @@
+
+> cautest@0.2.1 test
+> npm run build && npm run test:types && npm run test:c && node --test test/version.test.js test/interrupt.test.js test/schema.test.js test/config.test.js test/factory.test.js test/glob.test.js test/workflow.test.js test/protocol.test.js test/session.test.js test/cache.test.js test/native.test.js test/kernel.test.js test/kernel-build.test.js test/kernel-module.test.js test/uml.test.js test/driver.test.js test/mcu.test.js test/system.test.js test/script-test.test.js test/system-steps.test.js test/reporters.test.js test/cli.test.js test/install.test.js test/archive.test.js test/docs.test.js test/integration-entry.test.js test/npm.test.js test/selection.test.js test/repository-entry.test.js test/process.test.js test/artifact.test.js test/xmake-manifest.test.js test/resource-lock.test.js test/xmake-board-lifecycle.test.js test/kernel-artifact.test.js test/uml-cache.test.js test/uml-lifecycle.test.js test/cache-concurrency.test.js test/provider-snapshot.test.js test/mcu-failure-matrix.test.js test/uml-deps.test.js
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+
+> cautest@0.2.1 test:types
+> tsc --noEmit --strict --exactOptionalPropertyTypes --target ES2022 --module NodeNext --moduleResolution NodeNext test/types/config.mts
+
+
+> cautest@0.2.1 test:c
+> sh scripts/test-c-runtime.sh
+
+cautest C Common Core: 全部测试通过
+CTP/3 C 测试通过
+kernel ABI/parser smoke: PASS
+kernel selection model: PASS
+probe ABI/queue model: PASS
+C Runtime、CTP3、Kernel ABI 与 Probe 测试通过
+TAP version 13
+# Subtest: npm 发布包包含安装器运行时输入
+ok 1 - npm 发布包包含安装器运行时输入
+  ---
+  duration_ms: 4155.287343
+  type: 'test'
+  ...
+# Subtest: 便携包可解压、校验并直接运行
+ok 2 - 便携包可解压、校验并直接运行
+  ---
+  duration_ms: 3069.971705
+  type: 'test'
+  ...
+# Subtest: receipt strictly validates version/target/output/context/bytes and separates protocol identity
+ok 3 - receipt strictly validates version/target/output/context/bytes and separates protocol identity
+  ---
+  duration_ms: 29.505355
+  type: 'test'
+  ...
+# Subtest: Native artifact provider and legacy compiler use identical real CTP runtime and case results
+ok 4 - Native artifact provider and legacy compiler use identical real CTP runtime and case results
+  ---
+  duration_ms: 445.142081
+  type: 'test'
+  ...
+# Subtest: provider errors and missing CTP identities block every downstream Native run
+ok 5 - provider errors and missing CTP identities block every downstream Native run
+  ---
+  duration_ms: 7.272088
+  type: 'test'
+  ...
+# Subtest: MCU registers owned cleanup before flash/reset; borrowed boards remain untouched
+ok 6 - MCU registers owned cleanup before flash/reset; borrowed boards remain untouched
+  ---
+  duration_ms: 6.195198
+  type: 'test'
+  ...
+# Subtest: MCU artifact provider consumes the same real simulated firmware and runtime as legacy builder
+ok 7 - MCU artifact provider consumes the same real simulated firmware and runtime as legacy builder
+  ---
+  duration_ms: 350.840769
+  type: 'test'
+  ...
+# Subtest: same-key real Guest compilation serializes six independent processes and validates one publication
+ok 8 - same-key real Guest compilation serializes six independent processes and validates one publication
+  ---
+  duration_ms: 704.720864
+  type: 'test'
+  ...
+# Subtest: cache locks survive aliases, release on exception and owner death, and do not release another owner after waiter cancellation
+ok 9 - cache locks survive aliases, release on exception and owner death, and do not release another owner after waiter cancellation
+  ---
+  duration_ms: 409.754147
+  type: 'test'
+  ...
+# Subtest: Guest names are part of cache identity and parallel different-name builds cannot delete each other
+ok 10 - Guest names are part of cache identity and parallel different-name builds cannot delete each other
+  ---
+  duration_ms: 842.972825
+  type: 'test'
+  ...
+# Subtest: Fingerprint 对键和文件顺序稳定并感知内容变化
+ok 11 - Fingerprint 对键和文件顺序稳定并感知内容变化
+  ---
+  duration_ms: 29.693967
+  type: 'test'
+  ...
+# Subtest: Cache 覆盖 Miss/Hit、缺失输出、损坏和 Disable
+ok 12 - Cache 覆盖 Miss/Hit、缺失输出、损坏和 Disable
+  ---
+  duration_ms: 30.766077
+  type: 'test'
+  ...
+# Subtest: Cache 原子发布并接受并发同内容 Writer
+ok 13 - Cache 原子发布并接受并发同内容 Writer
+  ---
+  duration_ms: 12.857534
+  type: 'test'
+  ...
+# Subtest: resolveCautestC 返回同版本只读平台资产
+ok 14 - resolveCautestC 返回同版本只读平台资产
+  ---
+  duration_ms: 0.834022
+  type: 'test'
+  ...
+# Subtest: run --json 保持 stdout 结构化并实时写 stderr
+ok 15 - run --json 保持 stdout 结构化并实时写 stderr
+  ---
+  duration_ms: 134.710555
+  type: 'test'
+  ...
+# Subtest: doctor 和 run 预检失败使用基础设施错误码且不创建 Run 结果目录
+ok 16 - doctor 和 run 预检失败使用基础设施错误码且不创建 Run 结果目录
+  ---
+  duration_ms: 24.736275
+  type: 'test'
+  ...
+# Subtest: doctor 警告 Kernel 和 BusyBox Build 继承通用 60 秒超时
+ok 17 - doctor 警告 Kernel 和 BusyBox Build 继承通用 60 秒超时
+  ---
+  duration_ms: 35.19171
+  type: 'test'
+  ...
+# Subtest: doctor 检查 Toolchain、静态链接、UML ptrace、受管目录和 Kernel 污染
+ok 18 - doctor 检查 Toolchain、静态链接、UML ptrace、受管目录和 Kernel 污染
+  ---
+  duration_ms: 37.032916
+  type: 'test'
+  ...
+# Subtest: clean --all 只删除配置声明的受管目录
+ok 19 - clean --all 只删除配置声明的受管目录
+  ---
+  duration_ms: 13.163201
+  type: 'test'
+  ...
+# Subtest: clean 支持选择性范围且不删除未选择目录
+ok 20 - clean 支持选择性范围且不删除未选择目录
+  ---
+  duration_ms: 5.127516
+  type: 'test'
+  ...
+# Subtest: run 子命令提供独立帮助
+ok 21 - run 子命令提供独立帮助
+  ---
+  duration_ms: 0.357505
+  type: 'test'
+  ...
+# Subtest: --version 和 -V 无需配置即可显示 Release 与 Commit
+ok 22 - --version 和 -V 无需配置即可显示 Release 与 Commit
+  ---
+  duration_ms: 1.149255
+  type: 'test'
+  ...
+# Subtest: CLI Profile 生成 Reporter，并支持 level/tag/Glob 筛选
+ok 23 - CLI Profile 生成 Reporter，并支持 level/tag/Glob 筛选
+  ---
+  duration_ms: 19.02322
+  type: 'test'
+  ...
+# Subtest: CLI Profile Env 实际覆盖标准 Native Job 的构建期闭包环境
+ok 24 - CLI Profile Env 实际覆盖标准 Native Job 的构建期闭包环境
+  ---
+  duration_ms: 457.22815
+  type: 'test'
+  ...
+# Subtest: CLI C Test 覆盖、显式 Reporter、输出目录和 Direct Process Session
+ok 25 - CLI C Test 覆盖、显式 Reporter、输出目录和 Direct Process Session
+  ---
+  duration_ms: 707.172815
+  type: 'test'
+  ...
+# Subtest: describe 支持公开 Job Factory/Preset 概要
+ok 26 - describe 支持公开 Job Factory/Preset 概要
+  ---
+  duration_ms: 7.225937
+  type: 'test'
+  ...
+# Subtest: describe.sources 覆盖中间汇总和公共 Factory 模块
+ok 27 - describe.sources 覆盖中间汇总和公共 Factory 模块
+  ---
+  duration_ms: 41.660512
+  type: 'test'
+  ...
+# Subtest: CLI 稳定区分 FAIL、ERROR、参数错误和显式空选择
+ok 28 - CLI 稳定区分 FAIL、ERROR、参数错误和显式空选择
+  ---
+  duration_ms: 69.636174
+  type: 'test'
+  ...
+# Subtest: doctor reports missing Linux Kconfig tools before attempting an actual source build
+ok 29 - doctor reports missing Linux Kconfig tools before attempting an actual source build
+  ---
+  duration_ms: 35.353028
+  type: 'test'
+  ...
+# Subtest: testConfig 只接受 TestJob 数组并生成稳定线性计划
+ok 30 - testConfig 只接受 TestJob 数组并生成稳定线性计划
+  ---
+  duration_ms: 1.731055
+  type: 'test'
+  ...
+# Subtest: testConfig 拒绝普通对象、重复 ID 和未知字段
+ok 31 - testConfig 拒绝普通对象、重复 ID 和未知字段
+  ---
+  duration_ms: 0.61083
+  type: 'test'
+  ...
+# Subtest: Workflow 拒绝 Phase 逆序和非 collect 失败路径
+ok 32 - Workflow 拒绝 Phase 逆序和非 collect 失败路径
+  ---
+  duration_ms: 0.301638
+  type: 'test'
+  ...
+# Subtest: plan 按 ID 选择并拒绝不存在的 Job
+ok 33 - plan 按 ID 选择并拒绝不存在的 Job
+  ---
+  duration_ms: 0.279471
+  type: 'test'
+  ...
+# Subtest: Markdown link checks ignore fenced excerpts but retain surrounding prose
+ok 34 - Markdown link checks ignore fenced excerpts but retain surrounding prose
+  ---
+  duration_ms: 0.856436
+  type: 'test'
+  ...
+# Subtest: 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+ok 35 - 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+  ---
+  duration_ms: 138.297743
+  type: 'test'
+  ...
+# Subtest: Usage 提供按需入口并绑定完整可执行示例
+ok 36 - Usage 提供按需入口并绑定完整可执行示例
+  ---
+  duration_ms: 22.327095
+  type: 'test'
+  ...
+# Subtest: 开发者索引覆盖 Project Docs 核心阅读路径
+ok 37 - 开发者索引覆盖 Project Docs 核心阅读路径
+  ---
+  duration_ms: 1.176416
+  type: 'test'
+  ...
+# Subtest: 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+ok 38 - 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+  ---
+  duration_ms: 4.867128
+  type: 'test'
+  ...
+# Subtest: Driver ABI Job 使用唯一 Schema 展开 Driver、Guest 和 UML Workflow
+ok 39 - Driver ABI Job 使用唯一 Schema 展开 Driver、Guest 和 UML Workflow
+  ---
+  duration_ms: 3.817415
+  type: 'test'
+  ...
+# Subtest: Linux Driver 示例同时引入公共版本与 Kernel Probe Header
+ok 40 - Linux Driver 示例同时引入公共版本与 Kernel Probe Header
+  ---
+  duration_ms: 7.777026
+  type: 'test'
+  ...
+# Subtest: Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3
+ok 41 - Driver Guest C Test 自动生成 Registry 和入口并可执行 CTP3
+  ---
+  duration_ms: 638.174428
+  type: 'test'
+  ...
+# Subtest: Linux Driver 典型示例的多个 Guest 测试文件可以共同构建
+ok 42 - Linux Driver 典型示例的多个 Guest 测试文件可以共同构建
+  ---
+  duration_ms: 596.852833
+  type: 'test'
+  ...
+# Subtest: Driver Guest 构建兑现自定义缓存目录、禁用缓存和 fingerprintEnv
+ok 43 - Driver Guest 构建兑现自定义缓存目录、禁用缓存和 fingerprintEnv
+  ---
+  duration_ms: 2997.548192
+  type: 'test'
+  ...
+# Subtest: 公共默认项与命名空间只展开为普通 Test Job
+ok 44 - 公共默认项与命名空间只展开为普通 Test Job
+  ---
+  duration_ms: 2.639595
+  type: 'test'
+  ...
+# Subtest: Fragment 可嵌套，并能按 Phase 合并标准 Job Workflow
+ok 45 - Fragment 可嵌套，并能按 Phase 合并标准 Job Workflow
+  ---
+  duration_ms: 4.861231
+  type: 'test'
+  ...
+# Subtest: 标准 Job Fragment 暴露 Native/Kernel/BusyBox/Module/Guest/Rootfs/UML/MCU 能力
+ok 46 - 标准 Job Fragment 暴露 Native/Kernel/BusyBox/Module/Guest/Rootfs/UML/MCU 能力
+  ---
+  duration_ms: 5.781295
+  type: 'test'
+  ...
+# Subtest: 文件 Pattern 支持 Glob、排除、排序和逐项空匹配检查
+ok 47 - 文件 Pattern 支持 Glob、排除、排序和逐项空匹配检查
+  ---
+  duration_ms: 41.243167
+  type: 'test'
+  ...
+# Subtest: configHash 覆盖配置片段内容和最终解析结果且不依赖检出位置
+ok 48 - configHash 覆盖配置片段内容和最终解析结果且不依赖检出位置
+  ---
+  duration_ms: 180.270888
+  type: 'test'
+  ...
+# Subtest: XT-001: common defaults remain shallow and explicit tags replace helper defaults
+ok 49 - XT-001: common defaults remain shallow and explicit tags replace helper defaults
+  ---
+  duration_ms: 0.579106
+  type: 'test'
+  ...
+# Subtest: XT-001: C registry symbols and runtime Suite patterns are separate contracts
+ok 50 - XT-001: C registry symbols and runtime Suite patterns are separate contracts
+  ---
+  duration_ms: 0.520426
+  type: 'test'
+  ...
+# Subtest: 内置 Glob 覆盖路径、Globstar、字符组、花括号和正则特殊字符
+ok 51 - 内置 Glob 覆盖路径、Globstar、字符组、花括号和正则特殊字符
+  ---
+  duration_ms: 2.001267
+  type: 'test'
+  ...
+# Subtest: Glob 静态遍历根不会越过第一个元字符
+ok 52 - Glob 静态遍历根不会越过第一个元字符
+  ---
+  duration_ms: 0.368038
+  type: 'test'
+  ...
+# Subtest: 安装器生成仅含运行 JS 和公开声明的自包含便携目录
+ok 53 - 安装器生成仅含运行 JS 和公开声明的自包含便携目录
+  ---
+  duration_ms: 11651.444515
+  type: 'test'
+  ...
+# Subtest: 安装器拒绝非空目录且不覆盖内容
+ok 54 - 安装器拒绝非空目录且不覆盖内容
+  ---
+  duration_ms: 94.593416
+  type: 'test'
+  ...
+# Subtest: 真实 UML 入口缺少源码时以 BLOCKED/77 结束且不回退到私有路径
+ok 55 - 真实 UML 入口缺少源码时以 BLOCKED/77 结束且不回退到私有路径
+  ---
+  duration_ms: 273.141715
+  type: 'test'
+  ...
+# Subtest: UML 前置检查验证 Kernel UML 与 BusyBox 源码树结构
+ok 56 - UML 前置检查验证 Kernel UML 与 BusyBox 源码树结构
+  ---
+  duration_ms: 4.009434
+  type: 'test'
+  ...
+# Subtest: 真实入口展开 Kernel 与 Driver/Probe/Guest ABI UML Workflow
+ok 57 - 真实入口展开 Kernel 与 Driver/Probe/Guest ABI UML Workflow
+  ---
+  duration_ms: 4.086692
+  type: 'test'
+  ...
+# Subtest: SIGINT 首次触发 Abort，第二次强制退出 130，并可移除监听
+ok 58 - SIGINT 首次触发 Abort，第二次强制退出 130，并可移除监听
+  ---
+  duration_ms: 1.833283
+  type: 'test'
+  ...
+# Subtest: Kernel context and explicit module roles reject mismatched configurations, releases and executable masquerades
+ok 59 - Kernel context and explicit module roles reject mismatched configurations, releases and executable masquerades
+  ---
+  duration_ms: 232.967768
+  type: 'test'
+  ...
+# Subtest: Driver Guest validation accepts a real static ELF and rejects dynamic executables, modules and malformed headers
+ok 60 - Driver Guest validation accepts a real static ELF and rejects dynamic executables, modules and malformed headers
+  ---
+  duration_ms: 191.677951
+  type: 'test'
+  ...
+# Subtest: Artifact Driver build phases consume separate refs, inject one Kernel context and build real cpio without booting a mock Kernel
+ok 61 - Artifact Driver build phases consume separate refs, inject one Kernel context and build real cpio without booting a mock Kernel
+  ---
+  duration_ms: 778.464183
+  type: 'test'
+  ...
+# Subtest: Artifact failure stops before rootfs/provision and a conflicting Kernel env cannot override the shared Environment
+ok 62 - Artifact failure stops before rootfs/provision and a conflicting Kernel env cannot override the shared Environment
+  ---
+  duration_ms: 163.7526
+  type: 'test'
+  ...
+# Subtest: Named Environment factory is declarative, reused once, source-tracked and validated with Lua provenance
+ok 63 - Named Environment factory is declarative, reused once, source-tracked and validated with Lua provenance
+  ---
+  duration_ms: 270.128287
+  type: 'test'
+  ...
+# Subtest: Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目录
+ok 64 - Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目录
+  ---
+  duration_ms: 2633.559754
+  type: 'test'
+  ...
+# Subtest: Kernel Module 只在 Sandbox 构建，完整校验发布 Artifact 并支持并发
+ok 65 - Kernel Module 只在 Sandbox 构建，完整校验发布 Artifact 并支持并发
+  ---
+  duration_ms: 649.996012
+  type: 'test'
+  ...
+# Subtest: Kernel Environment 独立复用并展开自动 Test Module Workflow
+ok 66 - Kernel Environment 独立复用并展开自动 Test Module Workflow
+  ---
+  duration_ms: 3.971213
+  type: 'test'
+  ...
+# Subtest: Kernel Job 拒绝手写 Environment
+ok 67 - Kernel Job 拒绝手写 Environment
+  ---
+  duration_ms: 0.79376
+  type: 'test'
+  ...
+# Subtest: MCU owned/borrowed flash/reset/open failures and timeouts preserve cleanup and close late transports
+ok 68 - MCU owned/borrowed flash/reset/open failures and timeouts preserve cleanup and close late transports
+  ---
+  duration_ms: 10060.09477
+  type: 'test'
+  ...
+# Subtest: Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+ok 69 - Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+  ---
+  duration_ms: 305.90926
+  type: 'test'
+  ...
+# Subtest: External MCU Adapter 通过统一 CTP3 Transport 执行
+ok 70 - External MCU Adapter 通过统一 CTP3 Transport 执行
+  ---
+  duration_ms: 8.787925
+  type: 'test'
+  ...
+# Subtest: Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+ok 71 - Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+  ---
+  duration_ms: 1796.296305
+  type: 'test'
+  ...
+# Subtest: External MCU 校验 Reset 返回的 Boot ID
+ok 72 - External MCU 校验 Reset 返回的 Boot ID
+  ---
+  duration_ms: 3.380793
+  type: 'test'
+  ...
+# Subtest: Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+ok 73 - Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+  ---
+  duration_ms: 556.10473
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+ok 74 - 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+  ---
+  duration_ms: 261.942288
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+ok 75 - 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+  ---
+  duration_ms: 226.648949
+  type: 'test'
+  ...
+# Subtest: External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+ok 76 - External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+  ---
+  duration_ms: 4.290163
+  type: 'test'
+  ...
+# Subtest: Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓存命中
+ok 77 - Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓存命中
+  ---
+  duration_ms: 841.322777
+  type: 'test'
+  ...
+# Subtest: Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性
+ok 78 - Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性
+  ---
+  duration_ms: 1080.779698
+  type: 'test'
+  ...
+# Subtest: Native Header 与 fingerprintEnv 进入指纹，自定义 Cache 根受边界保护
+ok 79 - Native Header 与 fingerprintEnv 进入指纹，自定义 Cache 根受边界保护
+  ---
+  duration_ms: 764.139736
+  type: 'test'
+  ...
+# Subtest: Profile Env 覆盖 Native Job Env，并进入构建、运行和 Cache 指纹
+ok 80 - Profile Env 覆盖 Native Job Env，并进入构建、运行和 Cache 指纹
+  ---
+  duration_ms: 517.787538
+  type: 'test'
+  ...
+# Subtest: Native Crash/Timeout 映射 ERROR 且后续 Case 继续
+ok 81 - Native Crash/Timeout 映射 ERROR 且后续 Case 继续
+  ---
+  duration_ms: 340.627685
+  type: 'test'
+  ...
+# Subtest: Native 保留 FAIL/SKIP/ERROR，并让 Suite Fixture 使用同一初始快照
+ok 82 - Native 保留 FAIL/SKIP/ERROR，并让 Suite Fixture 使用同一初始快照
+  ---
+  duration_ms: 269.00723
+  type: 'test'
+  ...
+# Subtest: Native Suite Setup 错误保留 Session 诊断并映射基础设施 ERROR
+ok 83 - Native Suite Setup 错误保留 Session 诊断并映射基础设施 ERROR
+  ---
+  duration_ms: 235.942379
+  type: 'test'
+  ...
+# Subtest: npm scripts and lockfile no longer require a pnpm installation
+ok 84 - npm scripts and lockfile no longer require a pnpm installation
+  ---
+  duration_ms: 5.05288
+  type: 'test'
+  ...
+# Subtest: npm tarball installs and runs in an empty consumer offline without dev dependencies
+ok 85 - npm tarball installs and runs in an empty consumer offline without dev dependencies
+  ---
+  duration_ms: 7676.431119
+  type: 'test'
+  ...
+# Subtest: command abort kills a POSIX process group, including TERM-resistant grandchildren
+ok 86 - command abort kills a POSIX process group, including TERM-resistant grandchildren
+  ---
+  duration_ms: 121.012729
+  type: 'test'
+  ...
+# Subtest: already aborted commands never start; spawn failure and nonzero exits are preserved
+ok 87 - already aborted commands never start; spawn failure and nonzero exits are preserved
+  ---
+  duration_ms: 26.209353
+  type: 'test'
+  ...
+# Subtest: CTP3 Command 使用 LF 且受 64 B 上限约束
+ok 88 - CTP3 Command 使用 LF 且受 64 B 上限约束
+  ---
+  duration_ms: 3.031509
+  type: 'test'
+  ...
+# Subtest: LineDecoder 支持任意分片、CRLF 及超长行恢复
+ok 89 - LineDecoder 支持任意分片、CRLF 及超长行恢复
+  ---
+  duration_ms: 2.838366
+  type: 'test'
+  ...
+# Subtest: 字段转义和解析保持逗号、换行和反斜线
+ok 90 - 字段转义和解析保持逗号、换行和反斜线
+  ---
+  duration_ms: 0.942713
+  type: 'test'
+  ...
+# Subtest: StreamTransport 从任意 Chunk 还原完整协议行
+ok 91 - StreamTransport 从任意 Chunk 还原完整协议行
+  ---
+  duration_ms: 2.019242
+  type: 'test'
+  ...
+# Subtest: static ESM snapshot follows imports/re-exports/cycles without evaluating any top-level provider code
+ok 92 - static ESM snapshot follows imports/re-exports/cycles without evaluating any top-level provider code
+  ---
+  duration_ms: 98.940422
+  type: 'test'
+  ...
+# Subtest: lazy Board snapshot includes transitive ESM and explicit dynamic data; changed inputs stop before factory/flash
+ok 93 - lazy Board snapshot includes transitive ESM and explicit dynamic data; changed inputs stop before factory/flash
+  ---
+  duration_ms: 342.327651
+  type: 'test'
+  ...
+# Subtest: Console/JUnit/HTML Reporter 保留 Case、基础设施错误、时间线和 Artifact
+ok 94 - Console/JUnit/HTML Reporter 保留 Case、基础设施错误、时间线和 Artifact
+  ---
+  duration_ms: 11.957536
+  type: 'test'
+  ...
+# Subtest: source checkout CLI provides version/help from another working directory
+ok 95 - source checkout CLI provides version/help from another working directory
+  ---
+  duration_ms: 342.088396
+  type: 'test'
+  ...
+# Subtest: tools/cautest checkout works after relocation without node_modules and runs Native CTP
+ok 96 - tools/cautest checkout works after relocation without node_modules and runs Native CTP
+  ---
+  duration_ms: 1463.155731
+  type: 'test'
+  ...
+# Subtest: unbuilt source checkout fails with an actionable npm diagnostic and performs no install
+ok 97 - unbuilt source checkout fails with an actionable npm diagnostic and performs no install
+  ---
+  duration_ms: 46.150819
+  type: 'test'
+  ...
+# Subtest: source entry SIGINT returns 130 after executing registered cleanup
+ok 98 - source entry SIGINT returns 130 after executing registered cleanup
+  ---
+  duration_ms: 217.627455
+  type: 'test'
+  ...
+# Subtest: real flock serializes physical aliases, times out busy, cancels wait and never unlinks a held inode
+ok 99 - real flock serializes physical aliases, times out busy, cancels wait and never unlinks a held inode
+  ---
+  duration_ms: 242.461289
+  type: 'test'
+  ...
+# Subtest: OS lock is released when owner process is killed, without unsafe stale-PID deletion
+ok 100 - OS lock is released when owner process is killed, without unsafe stale-PID deletion
+  ---
+  duration_ms: 158.21898
+  type: 'test'
+  ...
+# Subtest: physical lock cleanup is last and survives a failing adapter cleanup
+ok 101 - physical lock cleanup is last and survives a failing adapter cleanup
+  ---
+  duration_ms: 107.29165
+  type: 'test'
+  ...
+# Subtest: TypeScript 声明保留公共 Schema 和 JSDoc
+ok 102 - TypeScript 声明保留公共 Schema 和 JSDoc
+  ---
+  duration_ms: 3.854987
+  type: 'test'
+  ...
+# Subtest: Script Test 聚合 EXPECT、ASSERT、SKIP 和异常
+ok 103 - Script Test 聚合 EXPECT、ASSERT、SKIP 和异常
+  ---
+  duration_ms: 3.902591
+  type: 'test'
+  ...
+# Subtest: Script Case Timeout 记为 ERROR
+ok 104 - Script Case Timeout 记为 ERROR
+  ---
+  duration_ms: 4.706772
+  type: 'test'
+  ...
+# Subtest: Script 顶层异常传播且每次执行获得隔离只读 Env
+ok 105 - Script 顶层异常传播且每次执行获得隔离只读 Env
+  ---
+  duration_ms: 1.0076
+  type: 'test'
+  ...
+# Subtest: Script Test 支持 assertEqual/fail/attach、Case 级 timeout 和统一事件
+ok 106 - Script Test 支持 assertEqual/fail/attach、Case 级 timeout 和统一事件
+  ---
+  duration_ms: 6.089306
+  type: 'test'
+  ...
+# Subtest: selection matches the baseline truth table across 8192 combinations
+ok 107 - selection matches the baseline truth table across 8192 combinations
+  ---
+  duration_ms: 83.39771
+  type: 'test'
+  ...
+# Subtest: ID OR / level OR / tag AND and cross-dimension AND are independent
+ok 108 - ID OR / level OR / tag AND and cross-dimension AND are independent
+  ---
+  duration_ms: 0.311327
+  type: 'test'
+  ...
+# Subtest: explicit IDs never enable disabled jobs, while inspection includes them
+ok 109 - explicit IDs never enable disabled jobs, while inspection includes them
+  ---
+  duration_ms: 0.131963
+  type: 'test'
+  ...
+# Subtest: selector preserves identity/order, does not mutate input, and deduplicates overlapping patterns
+ok 110 - selector preserves identity/order, does not mutate input, and deduplicates overlapping patterns
+  ---
+  duration_ms: 0.327867
+  type: 'test'
+  ...
+# Subtest: invalid options and categorical levels fail deterministically even for an empty registry
+ok 111 - invalid options and categorical levels fail deterministically even for an empty registry
+  ---
+  duration_ms: 0.665973
+  type: 'test'
+  ...
+# Subtest: old JS list/plan/doctor remain side-effect free, including disabled jobs; run excludes them
+ok 112 - old JS list/plan/doctor remain side-effect free, including disabled jobs; run excludes them
+  ---
+  duration_ms: 67.923234
+  type: 'test'
+  ...
+# Subtest: Host Filter 与执行规划区分 Suite 和 Case 模式
+ok 113 - Host Filter 与执行规划区分 Suite 和 Case 模式
+  ---
+  duration_ms: 2.667755
+  type: 'test'
+  ...
+# Subtest: Session 生成 Case 结果并将 Target Log 外置
+ok 114 - Session 生成 Case 结果并将 Target Log 外置
+  ---
+  duration_ms: 2.611649
+  type: 'test'
+  ...
+# Subtest: Execution Timeout 关闭连接且不发送 CANCEL
+ok 115 - Execution Timeout 关闭连接且不发送 CANCEL
+  ---
+  duration_ms: 11.348067
+  type: 'test'
+  ...
+# Subtest: ASSERT2 保留字符串 expected/actual 结构化类型
+ok 116 - ASSERT2 保留字符串 expected/actual 结构化类型
+  ---
+  duration_ms: 1.382313
+  type: 'test'
+  ...
+# Subtest: Suite Fixture 错误形成执行错误且不伪造 Case
+ok 117 - Suite Fixture 错误形成执行错误且不伪造 Case
+  ---
+  duration_ms: 0.586109
+  type: 'test'
+  ...
+# Subtest: Session 拒绝无法关联到当前 Case 的日志 ID
+ok 118 - Session 拒绝无法关联到当前 Case 的日志 ID
+  ---
+  duration_ms: 0.54016
+  type: 'test'
+  ...
+# Subtest: TARGET Scope 日志可在 HELLO 之前实时到达
+ok 119 - TARGET Scope 日志可在 HELLO 之前实时到达
+  ---
+  duration_ms: 1.293321
+  type: 'test'
+  ...
+# Subtest: Ready Probe 支持 Process、File、TCP 和 HTTP
+ok 120 - Ready Probe 支持 Process、File、TCP 和 HTTP
+  ---
+  duration_ms: 31.405259
+  type: 'test'
+  ...
+# Subtest: processStart Ready 后收集日志且 Cleanup 不泄漏进程
+ok 121 - processStart Ready 后收集日志且 Cleanup 不泄漏进程
+  ---
+  duration_ms: 102.330417
+  type: 'test'
+  ...
+# Subtest: Ready 失败仍收集启动日志并立即 Cleanup
+ok 122 - Ready 失败仍收集启动日志并立即 Cleanup
+  ---
+  duration_ms: 114.682551
+  type: 'test'
+  ...
+# Subtest: Attach Ownership 决定是否清理
+ok 123 - Attach Ownership 决定是否清理
+  ---
+  duration_ms: 0.825692
+  type: 'test'
+  ...
+# Subtest: External JUnit/JSON Adapter 保持 FAIL 与 ERROR Case 语义
+ok 124 - External JUnit/JSON Adapter 保持 FAIL 与 ERROR Case 语义
+  ---
+  duration_ms: 78.511968
+  type: 'test'
+  ...
+# Subtest: Script System Job 产生结构化 Case 结果
+ok 125 - Script System Job 产生结构化 Case 结果
+  ---
+  duration_ms: 17.664583
+  type: 'test'
+  ...
+# Subtest: Script System Job 可加载 defineScriptTest 渐进 API
+ok 126 - Script System Job 可加载 defineScriptTest 渐进 API
+  ---
+  duration_ms: 5.704969
+  type: 'test'
+  ...
+# Subtest: Script System 顶层 exec/env/signal 和 Case Event 进入 Workflow
+ok 127 - Script System 顶层 exec/env/signal 和 Case Event 进入 Workflow
+  ---
+  duration_ms: 45.457821
+  type: 'test'
+  ...
+# Subtest: build-output manifests reject partial builds, same-size corruption, modes, missing outputs and path escapes
+ok 128 - build-output manifests reject partial builds, same-size corruption, modes, missing outputs and path escapes
+  ---
+  duration_ms: 58.097543
+  type: 'test'
+  ...
+# Subtest: real Guest ELF cache detects byte corruption and incomplete publish
+ok 129 - real Guest ELF cache detects byte corruption and incomplete publish
+  ---
+  duration_ms: 417.491247
+  type: 'test'
+  ...
+# Subtest: real Driver CTP Guest cache validates binary bytes before a hit
+ok 130 - real Driver CTP Guest cache validates binary bytes before a hit
+  ---
+  duration_ms: 911.513167
+  type: 'test'
+  ...
+# Subtest: real cpio and Agent cache: corruption, same-ID payload changes, endpoint and install-path changes cannot reuse an image
+ok 131 - real cpio and Agent cache: corruption, same-ID payload changes, endpoint and install-path changes cannot reuse an image
+  ---
+  duration_ms: 1846.985034
+  type: 'test'
+  ...
+# Subtest: offline dependency collector requests installed packages through an empty APT status and rejects incomplete bundles
+ok 132 - offline dependency collector requests installed packages through an empty APT status and rejects incomplete bundles
+  ---
+  duration_ms: 664.058232
+  type: 'test'
+  ...
+# Subtest: Linux doctor probes bc arithmetic rather than a GNU-only version flag and rejects incorrect calculators
+ok 133 - Linux doctor probes bc arithmetic rather than a GNU-only version flag and rejects incorrect calculators
+  ---
+  duration_ms: 39.653825
+  type: 'test'
+  ...
+# Subtest: UML-owned process lifecycle abort: TERM-resistant descendants are reaped and logs retained
+ok 134 - UML-owned process lifecycle abort: TERM-resistant descendants are reaped and logs retained
+  ---
+  duration_ms: 82.845446
+  type: 'test'
+  ...
+# Subtest: UML-owned process lifecycle timeout: TERM-resistant descendants are reaped and logs retained
+ok 135 - UML-owned process lifecycle timeout: TERM-resistant descendants are reaped and logs retained
+  ---
+  duration_ms: 264.455038
+  type: 'test'
+  ...
+# Subtest: UML-owned process lifecycle wrong-id: TERM-resistant descendants are reaped and logs retained
+ok 136 - UML-owned process lifecycle wrong-id: TERM-resistant descendants are reaped and logs retained
+  ---
+  duration_ms: 71.817362
+  type: 'test'
+  ...
+# Subtest: UML-owned process lifecycle early-exit: TERM-resistant descendants are reaped and logs retained
+ok 137 - UML-owned process lifecycle early-exit: TERM-resistant descendants are reaped and logs retained
+  ---
+  duration_ms: 112.221935
+  type: 'test'
+  ...
+# Subtest: UML spawn errors are collected without unhandled errors; pre-aborted start spawns nothing
+ok 138 - UML spawn errors are collected without unhandled errors; pre-aborted start spawns nothing
+  ---
+  duration_ms: 13.215155
+  type: 'test'
+  ...
+# Subtest: expired or cancelled control waiters cannot consume a later command response
+ok 139 - expired or cancelled control waiters cannot consume a later command response
+  ---
+  duration_ms: 14.86028
+  type: 'test'
+  ...
+# Subtest: UML Control Channel 将 Agent Endpoint 复用为统一 CTP3 Transport
+ok 140 - UML Control Channel 将 Agent Endpoint 复用为统一 CTP3 Transport
+  ---
+  duration_ms: 10.326322
+  type: 'test'
+  ...
+# Subtest: Rootfs 真实生成 Agent、Catalog、Module 和 initramfs
+ok 141 - Rootfs 真实生成 Agent、Catalog、Module 和 initramfs
+  ---
+  duration_ms: 654.49391
+  type: 'test'
+  ...
+# Subtest: UML Guest Program 使用独立可关闭的构建缓存
+ok 142 - UML Guest Program 使用独立可关闭的构建缓存
+  ---
+  duration_ms: 233.559258
+  type: 'test'
+  ...
+# Subtest: UML 启动、日志收集和清理进入统一 Resource/Artifact 生命周期
+ok 143 - UML 启动、日志收集和清理进入统一 Resource/Artifact 生命周期
+  ---
+  duration_ms: 59.169986
+  type: 'test'
+  ...
+# Subtest: 版本表统一约束 Package、TypeScript、C Header 和 Build Info
+ok 144 - 版本表统一约束 Package、TypeScript、C Header 和 Build Info
+  ---
+  duration_ms: 130.68625
+  type: 'test'
+  ...
+# Subtest: Workflow 严格顺序执行并在错误后只运行失败路径 Collect
+ok 145 - Workflow 严格顺序执行并在错误后只运行失败路径 Collect
+  ---
+  duration_ms: 6.461227
+  type: 'test'
+  ...
+# Subtest: Step timeout 产生 ERROR 并向 Executor 发送 Abort
+ok 146 - Step timeout 产生 ERROR 并向 Executor 发送 Abort
+  ---
+  duration_ms: 11.314421
+  type: 'test'
+  ...
+# Subtest: 结构化测试失败保持 FAIL，并执行失败路径 Collect
+ok 147 - 结构化测试失败保持 FAIL，并执行失败路径 Collect
+  ---
+  duration_ms: 1.091786
+  type: 'test'
+  ...
+# Subtest: Step 返回 ERROR 时保留已取得测试结果和诊断
+ok 148 - Step 返回 ERROR 时保留已取得测试结果和诊断
+  ---
+  duration_ms: 1.441792
+  type: 'test'
+  ...
+# Subtest: Case FAIL 默认不阻断后续 Step，stopOnTestFailure 可显式停止
+ok 149 - Case FAIL 默认不阻断后续 Step，stopOnTestFailure 可显式停止
+  ---
+  duration_ms: 1.719959
+  type: 'test'
+  ...
+# Subtest: Workflow Context 统一管理 Artifact、Resource、Result、Event 和 LIFO Cleanup
+ok 150 - Workflow Context 统一管理 Artifact、Resource、Result、Event 和 LIFO Cleanup
+  ---
+  duration_ms: 1.772423
+  type: 'test'
+  ...
+# Subtest: 空结果由统一 allowEmpty 策略聚合
+ok 151 - 空结果由统一 allowEmpty 策略聚合
+  ---
+  duration_ms: 1.199613
+  type: 'test'
+  ...
+# Subtest: executeRun 和结果目录保留事件、Job 快照及失败索引
+ok 152 - executeRun 和结果目录保留事件、Job 快照及失败索引
+  ---
+  duration_ms: 15.659397
+  type: 'test'
+  ...
+# Subtest: late owned Board factory cannot flash after timeout and closes exactly once; borrowed remains borrowed
+ok 153 - late owned Board factory cannot flash after timeout and closes exactly once; borrowed remains borrowed
+  ---
+  duration_ms: 776.933114
+  type: 'test'
+  ...
+# Subtest: Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields
+ok 154 - Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields
+  ---
+  duration_ms: 2.291066
+  type: 'test'
+  ...
+# Subtest: Xmake manifest duplicates identify both origins; driver outputs are explicit references
+ok 155 - Xmake manifest duplicates identify both origins; driver outputs are explicit references
+  ---
+  duration_ms: 1.046831
+  type: 'test'
+  ...
+# Subtest: Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load
+ok 156 - Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load
+  ---
+  duration_ms: 58.064341
+  type: 'test'
+  ...
+# Subtest: MCU board factories stay lazy for list/plan and validate named resources
+ok 157 - MCU board factories stay lazy for list/plan and validate named resources
+  ---
+  duration_ms: 73.166684
+  type: 'test'
+  ...
+1..157
+# tests 157
+# suites 0
+# pass 157
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 26422.596189

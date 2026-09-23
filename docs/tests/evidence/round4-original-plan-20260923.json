@@ -1,0 +1,41 @@
+{
+  "unchanged": true,
+  "files": [
+    {
+      "path": "SOURCE_AUDIT.md",
+      "sha256": "98dad76119332a7f49ec90fafe54cee074d0d0c775e2ed074221362b2e837413"
+    },
+    {
+      "path": "SOLUTION.md",
+      "sha256": "b515b0dabc5919b540d189e19b8092f62bec7212deceb3eb35f1c95c1c39d270"
+    },
+    {
+      "path": "SHA256SUMS.txt",
+      "sha256": "bca9761948d811803b47ba27d78cd46978ee44a68b7c09e3046d9ae1f005c8f1"
+    },
+    {
+      "path": "PLAN.md",
+      "sha256": "e9d679b866103c85c3b3e2fda5e33662b9621483586eff57c5b7bd926b272943"
+    },
+    {
+      "path": "README.md",
+      "sha256": "2374fc9b088635f45998e16eee73c15f8d86d6a0b550c9a0003631559d265b70"
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "sha256": "0a12c4b820eb97d1f56602970c7c763d73201fd1a861c224e0c2b93d26bb6d5e"
+    },
+    {
+      "path": "plan.json",
+      "sha256": "effd51ca3f247162c0d5e7e8299cfe92f4f933a9d6b34fae1d0b79b09a7485c1"
+    },
+    {
+      "path": "evidence/baseline-subset.tap",
+      "sha256": "0c20cdf36cf864f22aa400d7b452df997c898e15be44a045c3de2a0ec09f6654"
+    },
+    {
+      "path": "examples/API_DRAFT.md",
+      "sha256": "ccda9e29ce98fa3784e738699d71a1942616719613433166492c8dc306e2220b"
+    }
+  ]
+}

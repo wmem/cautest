@@ -1,0 +1,34 @@
+
+> cautest@0.2.1 test:xmake:kbuild
+> npm run build && node scripts/test-xmake.mjs --kbuild
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+TAP version 13
+# Subtest: real product Kbuild phony target exports role-checked ELF, symbols and Kernel identity without source pollution
+ok 1 - real product Kbuild phony target exports role-checked ELF, symbols and Kernel identity without source pollution
+  ---
+  duration_ms: 11216.723506
+  type: 'test'
+  ...
+# Subtest: real Kernel Runtime and product/Test modules build through Xmake against explicit host headers (NO UML boot or module load)
+ok 2 - real Kernel Runtime and product/Test modules build through Xmake against explicit host headers (NO UML boot or module load)
+  ---
+  duration_ms: 12261.183448
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12354.857372
