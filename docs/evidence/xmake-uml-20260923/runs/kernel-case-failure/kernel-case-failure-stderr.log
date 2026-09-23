@@ -1,0 +1,24 @@
+START Job unit.kernel.math
+START Step unit.kernel.math/build/kernelBuild:unit_kernel_math
+END Step unit.kernel.math/kernelBuild:unit_kernel_math SUCCESS 26665ms CACHE HIT
+START Step unit.kernel.math/build/busyboxBuild:unit_kernel_math
+END Step unit.kernel.math/busyboxBuild:unit_kernel_math SUCCESS 937ms CACHE HIT
+START Step unit.kernel.math/build/kernelArtifactContext:unit_kernel_math
+END Step unit.kernel.math/kernelArtifactContext:unit_kernel_math SUCCESS 135ms
+START Step unit.kernel.math/build/kernelModuleBuild:cautest_kernel
+END Step unit.kernel.math/kernelModuleBuild:cautest_kernel SUCCESS 70ms CACHE HIT
+START Step unit.kernel.math/build/kernelRuntimeSymbols:unit_kernel_math
+END Step unit.kernel.math/kernelRuntimeSymbols:unit_kernel_math SUCCESS 0ms
+START Step unit.kernel.math/build/artifactBuild:test-module
+END Step unit.kernel.math/artifactBuild:test-module SUCCESS 3543ms
+START Step unit.kernel.math/build/kernelArtifactValidate:test-module
+END Step unit.kernel.math/kernelArtifactValidate:test-module SUCCESS 1ms
+START Step unit.kernel.math/build/umlRootfsBuild:unit_kernel_math
+END Step unit.kernel.math/umlRootfsBuild:unit_kernel_math SUCCESS 269ms CACHE MISS
+START Step unit.kernel.math/provision/umlStart:unit_kernel_math
+END Step unit.kernel.math/umlStart:unit_kernel_math SUCCESS 245ms
+START Step unit.kernel.math/run/cTestRun:unit_kernel_math
+END Step unit.kernel.math/cTestRun:unit_kernel_math FAIL 12ms
+START Step unit.kernel.math/collect/umlLogs:unit_kernel_math
+END Step unit.kernel.math/umlLogs:unit_kernel_math SUCCESS 7ms
+END Job unit.kernel.math FAIL 31888ms

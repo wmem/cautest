@@ -1,0 +1,10 @@
+[stdout] [ 15%]: <test.driver-guest> compiling.release product/guest/driver_test.c
+[stdout] [ 15%]: <test.driver-guest> compiling.release ../../cautest/assets/cautest-c/core/cautest.c
+[stdout] [ 15%]: <test.driver-guest> compiling.release ../../cautest/assets/cautest-c/protocol/ctp3.c
+[ 15%]: <test.driver-guest> compiling.release ../../cautest/assets/cautest-c/platform/posix/cautest_posix_platform.c
+[stdout] [ 15%]: <test.driver-guest> compiling.release ../../cautest/assets/cautest-c/target/posix/cautest_posix_target.c
+[stdout] [ 15%]: <test.driver-guest> compiling.release ../../cautest/assets/cautest-c/agent/uml-guest-agent/probe_client.c
+[stdout] [ 15%]: <test.driver-guest> compiling.release build/.gens/test.driver-guest/linux/x86_64/release/cautest/registry.c
+[stdout] [ 23%]: <test.driver-guest> compiling.release build/.gens/test.driver-guest/linux/x86_64/release/cautest/entry.c
+[stdout] [ 79%]: <test.driver-guest> linking.release test.driver-guest
+[stdout] [100%]: build ok, spent 0.224s

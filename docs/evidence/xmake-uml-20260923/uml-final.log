@@ -1,0 +1,311 @@
+
+> cautest@0.2.1 test:xmake:uml
+> npm run build && node test/integration/xmake-uml-smoke.mjs
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+[uml-acceptance] project: /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] list: starting
+[uml-acceptance] list: exit 0
+[uml-acceptance] plan: starting
+[uml-acceptance] plan: exit 0
+[uml-acceptance] doctor: starting
+[uml-acceptance] doctor: exit 0
+[uml-acceptance] cold: starting
+[uml-acceptance] cold: 30s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 60s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 90s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 120s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 150s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 180s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 210s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 240s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 270s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 300s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: 330s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cold: exit 0
+[uml-acceptance] cache-hit: starting
+[uml-acceptance] cache-hit: 30s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] cache-hit: exit 0
+[uml-acceptance] guest-assertion-failure: starting
+[uml-acceptance] guest-assertion-failure: exit 1
+[uml-acceptance] guest-startup-failure: starting
+[uml-acceptance] guest-startup-failure: exit 2
+[uml-acceptance] module-init-failure: starting
+[uml-acceptance] module-init-failure: exit 2
+[uml-acceptance] stale-module-after-build-failure: starting
+[uml-acceptance] stale-module-after-build-failure: exit 2
+[uml-acceptance] kernel-case-failure: starting
+[uml-acceptance] kernel-case-failure: 30s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] kernel-case-failure: exit 1
+[uml-acceptance] recovery: starting
+[uml-acceptance] recovery: 30s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] recovery: exit 0
+[uml-acceptance] busybox-corruption-recovery: starting
+[uml-acceptance] busybox-corruption-recovery: 30s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] busybox-corruption-recovery: 60s; logs in /mnt/data/run-uml/acceptance-final/project-fRxMqR
+[uml-acceptance] busybox-corruption-recovery: exit 0
+{
+  "schemaVersion": 1,
+  "status": "SUCCESS",
+  "command": "npm run test:xmake:uml",
+  "root": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+  "runs": [
+    {
+      "label": "cold",
+      "schemaVersion": 1,
+      "command": "run",
+      "runId": "20260923063157413-f5f1d041",
+      "status": "SUCCESS",
+      "configHash": "368c8c71130accb48c9e9df557d0c5df2679439cb8ce427b2b63b73cfda555db",
+      "resultDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041",
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041/result.json",
+      "summaryPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041/summary.json",
+      "failuresPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041/failures.jsonl"
+    },
+    {
+      "label": "cache-hit",
+      "schemaVersion": 1,
+      "command": "run",
+      "runId": "20260923063731780-028a6cfa",
+      "status": "SUCCESS",
+      "configHash": "4d9eb6828c53e398d5ceed3be02171224f58d2bd25e3a072faeeb0468ca56f06",
+      "resultDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063731780-028a6cfa",
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063731780-028a6cfa/result.json",
+      "summaryPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063731780-028a6cfa/summary.json",
+      "failuresPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063731780-028a6cfa/failures.jsonl"
+    }
+  ],
+  "matrix": {
+    "status": "SUCCESS",
+    "scope": "real UML kernel, modules, guest syscalls and process cleanup",
+    "records": [
+      {
+        "label": "rootfs-same-size-corruption",
+        "status": "PASS",
+        "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/fbf941b51b211fc263ecb36e63eb8e6c096cf5abd1d73ed5580b9acec6d5e09a/rootfs.cpio",
+        "buildId": "fbf941b51b211fc263ecb36e63eb8e6c096cf5abd1d73ed5580b9acec6d5e09a"
+      },
+      {
+        "label": "ready-timeout",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "pid": 75450,
+        "processGroupStopped": true,
+        "durationMs": 1218,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/ready-timeout/job-result.json"
+      },
+      {
+        "label": "cancel",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "pid": 75458,
+        "processGroupStopped": true,
+        "durationMs": 154,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/cancel/job-result.json"
+      },
+      {
+        "label": "wrong-catalog",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "pid": 75465,
+        "processGroupStopped": true,
+        "durationMs": 231,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-catalog/job-result.json"
+      },
+      {
+        "label": "wrong-guest-id",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "pid": 75482,
+        "processGroupStopped": true,
+        "durationMs": 770,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-guest-id/job-result.json"
+      },
+      {
+        "label": "guest-assertion-failure",
+        "status": "PASS",
+        "expectedStatus": "FAIL",
+        "exitCode": 1,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063825329-0e09c451/result.json"
+      },
+      {
+        "label": "guest-startup-failure",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "exitCode": 2,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/result.json"
+      },
+      {
+        "label": "module-init-failure",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "exitCode": 2,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063920186-1d981bd2/result.json"
+      },
+      {
+        "label": "stale-module-after-build-failure",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "exitCode": 2,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063946349-5c93abd6/result.json"
+      },
+      {
+        "label": "kernel-case-failure",
+        "status": "PASS",
+        "expectedStatus": "FAIL",
+        "exitCode": 1,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064015625-cd2bb472/result.json"
+      },
+      {
+        "label": "recovery",
+        "status": "PASS",
+        "expectedStatus": "SUCCESS",
+        "exitCode": 0,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/result.json"
+      },
+      {
+        "label": "busybox-corruption-recovery",
+        "status": "PASS",
+        "expectedStatus": "SUCCESS",
+        "exitCode": 0,
+        "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/result.json"
+      }
+    ],
+    "sourceFilesRestored": true
+  },
+  "records": [
+    {
+      "label": "list",
+      "args": [
+        "ct",
+        "--list",
+        "--json"
+      ],
+      "exitCode": 0,
+      "durationMs": 409
+    },
+    {
+      "label": "plan",
+      "args": [
+        "ct",
+        "--plan",
+        "--json"
+      ],
+      "exitCode": 0,
+      "durationMs": 366
+    },
+    {
+      "label": "doctor",
+      "args": [
+        "ct",
+        "--doctor",
+        "--json"
+      ],
+      "exitCode": 0,
+      "durationMs": 500
+    },
+    {
+      "label": "cold",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit"
+      ],
+      "exitCode": 0,
+      "durationMs": 334399
+    },
+    {
+      "label": "cache-hit",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit"
+      ],
+      "exitCode": 0,
+      "durationMs": 50799
+    },
+    {
+      "label": "guest-assertion-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 1,
+      "durationMs": 26703
+    },
+    {
+      "label": "guest-startup-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 2,
+      "durationMs": 28165
+    },
+    {
+      "label": "module-init-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 2,
+      "durationMs": 25827
+    },
+    {
+      "label": "stale-module-after-build-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 2,
+      "durationMs": 29555
+    },
+    {
+      "label": "kernel-case-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "unit.kernel.math"
+      ],
+      "exitCode": 1,
+      "durationMs": 32401
+    },
+    {
+      "label": "recovery",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit"
+      ],
+      "exitCode": 0,
+      "durationMs": 47572
+    },
+    {
+      "label": "busybox-corruption-recovery",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 0,
+      "durationMs": 66546
+    }
+  ]
+}

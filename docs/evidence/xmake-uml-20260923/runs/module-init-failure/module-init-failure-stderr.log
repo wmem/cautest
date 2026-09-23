@@ -1,0 +1,23 @@
+START Job integration.driver.abi
+START Step integration.driver.abi/build/kernelBuild:integration-driver-abi
+END Step integration.driver.abi/kernelBuild:integration-driver-abi SUCCESS 14407ms CACHE HIT
+START Step integration.driver.abi/build/busyboxBuild:integration-driver-abi
+END Step integration.driver.abi/busyboxBuild:integration-driver-abi SUCCESS 772ms CACHE HIT
+START Step integration.driver.abi/build/kernelArtifactContext:integration-driver-abi
+END Step integration.driver.abi/kernelArtifactContext:integration-driver-abi SUCCESS 138ms
+START Step integration.driver.abi/build/artifactBuild:driver-1
+END Step integration.driver.abi/artifactBuild:driver-1 SUCCESS 3858ms
+START Step integration.driver.abi/build/kernelArtifactValidate:driver-1
+END Step integration.driver.abi/kernelArtifactValidate:driver-1 SUCCESS 2ms
+START Step integration.driver.abi/build/artifactBuild:driver-guest
+END Step integration.driver.abi/artifactBuild:driver-guest SUCCESS 730ms
+START Step integration.driver.abi/build/driverGuestArtifactValidate:driver-guest
+END Step integration.driver.abi/driverGuestArtifactValidate:driver-guest SUCCESS 2ms
+START Step integration.driver.abi/build/umlRootfsBuild:integration-driver-abi
+END Step integration.driver.abi/umlRootfsBuild:integration-driver-abi SUCCESS 298ms CACHE MISS
+START Step integration.driver.abi/provision/umlStart:integration-driver-abi
+END Step integration.driver.abi/umlStart:integration-driver-abi ERROR 5085ms
+END Step integration.driver.abi/cTestRun:integration-driver-abi SKIPPED 0ms
+START Step integration.driver.abi/collect/umlLogs:integration-driver-abi
+END Step integration.driver.abi/umlLogs:integration-driver-abi SUCCESS 9ms
+END Job integration.driver.abi ERROR 25304ms

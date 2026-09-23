@@ -1,0 +1,500 @@
+{
+  "jobId": "integration.driver.abi",
+  "level": "integration",
+  "status": "SUCCESS",
+  "startedAt": "2026-09-23T06:41:35.579Z",
+  "endedAt": "2026-09-23T06:42:41.644Z",
+  "durationMs": 66064.776134,
+  "steps": [
+    {
+      "id": "01-build-kernelBuild-integration-driver-abi",
+      "kind": "kernelBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 18107.918632999997,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "02-build-busyboxBuild-integration-driver-abi",
+      "kind": "busyboxBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 42171.789934,
+      "diagnostics": [
+        {
+          "code": "cache_miss",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "03-build-kernelArtifactContext-integration-driver-abi",
+      "kind": "kernelArtifactContext",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 172.082441999999,
+      "diagnostics": [
+        {
+          "code": "kernel_context_ready",
+          "message": "6.6.157"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "04-build-artifactBuild-driver-1",
+      "kind": "artifactBuild",
+      "name": "driver-1",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 3637.882823,
+      "diagnostics": [
+        {
+          "code": "artifact_ready",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+          "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "05-build-kernelArtifactValidate-driver-1",
+      "kind": "kernelArtifactValidate",
+      "name": "driver-1",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 3.6288649999987683,
+      "diagnostics": [
+        {
+          "code": "kernel_artifact_verified",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "06-build-artifactBuild-driver-guest",
+      "kind": "artifactBuild",
+      "name": "driver-guest",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 765.2583209999939,
+      "diagnostics": [
+        {
+          "code": "artifact_ready",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+          "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "07-build-driverGuestArtifactValidate-driver-guest",
+      "kind": "driverGuestArtifactValidate",
+      "name": "driver-guest",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 2.006410000001779,
+      "diagnostics": [
+        {
+          "code": "driver_guest_verified",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "08-build-umlRootfsBuild-integration-driver-abi",
+      "kind": "umlRootfsBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 749.1802850000022,
+      "diagnostics": [
+        {
+          "code": "cache_miss",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/93fa600c6e504ad0f9fa0145711b3271643e6bf352ab5eef8bd4896eff32c4a2/rootfs.cpio"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "09-provision-umlStart-integration-driver-abi",
+      "kind": "umlStart",
+      "name": "integration-driver-abi",
+      "phase": "provision",
+      "status": "SUCCESS",
+      "durationMs": 393.5849359999993,
+      "diagnostics": [
+        {
+          "code": "uml_ready",
+          "message": "pid=91152"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "10-run-cTestRun-integration-driver-abi",
+      "kind": "cTestRun",
+      "name": "integration-driver-abi",
+      "phase": "run",
+      "status": "SUCCESS",
+      "durationMs": 47.8598120000097,
+      "diagnostics": [
+        {
+          "code": "c_test_session",
+          "message": "Driver Guest C Test: catalog=3, selected=3, executions=1, cases=3, events=10",
+          "hello": {
+            "major": 3,
+            "minor": 1,
+            "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+            "bootId": "native-25",
+            "rxLineMax": 64,
+            "txLineMax": 512
+          },
+          "catalog": [
+            {
+              "suiteId": 0,
+              "caseId": 0,
+              "paramId": 0,
+              "suite": "driver_abi",
+              "case": "read_write",
+              "parameter": "",
+              "name": "driver_abi/read_write"
+            },
+            {
+              "suiteId": 0,
+              "caseId": 1,
+              "paramId": 0,
+              "suite": "driver_abi",
+              "case": "ioctl_value",
+              "parameter": "",
+              "name": "driver_abi/ioctl_value"
+            },
+            {
+              "suiteId": 0,
+              "caseId": 2,
+              "paramId": 0,
+              "suite": "driver_abi",
+              "case": "invalid_input",
+              "parameter": "",
+              "name": "driver_abi/invalid_input"
+            }
+          ],
+          "selection": [
+            {
+              "suiteId": 0,
+              "caseId": 0,
+              "paramId": 0,
+              "suite": "driver_abi",
+              "case": "read_write",
+              "parameter": "",
+              "name": "driver_abi/read_write"
+            },
+            {
+              "suiteId": 0,
+              "caseId": 1,
+              "paramId": 0,
+              "suite": "driver_abi",
+              "case": "ioctl_value",
+              "parameter": "",
+              "name": "driver_abi/ioctl_value"
+            },
+            {
+              "suiteId": 0,
+              "caseId": 2,
+              "paramId": 0,
+              "suite": "driver_abi",
+              "case": "invalid_input",
+              "parameter": "",
+              "name": "driver_abi/invalid_input"
+            }
+          ],
+          "executionCount": 1,
+          "eventCount": 10
+        }
+      ],
+      "testResults": [
+        {
+          "name": "driver_abi",
+          "cases": [
+            {
+              "name": "read_write",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            },
+            {
+              "name": "ioctl_value",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            },
+            {
+              "name": "invalid_input",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11-collect-umlLogs-integration-driver-abi",
+      "kind": "umlLogs",
+      "name": "integration-driver-abi",
+      "phase": "collect",
+      "status": "SUCCESS",
+      "durationMs": 10.40854699999909,
+      "diagnostics": [
+        {
+          "code": "uml_logs",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/integration-driver-abi-console.log"
+        },
+        {
+          "code": "uml_host_stderr",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/integration-driver-abi-host-stderr.log"
+        }
+      ],
+      "testResults": []
+    }
+  ],
+  "groups": [
+    {
+      "name": "driver_abi",
+      "cases": [
+        {
+          "name": "read_write",
+          "status": "PASS",
+          "assertions": [],
+          "diagnostics": []
+        },
+        {
+          "name": "ioctl_value",
+          "status": "PASS",
+          "assertions": [],
+          "diagnostics": []
+        },
+        {
+          "name": "invalid_input",
+          "status": "PASS",
+          "assertions": [],
+          "diagnostics": []
+        }
+      ]
+    }
+  ],
+  "cleanup": [
+    {
+      "name": "stop-uml:integration-driver-abi",
+      "status": "SUCCESS"
+    }
+  ],
+  "errors": [],
+  "artifacts": [
+    {
+      "kind": "uml-kernel",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "metadata": {
+        "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+        "cacheHit": true,
+        "arch": "um"
+      }
+    },
+    {
+      "kind": "busybox",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+      "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "metadata": {
+        "cacheHit": false
+      }
+    },
+    {
+      "kind": "kernel-context",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923064135576-8a8c52ca/integration.driver.abi/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+      "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+      "metadata": {}
+    },
+    {
+      "kind": "log",
+      "name": "xmake-product.driver",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/integration.driver.abi/xmake-product.driver.log",
+      "metadata": {}
+    },
+    {
+      "kind": "build-artifact",
+      "name": "driver-1",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+      "fingerprint": "f2983fc40c839646106cf94437bc60a7bd98d627f44e6d710ed8d87849d5c203",
+      "metadata": {
+        "receipt": {
+          "schemaVersion": 1,
+          "kind": "cautest.artifact-receipt",
+          "target": "product.driver",
+          "context": {
+            "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+            "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+            "plat": "linux",
+            "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+            "mode": "release",
+            "arch": "x86_64"
+          },
+          "outputs": [
+            {
+              "role": "ko",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+              "size": 165456,
+              "sha256": "f2983fc40c839646106cf94437bc60a7bd98d627f44e6d710ed8d87849d5c203"
+            },
+            {
+              "role": "symbols",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+              "size": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "role": "order",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+              "size": 131,
+              "sha256": "125a4ef357ea751b963cd7b4ca63eb056bc890f9b7cdde2eef347b65785c1b66"
+            },
+            {
+              "role": "kernel-context",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/kernel-context.json",
+              "size": 674,
+              "sha256": "758f1f924da435c09eead92e708e2efaa75aa51fe6a8a7a70641f4b991e8d388"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "kernel-module",
+      "name": "driver-1",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+      "fingerprint": "f2983fc40c839646106cf94437bc60a7bd98d627f44e6d710ed8d87849d5c203",
+      "metadata": {
+        "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+        "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+        "externalArtifact": true
+      }
+    },
+    {
+      "kind": "log",
+      "name": "xmake-test.driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/integration.driver.abi/xmake-test.driver-guest.log",
+      "metadata": {}
+    },
+    {
+      "kind": "build-artifact",
+      "name": "driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+      "fingerprint": "ae5590d5b3ec5fa7d2e08d279701e36fb70edec1cfb41db79cf25d382df456ae",
+      "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+      "metadata": {
+        "receipt": {
+          "schemaVersion": 1,
+          "kind": "cautest.artifact-receipt",
+          "target": "test.driver-guest",
+          "context": {
+            "arch": "x86_64",
+            "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+            "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+            "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+            "mode": "release",
+            "plat": "linux"
+          },
+          "outputs": [
+            {
+              "role": "primary",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+              "size": 821928,
+              "sha256": "ae5590d5b3ec5fa7d2e08d279701e36fb70edec1cfb41db79cf25d382df456ae"
+            }
+          ],
+          "protocolBuildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b"
+        }
+      }
+    },
+    {
+      "kind": "guest-program",
+      "name": "driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+      "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+      "metadata": {
+        "externalArtifact": true,
+        "endpoint": "driver-guest"
+      }
+    },
+    {
+      "kind": "uml-image",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/93fa600c6e504ad0f9fa0145711b3271643e6bf352ab5eef8bd4896eff32c4a2/rootfs.cpio",
+      "fingerprint": "93fa600c6e504ad0f9fa0145711b3271643e6bf352ab5eef8bd4896eff32c4a2",
+      "buildId": "93fa600c6e504ad0f9fa0145711b3271643e6bf352ab5eef8bd4896eff32c4a2",
+      "metadata": {
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "cacheHit": false,
+        "endpoints": [
+          "kernel",
+          "driver-guest"
+        ]
+      }
+    },
+    {
+      "kind": "log",
+      "name": "integration-driver-abi-driver-guest-target",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/integration-driver-abi/integration-driver-abi-driver-guest-target.log",
+      "metadata": {
+        "source": "ctp-target",
+        "endpoint": "driver-guest"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "integration-driver-abi-console",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/integration-driver-abi-console.log",
+      "metadata": {
+        "source": "uml-console"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "integration-driver-abi-host-stderr",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/integration-driver-abi-host-stderr.log",
+      "metadata": {
+        "source": "uml-host-stderr"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "kind": "uml",
+      "name": "integration-driver-abi",
+      "state": "closed",
+      "owner": "integration.driver.abi",
+      "metadata": {
+        "buildId": "93fa600c6e504ad0f9fa0145711b3271643e6bf352ab5eef8bd4896eff32c4a2",
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/93fa600c6e504ad0f9fa0145711b3271643e6bf352ab5eef8bd4896eff32c4a2/rootfs.cpio"
+      }
+    }
+  ]
+}

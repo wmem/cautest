@@ -1,0 +1,16 @@
+{
+  "errors": [
+    {
+      "name": "CautestError",
+      "code": "transport_error",
+      "message": "UML 已退出: code=null, signal=SIGABRT\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 692158464 bytes to physical memory to account for exec-shield gap\n",
+      "stack": "CautestError: UML 已退出: code=null, signal=SIGABRT\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 692158464 bytes to physical memory to account for exec-shield gap\n\n    at ChildProcess.<anonymous> (file:///mnt/data/run-uml/cautest/dist/uml/runtime.js:354:55)\n    at Object.onceWrapper (node:events:633:26)\n    at ChildProcess.emit (node:events:518:28)\n    at ChildProcess._handle.onexit (node:internal/child_process:293:12)"
+    }
+  ],
+  "cleanup": [
+    {
+      "name": "stop-uml:integration-driver-abi",
+      "status": "SUCCESS"
+    }
+  ]
+}

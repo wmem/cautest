@@ -33,7 +33,7 @@ node tools/cautest/cautest.js --config ./cautest.config.mjs run --level unit
 
 这里使用的是已有 JS 配置入口；项目仍可 `import { testConfig } from "@cautest/config.js"`。运行时只需 Node，不依赖工具目录中的 `node_modules`。缺少 `dist` 时给出 npm 准备命令，不自动安装。
 
-Xmake 工程可以在自己的 `xmake.lua` 中加入 `includes("tools/cautest/xmake.lua")` 和 `includes("ctest.lua")`，使用分散的 `ctest.*` 声明与 `xmake ct`。Native 完整链路和 MCU Host 模拟已通过真实 Xmake 验证；Kernel/Driver 产物接入与共享 Environment 工厂已实现并完成组件验证，但真实 UML 启动、Driver ABI 和实板 SPI 尚未验收。详见 [Xmake 使用说明](docs/usage/xmake.md)和 [Kernel/Driver 接入说明](docs/usage/xmake-kernel-driver.md)。
+Xmake 工程可以在自己的 `xmake.lua` 中加入 `includes("tools/cautest/xmake.lua")` 和 `includes("ctest.lua")`，使用分散的 `ctest.*` 声明与 `xmake ct`。Native、MCU SPI 软件行为模拟，以及 Linux 6.6.157 真实 UML 的 Kernel Test / Driver ABI 已执行验证；实板 MCU/SPI 按当前范围延期，模拟不代表物理硬件验收。详见 [Xmake 使用说明](docs/usage/xmake.md)和 [Kernel/Driver 接入说明](docs/usage/xmake-kernel-driver.md)。
 
 如果项目选择把 Cautest 作为 npm 依赖安装，ESM 可从 `"cautest"` 或 `"cautest/config.js"` 导入公共 API；这不代表已向公共 Registry 发布该私有包。`npx <Git URL>` 仍选择原来的 `cautest-install` 安装器，不改成测试执行命令。
 
@@ -86,4 +86,4 @@ tar -xzf cautest-<版本>-<commit>.tar.gz -C ./tools
 
 准备源码依赖后，在工程中加入 `includes("tools/cautest/xmake.lua")`，
 通过分散的 `ctest.*` 声明和 `xmake ct` 运行既有 Workflow。
-参见 [Xmake 使用说明](docs/usage/xmake.md)；当前真实验证平台是 Xmake 3.1.1 / Linux x86_64（Native、MCU Host 模拟及 Kernel/Driver 构建组件），不代表实板或真实 UML 通过。
+参见 [Xmake 使用说明](docs/usage/xmake.md)；当前真实验证平台是 Xmake 3.1.1 / Linux x86_64（Native、MCU SPI 软件模拟，以及 Linux 6.6.157 / BusyBox 1.36.1 的真实 UML），不代表其他宿主、工具链或实板通过。

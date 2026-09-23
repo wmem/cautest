@@ -219,13 +219,12 @@ executes a .ko, boots a Kernel or tests a Driver ABI**. This is not full ABI
 compatibility validation; final module loading also needs matching Kernel config,
 symbol versions, architecture and the future explicit UML Environment.
 
-This continuation actually compiled against preinstalled
-`linux-headers-6.12.96+deb13-amd64`, not the supplied Linux 6.6.157 archive. The
-6.6.157 configuration build was attempted and stopped at missing flex. BusyBox
-1.36.1 source has since been supplied and really built statically; a real board
-is still absent. No substituted Kernel version is presented as real 6.6.157 UML
-acceptance. The artifact-backed split and single-source Environment are now
-implemented; see the separate Kernel/Driver guide for validation boundaries.
+The Kbuild-only regression uses the explicitly supplied `KERNEL_BUILD` and never
+loads host modules. Separately, the real UML acceptance has now built and booted
+the supplied Linux 6.6.157 with BusyBox 1.36.1, exercising both Kernel C Test and
+Driver read/write/ioctl/invalid-input cases. See the [Kernel/Driver guide](xmake-kernel-driver.md)
+for the distinct cold/hot and failure-matrix commands. MCU physical hardware is
+explicitly deferred; the MCU SPI fixture is a host-compiled behavioral model.
 
 ## Explicit acceptance commands and provider dependencies
 

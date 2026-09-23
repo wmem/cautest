@@ -1,0 +1,37 @@
+[
+  {
+    "kind": "uml-kernel",
+    "name": "integration-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+    "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+    "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+    "metadata": {
+      "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "cacheHit": true,
+      "arch": "um"
+    }
+  },
+  {
+    "kind": "busybox",
+    "name": "integration-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+    "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+    "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+    "metadata": {
+      "cacheHit": true
+    }
+  },
+  {
+    "kind": "kernel-context",
+    "name": "integration-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923063946349-5c93abd6/integration.driver.abi/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+    "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+    "metadata": {}
+  },
+  {
+    "kind": "log",
+    "name": "xmake-product.driver",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063946349-5c93abd6/integration.driver.abi/xmake-product.driver.log",
+    "metadata": {}
+  }
+]

@@ -1,0 +1,1631 @@
+{
+  "schemaVersion": 1,
+  "id": "20260923064048018-f3990673",
+  "status": "SUCCESS",
+  "startedAt": "2026-09-23T06:40:48.019Z",
+  "endedAt": "2026-09-23T06:41:35.093Z",
+  "durationMs": 47072.655466000004,
+  "metadata": {
+    "configPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/xmake/manifests/B925C9AF-4C08-4160-9564-9C7101BDCBB2.json",
+    "configHash": "4d9eb6828c53e398d5ceed3be02171224f58d2bd25e3a072faeeb0468ca56f06"
+  },
+  "jobs": [
+    {
+      "jobId": "integration.driver.abi",
+      "level": "integration",
+      "status": "SUCCESS",
+      "startedAt": "2026-09-23T06:40:48.022Z",
+      "endedAt": "2026-09-23T06:41:12.703Z",
+      "durationMs": 24680.517860999997,
+      "steps": [
+        {
+          "id": "01-build-kernelBuild-integration-driver-abi",
+          "kind": "kernelBuild",
+          "name": "integration-driver-abi",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 17793.825714000002,
+          "diagnostics": [
+            {
+              "code": "cache_hit",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "02-build-busyboxBuild-integration-driver-abi",
+          "kind": "busyboxBuild",
+          "name": "integration-driver-abi",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 1077.2223900000026,
+          "diagnostics": [
+            {
+              "code": "cache_hit",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "03-build-kernelArtifactContext-integration-driver-abi",
+          "kind": "kernelArtifactContext",
+          "name": "integration-driver-abi",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 276.4292200000018,
+          "diagnostics": [
+            {
+              "code": "kernel_context_ready",
+              "message": "6.6.157"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "04-build-artifactBuild-driver-1",
+          "kind": "artifactBuild",
+          "name": "driver-1",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 3895.041801000003,
+          "diagnostics": [
+            {
+              "code": "artifact_ready",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+              "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "05-build-kernelArtifactValidate-driver-1",
+          "kind": "kernelArtifactValidate",
+          "name": "driver-1",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 2.1492859999998473,
+          "diagnostics": [
+            {
+              "code": "kernel_artifact_verified",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "06-build-artifactBuild-driver-guest",
+          "kind": "artifactBuild",
+          "name": "driver-guest",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 1007.5263840000007,
+          "diagnostics": [
+            {
+              "code": "artifact_ready",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+              "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "07-build-driverGuestArtifactValidate-driver-guest",
+          "kind": "driverGuestArtifactValidate",
+          "name": "driver-guest",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 1.5930939999998373,
+          "diagnostics": [
+            {
+              "code": "driver_guest_verified",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "08-build-umlRootfsBuild-integration-driver-abi",
+          "kind": "umlRootfsBuild",
+          "name": "integration-driver-abi",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 291.1069069999976,
+          "diagnostics": [
+            {
+              "code": "cache_miss",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/d316fe1ab90f3ab4cf6a0728a80437e1f98572739d02462af1ebc5a3696c8986/rootfs.cpio"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "09-provision-umlStart-integration-driver-abi",
+          "kind": "umlStart",
+          "name": "integration-driver-abi",
+          "phase": "provision",
+          "status": "SUCCESS",
+          "durationMs": 285.4976800000004,
+          "diagnostics": [
+            {
+              "code": "uml_ready",
+              "message": "pid=82993"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "10-run-cTestRun-integration-driver-abi",
+          "kind": "cTestRun",
+          "name": "integration-driver-abi",
+          "phase": "run",
+          "status": "SUCCESS",
+          "durationMs": 37.99670300000071,
+          "diagnostics": [
+            {
+              "code": "c_test_session",
+              "message": "Driver Guest C Test: catalog=3, selected=3, executions=1, cases=3, events=10",
+              "hello": {
+                "major": 3,
+                "minor": 1,
+                "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+                "bootId": "native-25",
+                "rxLineMax": 64,
+                "txLineMax": 512
+              },
+              "catalog": [
+                {
+                  "suiteId": 0,
+                  "caseId": 0,
+                  "paramId": 0,
+                  "suite": "driver_abi",
+                  "case": "read_write",
+                  "parameter": "",
+                  "name": "driver_abi/read_write"
+                },
+                {
+                  "suiteId": 0,
+                  "caseId": 1,
+                  "paramId": 0,
+                  "suite": "driver_abi",
+                  "case": "ioctl_value",
+                  "parameter": "",
+                  "name": "driver_abi/ioctl_value"
+                },
+                {
+                  "suiteId": 0,
+                  "caseId": 2,
+                  "paramId": 0,
+                  "suite": "driver_abi",
+                  "case": "invalid_input",
+                  "parameter": "",
+                  "name": "driver_abi/invalid_input"
+                }
+              ],
+              "selection": [
+                {
+                  "suiteId": 0,
+                  "caseId": 0,
+                  "paramId": 0,
+                  "suite": "driver_abi",
+                  "case": "read_write",
+                  "parameter": "",
+                  "name": "driver_abi/read_write"
+                },
+                {
+                  "suiteId": 0,
+                  "caseId": 1,
+                  "paramId": 0,
+                  "suite": "driver_abi",
+                  "case": "ioctl_value",
+                  "parameter": "",
+                  "name": "driver_abi/ioctl_value"
+                },
+                {
+                  "suiteId": 0,
+                  "caseId": 2,
+                  "paramId": 0,
+                  "suite": "driver_abi",
+                  "case": "invalid_input",
+                  "parameter": "",
+                  "name": "driver_abi/invalid_input"
+                }
+              ],
+              "executionCount": 1,
+              "eventCount": 10
+            }
+          ],
+          "testResults": [
+            {
+              "name": "driver_abi",
+              "cases": [
+                {
+                  "name": "read_write",
+                  "status": "PASS",
+                  "assertions": [],
+                  "diagnostics": []
+                },
+                {
+                  "name": "ioctl_value",
+                  "status": "PASS",
+                  "assertions": [],
+                  "diagnostics": []
+                },
+                {
+                  "name": "invalid_input",
+                  "status": "PASS",
+                  "assertions": [],
+                  "diagnostics": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "11-collect-umlLogs-integration-driver-abi",
+          "kind": "umlLogs",
+          "name": "integration-driver-abi",
+          "phase": "collect",
+          "status": "SUCCESS",
+          "durationMs": 6.785675999999512,
+          "diagnostics": [
+            {
+              "code": "uml_logs",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/integration-driver-abi-console.log"
+            },
+            {
+              "code": "uml_host_stderr",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/integration-driver-abi-host-stderr.log"
+            }
+          ],
+          "testResults": []
+        }
+      ],
+      "groups": [
+        {
+          "name": "driver_abi",
+          "cases": [
+            {
+              "name": "read_write",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            },
+            {
+              "name": "ioctl_value",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            },
+            {
+              "name": "invalid_input",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            }
+          ]
+        }
+      ],
+      "cleanup": [
+        {
+          "name": "stop-uml:integration-driver-abi",
+          "status": "SUCCESS"
+        }
+      ],
+      "errors": [],
+      "artifacts": [
+        {
+          "kind": "uml-kernel",
+          "name": "integration-driver-abi",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+          "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+          "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+          "metadata": {
+            "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+            "cacheHit": true,
+            "arch": "um"
+          }
+        },
+        {
+          "kind": "busybox",
+          "name": "integration-driver-abi",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+          "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+          "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+          "metadata": {
+            "cacheHit": true
+          }
+        },
+        {
+          "kind": "kernel-context",
+          "name": "integration-driver-abi",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923064048018-f3990673/integration.driver.abi/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+          "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+          "metadata": {}
+        },
+        {
+          "kind": "log",
+          "name": "xmake-product.driver",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/integration.driver.abi/xmake-product.driver.log",
+          "metadata": {}
+        },
+        {
+          "kind": "build-artifact",
+          "name": "driver-1",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+          "fingerprint": "6e3ca408b323cd8c844317ccf2f4235bb33e8d6d0ab638e985e31e33a096c766",
+          "metadata": {
+            "receipt": {
+              "schemaVersion": 1,
+              "kind": "cautest.artifact-receipt",
+              "target": "product.driver",
+              "context": {
+                "arch": "x86_64",
+                "mode": "release",
+                "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+                "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+                "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+                "plat": "linux"
+              },
+              "outputs": [
+                {
+                  "role": "ko",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+                  "size": 165456,
+                  "sha256": "6e3ca408b323cd8c844317ccf2f4235bb33e8d6d0ab638e985e31e33a096c766"
+                },
+                {
+                  "role": "symbols",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+                  "size": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "role": "order",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+                  "size": 131,
+                  "sha256": "2b972535b3c282b4e92e190ba3423bddeb858ec48567623625724283c876a1cd"
+                },
+                {
+                  "role": "kernel-context",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/kernel-context.json",
+                  "size": 674,
+                  "sha256": "77aa7644a8ca4e9a0f2c69c6d16ec9c26bfc520e15e3fb8f590e5bac82539964"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "kernel-module",
+          "name": "driver-1",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+          "fingerprint": "6e3ca408b323cd8c844317ccf2f4235bb33e8d6d0ab638e985e31e33a096c766",
+          "metadata": {
+            "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+            "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+            "externalArtifact": true
+          }
+        },
+        {
+          "kind": "log",
+          "name": "xmake-test.driver-guest",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/integration.driver.abi/xmake-test.driver-guest.log",
+          "metadata": {}
+        },
+        {
+          "kind": "build-artifact",
+          "name": "driver-guest",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+          "fingerprint": "ae5590d5b3ec5fa7d2e08d279701e36fb70edec1cfb41db79cf25d382df456ae",
+          "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+          "metadata": {
+            "receipt": {
+              "schemaVersion": 1,
+              "kind": "cautest.artifact-receipt",
+              "target": "test.driver-guest",
+              "context": {
+                "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+                "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+                "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+                "mode": "release",
+                "plat": "linux",
+                "arch": "x86_64"
+              },
+              "outputs": [
+                {
+                  "role": "primary",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+                  "size": 821928,
+                  "sha256": "ae5590d5b3ec5fa7d2e08d279701e36fb70edec1cfb41db79cf25d382df456ae"
+                }
+              ],
+              "protocolBuildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b"
+            }
+          }
+        },
+        {
+          "kind": "guest-program",
+          "name": "driver-guest",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+          "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+          "metadata": {
+            "externalArtifact": true,
+            "endpoint": "driver-guest"
+          }
+        },
+        {
+          "kind": "uml-image",
+          "name": "integration-driver-abi",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/d316fe1ab90f3ab4cf6a0728a80437e1f98572739d02462af1ebc5a3696c8986/rootfs.cpio",
+          "fingerprint": "d316fe1ab90f3ab4cf6a0728a80437e1f98572739d02462af1ebc5a3696c8986",
+          "buildId": "d316fe1ab90f3ab4cf6a0728a80437e1f98572739d02462af1ebc5a3696c8986",
+          "metadata": {
+            "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+            "cacheHit": false,
+            "endpoints": [
+              "kernel",
+              "driver-guest"
+            ]
+          }
+        },
+        {
+          "kind": "log",
+          "name": "integration-driver-abi-driver-guest-target",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/integration-driver-abi/integration-driver-abi-driver-guest-target.log",
+          "metadata": {
+            "source": "ctp-target",
+            "endpoint": "driver-guest"
+          }
+        },
+        {
+          "kind": "log",
+          "name": "integration-driver-abi-console",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/integration-driver-abi-console.log",
+          "metadata": {
+            "source": "uml-console"
+          }
+        },
+        {
+          "kind": "log",
+          "name": "integration-driver-abi-host-stderr",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/integration-driver-abi-host-stderr.log",
+          "metadata": {
+            "source": "uml-host-stderr"
+          }
+        }
+      ],
+      "resources": [
+        {
+          "kind": "uml",
+          "name": "integration-driver-abi",
+          "state": "closed",
+          "owner": "integration.driver.abi",
+          "metadata": {
+            "buildId": "d316fe1ab90f3ab4cf6a0728a80437e1f98572739d02462af1ebc5a3696c8986",
+            "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+            "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/d316fe1ab90f3ab4cf6a0728a80437e1f98572739d02462af1ebc5a3696c8986/rootfs.cpio"
+          }
+        }
+      ]
+    },
+    {
+      "jobId": "unit.kernel.math",
+      "level": "unit",
+      "status": "SUCCESS",
+      "startedAt": "2026-09-23T06:41:12.703Z",
+      "endedAt": "2026-09-23T06:41:35.093Z",
+      "durationMs": 22389.979247000003,
+      "steps": [
+        {
+          "id": "01-build-kernelBuild-unit_kernel_math",
+          "kind": "kernelBuild",
+          "name": "unit_kernel_math",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 18112.482066000004,
+          "diagnostics": [
+            {
+              "code": "cache_hit",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "02-build-busyboxBuild-unit_kernel_math",
+          "kind": "busyboxBuild",
+          "name": "unit_kernel_math",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 683.4650840000031,
+          "diagnostics": [
+            {
+              "code": "cache_hit",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "03-build-kernelArtifactContext-unit_kernel_math",
+          "kind": "kernelArtifactContext",
+          "name": "unit_kernel_math",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 126.84446100000059,
+          "diagnostics": [
+            {
+              "code": "kernel_context_ready",
+              "message": "6.6.157"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "04-build-kernelModuleBuild-cautest_kernel",
+          "kind": "kernelModuleBuild",
+          "name": "cautest_kernel",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 67.33014700000058,
+          "diagnostics": [
+            {
+              "code": "cache_hit",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/cautest_kernel.ko"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "05-build-kernelRuntimeSymbols-unit_kernel_math",
+          "kind": "kernelRuntimeSymbols",
+          "name": "unit_kernel_math",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 0.07966699999815319,
+          "diagnostics": [],
+          "testResults": []
+        },
+        {
+          "id": "06-build-artifactBuild-test-module",
+          "kind": "artifactBuild",
+          "name": "test-module",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 2821.1165279999987,
+          "diagnostics": [
+            {
+              "code": "artifact_ready",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+              "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "07-build-kernelArtifactValidate-test-module",
+          "kind": "kernelArtifactValidate",
+          "name": "test-module",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 1.3830979999984265,
+          "diagnostics": [
+            {
+              "code": "kernel_artifact_verified",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "08-build-umlRootfsBuild-unit_kernel_math",
+          "kind": "umlRootfsBuild",
+          "name": "unit_kernel_math",
+          "phase": "build",
+          "status": "SUCCESS",
+          "durationMs": 264.4557339999956,
+          "diagnostics": [
+            {
+              "code": "cache_miss",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54/rootfs.cpio"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "09-provision-umlStart-unit_kernel_math",
+          "kind": "umlStart",
+          "name": "unit_kernel_math",
+          "phase": "provision",
+          "status": "SUCCESS",
+          "durationMs": 291.31626900000265,
+          "diagnostics": [
+            {
+              "code": "uml_ready",
+              "message": "pid=83553"
+            }
+          ],
+          "testResults": []
+        },
+        {
+          "id": "10-run-cTestRun-unit_kernel_math",
+          "kind": "cTestRun",
+          "name": "unit_kernel_math",
+          "phase": "run",
+          "status": "SUCCESS",
+          "durationMs": 11.456556999997701,
+          "diagnostics": [
+            {
+              "code": "c_test_session",
+              "message": "Kernel C Test: catalog=2, selected=2, executions=1, cases=2, events=8",
+              "hello": {
+                "major": 3,
+                "minor": 1,
+                "buildId": "2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54",
+                "bootId": "uml-1",
+                "rxLineMax": 64,
+                "txLineMax": 512
+              },
+              "catalog": [
+                {
+                  "suiteId": 0,
+                  "caseId": 0,
+                  "paramId": 0,
+                  "suite": "kernel_math",
+                  "case": "add",
+                  "parameter": "",
+                  "name": "kernel_math/add"
+                },
+                {
+                  "suiteId": 0,
+                  "caseId": 1,
+                  "paramId": 0,
+                  "suite": "kernel_math",
+                  "case": "boundary",
+                  "parameter": "",
+                  "name": "kernel_math/boundary"
+                }
+              ],
+              "selection": [
+                {
+                  "suiteId": 0,
+                  "caseId": 0,
+                  "paramId": 0,
+                  "suite": "kernel_math",
+                  "case": "add",
+                  "parameter": "",
+                  "name": "kernel_math/add"
+                },
+                {
+                  "suiteId": 0,
+                  "caseId": 1,
+                  "paramId": 0,
+                  "suite": "kernel_math",
+                  "case": "boundary",
+                  "parameter": "",
+                  "name": "kernel_math/boundary"
+                }
+              ],
+              "executionCount": 1,
+              "eventCount": 8
+            }
+          ],
+          "testResults": [
+            {
+              "name": "kernel_math",
+              "cases": [
+                {
+                  "name": "add",
+                  "status": "PASS",
+                  "assertions": [],
+                  "diagnostics": []
+                },
+                {
+                  "name": "boundary",
+                  "status": "PASS",
+                  "assertions": [],
+                  "diagnostics": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "11-collect-umlLogs-unit_kernel_math",
+          "kind": "umlLogs",
+          "name": "unit_kernel_math",
+          "phase": "collect",
+          "status": "SUCCESS",
+          "durationMs": 7.945762999996077,
+          "diagnostics": [
+            {
+              "code": "uml_logs",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/unit_kernel_math-console.log"
+            },
+            {
+              "code": "uml_host_stderr",
+              "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/unit_kernel_math-host-stderr.log"
+            }
+          ],
+          "testResults": []
+        }
+      ],
+      "groups": [
+        {
+          "name": "kernel_math",
+          "cases": [
+            {
+              "name": "add",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            },
+            {
+              "name": "boundary",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            }
+          ]
+        }
+      ],
+      "cleanup": [
+        {
+          "name": "stop-uml:unit_kernel_math",
+          "status": "SUCCESS"
+        }
+      ],
+      "errors": [],
+      "artifacts": [
+        {
+          "kind": "uml-kernel",
+          "name": "unit_kernel_math",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+          "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+          "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+          "metadata": {
+            "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+            "cacheHit": true,
+            "arch": "um"
+          }
+        },
+        {
+          "kind": "busybox",
+          "name": "unit_kernel_math",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+          "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+          "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+          "metadata": {
+            "cacheHit": true
+          }
+        },
+        {
+          "kind": "kernel-context",
+          "name": "unit_kernel_math",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923064048018-f3990673/unit.kernel.math/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+          "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+          "metadata": {}
+        },
+        {
+          "kind": "kernel-module",
+          "name": "cautest_kernel",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/cautest_kernel.ko",
+          "fingerprint": "3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed",
+          "buildId": "3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed",
+          "metadata": {
+            "cacheHit": true,
+            "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/Module.symvers",
+            "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/modules.order",
+            "coverageNotes": [],
+            "coverageSources": []
+          }
+        },
+        {
+          "kind": "log",
+          "name": "xmake-test.kernel",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/unit.kernel.math/xmake-test.kernel.log",
+          "metadata": {}
+        },
+        {
+          "kind": "build-artifact",
+          "name": "test-module",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+          "fingerprint": "ac209f94da27d91ddfc684c3c082fddba97038b5eedb103ecd7d9d5db0865675",
+          "metadata": {
+            "receipt": {
+              "schemaVersion": 1,
+              "kind": "cautest.artifact-receipt",
+              "target": "test.kernel",
+              "context": {
+                "mode": "release",
+                "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+                "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+                "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+                "arch": "x86_64",
+                "plat": "linux"
+              },
+              "outputs": [
+                {
+                  "role": "ko",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+                  "size": 76256,
+                  "sha256": "ac209f94da27d91ddfc684c3c082fddba97038b5eedb103ecd7d9d5db0865675"
+                },
+                {
+                  "role": "symbols",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/Module.symvers",
+                  "size": 0,
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "role": "order",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/modules.order",
+                  "size": 131,
+                  "sha256": "645dc0b5ad0b35dfc836e12b5a4ca700ba9ee613cc644f96407e930796c21dfb"
+                },
+                {
+                  "role": "kernel-context",
+                  "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/kernel-context.json",
+                  "size": 674,
+                  "sha256": "bf5c05d51a15e2cf7ee894b06d788cf1da340d89e6a103bc249db75052454155"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "kernel-module",
+          "name": "test-module",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+          "fingerprint": "ac209f94da27d91ddfc684c3c082fddba97038b5eedb103ecd7d9d5db0865675",
+          "metadata": {
+            "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/Module.symvers",
+            "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/modules.order",
+            "externalArtifact": true
+          }
+        },
+        {
+          "kind": "uml-image",
+          "name": "unit_kernel_math",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54/rootfs.cpio",
+          "fingerprint": "2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54",
+          "buildId": "2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54",
+          "metadata": {
+            "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+            "cacheHit": false,
+            "endpoints": [
+              "kernel"
+            ]
+          }
+        },
+        {
+          "kind": "log",
+          "name": "unit_kernel_math-kernel-target",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/unit_kernel_math/unit_kernel_math-kernel-target.log",
+          "metadata": {
+            "source": "ctp-target",
+            "endpoint": "kernel"
+          }
+        },
+        {
+          "kind": "log",
+          "name": "unit_kernel_math-console",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/unit_kernel_math-console.log",
+          "metadata": {
+            "source": "uml-console"
+          }
+        },
+        {
+          "kind": "log",
+          "name": "unit_kernel_math-host-stderr",
+          "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/unit_kernel_math-host-stderr.log",
+          "metadata": {
+            "source": "uml-host-stderr"
+          }
+        }
+      ],
+      "resources": [
+        {
+          "kind": "uml",
+          "name": "unit_kernel_math",
+          "state": "closed",
+          "owner": "unit.kernel.math",
+          "metadata": {
+            "buildId": "2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54",
+            "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+            "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54/rootfs.cpio"
+          }
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "version": 1,
+      "sequence": 1,
+      "timestamp": "2026-09-23T06:40:48.021Z",
+      "type": "RUN_START",
+      "runId": "20260923064048018-f3990673"
+    },
+    {
+      "version": 1,
+      "sequence": 2,
+      "timestamp": "2026-09-23T06:40:48.022Z",
+      "type": "JOB_START",
+      "jobId": "integration.driver.abi"
+    },
+    {
+      "version": 1,
+      "sequence": 3,
+      "timestamp": "2026-09-23T06:40:48.023Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "01-build-kernelBuild-integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 4,
+      "timestamp": "2026-09-23T06:41:05.816Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "uml-kernel:integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 5,
+      "timestamp": "2026-09-23T06:41:05.817Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "01-build-kernelBuild-integration-driver-abi",
+      "status": "SUCCESS",
+      "durationMs": 17793.825714000002
+    },
+    {
+      "version": 1,
+      "sequence": 6,
+      "timestamp": "2026-09-23T06:41:05.817Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "02-build-busyboxBuild-integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 7,
+      "timestamp": "2026-09-23T06:41:06.893Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "busybox:integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 8,
+      "timestamp": "2026-09-23T06:41:06.894Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "02-build-busyboxBuild-integration-driver-abi",
+      "status": "SUCCESS",
+      "durationMs": 1077.2223900000026
+    },
+    {
+      "version": 1,
+      "sequence": 9,
+      "timestamp": "2026-09-23T06:41:06.897Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "03-build-kernelArtifactContext-integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 10,
+      "timestamp": "2026-09-23T06:41:07.173Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "kernel-context:integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 11,
+      "timestamp": "2026-09-23T06:41:07.173Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "03-build-kernelArtifactContext-integration-driver-abi",
+      "status": "SUCCESS",
+      "durationMs": 276.4292200000018
+    },
+    {
+      "version": 1,
+      "sequence": 12,
+      "timestamp": "2026-09-23T06:41:07.173Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "04-build-artifactBuild-driver-1"
+    },
+    {
+      "version": 1,
+      "sequence": 13,
+      "timestamp": "2026-09-23T06:41:10.935Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "log:xmake-product.driver"
+    },
+    {
+      "version": 1,
+      "sequence": 14,
+      "timestamp": "2026-09-23T06:41:11.068Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "build-artifact:driver-1"
+    },
+    {
+      "version": 1,
+      "sequence": 15,
+      "timestamp": "2026-09-23T06:41:11.069Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "04-build-artifactBuild-driver-1",
+      "status": "SUCCESS",
+      "durationMs": 3895.041801000003
+    },
+    {
+      "version": 1,
+      "sequence": 16,
+      "timestamp": "2026-09-23T06:41:11.069Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "05-build-kernelArtifactValidate-driver-1"
+    },
+    {
+      "version": 1,
+      "sequence": 17,
+      "timestamp": "2026-09-23T06:41:11.071Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "kernel-module:driver-1"
+    },
+    {
+      "version": 1,
+      "sequence": 18,
+      "timestamp": "2026-09-23T06:41:11.071Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "05-build-kernelArtifactValidate-driver-1",
+      "status": "SUCCESS",
+      "durationMs": 2.1492859999998473
+    },
+    {
+      "version": 1,
+      "sequence": 19,
+      "timestamp": "2026-09-23T06:41:11.071Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "06-build-artifactBuild-driver-guest"
+    },
+    {
+      "version": 1,
+      "sequence": 20,
+      "timestamp": "2026-09-23T06:41:12.063Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "log:xmake-test.driver-guest"
+    },
+    {
+      "version": 1,
+      "sequence": 21,
+      "timestamp": "2026-09-23T06:41:12.078Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "build-artifact:driver-guest"
+    },
+    {
+      "version": 1,
+      "sequence": 22,
+      "timestamp": "2026-09-23T06:41:12.079Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "06-build-artifactBuild-driver-guest",
+      "status": "SUCCESS",
+      "durationMs": 1007.5263840000007
+    },
+    {
+      "version": 1,
+      "sequence": 23,
+      "timestamp": "2026-09-23T06:41:12.079Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "07-build-driverGuestArtifactValidate-driver-guest"
+    },
+    {
+      "version": 1,
+      "sequence": 24,
+      "timestamp": "2026-09-23T06:41:12.080Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "guest-program:driver-guest"
+    },
+    {
+      "version": 1,
+      "sequence": 25,
+      "timestamp": "2026-09-23T06:41:12.080Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "07-build-driverGuestArtifactValidate-driver-guest",
+      "status": "SUCCESS",
+      "durationMs": 1.5930939999998373
+    },
+    {
+      "version": 1,
+      "sequence": 26,
+      "timestamp": "2026-09-23T06:41:12.080Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "08-build-umlRootfsBuild-integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 27,
+      "timestamp": "2026-09-23T06:41:12.371Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "uml-image:integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 28,
+      "timestamp": "2026-09-23T06:41:12.372Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "08-build-umlRootfsBuild-integration-driver-abi",
+      "status": "SUCCESS",
+      "durationMs": 291.1069069999976
+    },
+    {
+      "version": 1,
+      "sequence": 29,
+      "timestamp": "2026-09-23T06:41:12.372Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "09-provision-umlStart-integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 30,
+      "timestamp": "2026-09-23T06:41:12.377Z",
+      "type": "RESOURCE_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "resource": "uml:integration-driver-abi",
+      "state": "starting"
+    },
+    {
+      "version": 1,
+      "sequence": 31,
+      "timestamp": "2026-09-23T06:41:12.657Z",
+      "type": "RESOURCE_STATE",
+      "jobId": "integration.driver.abi",
+      "resource": "uml:integration-driver-abi",
+      "state": "ready"
+    },
+    {
+      "version": 1,
+      "sequence": 32,
+      "timestamp": "2026-09-23T06:41:12.657Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "09-provision-umlStart-integration-driver-abi",
+      "status": "SUCCESS",
+      "durationMs": 285.4976800000004
+    },
+    {
+      "version": 1,
+      "sequence": 33,
+      "timestamp": "2026-09-23T06:41:12.657Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "10-run-cTestRun-integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 44,
+      "timestamp": "2026-09-23T06:41:12.695Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "log:integration-driver-abi-driver-guest-target"
+    },
+    {
+      "version": 1,
+      "sequence": 45,
+      "timestamp": "2026-09-23T06:41:12.695Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "10-run-cTestRun-integration-driver-abi",
+      "status": "SUCCESS",
+      "durationMs": 37.99670300000071
+    },
+    {
+      "version": 1,
+      "sequence": 46,
+      "timestamp": "2026-09-23T06:41:12.696Z",
+      "type": "STEP_START",
+      "jobId": "integration.driver.abi",
+      "stepId": "11-collect-umlLogs-integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 47,
+      "timestamp": "2026-09-23T06:41:12.702Z",
+      "type": "RESOURCE_CLOSED",
+      "jobId": "integration.driver.abi",
+      "resource": "uml:integration-driver-abi"
+    },
+    {
+      "version": 1,
+      "sequence": 48,
+      "timestamp": "2026-09-23T06:41:12.702Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "log:integration-driver-abi-console"
+    },
+    {
+      "version": 1,
+      "sequence": 49,
+      "timestamp": "2026-09-23T06:41:12.702Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "integration.driver.abi",
+      "artifact": "log:integration-driver-abi-host-stderr"
+    },
+    {
+      "version": 1,
+      "sequence": 50,
+      "timestamp": "2026-09-23T06:41:12.702Z",
+      "type": "STEP_END",
+      "jobId": "integration.driver.abi",
+      "stepId": "11-collect-umlLogs-integration-driver-abi",
+      "status": "SUCCESS",
+      "durationMs": 6.785675999999512
+    },
+    {
+      "version": 1,
+      "sequence": 51,
+      "timestamp": "2026-09-23T06:41:12.703Z",
+      "type": "JOB_END",
+      "jobId": "integration.driver.abi",
+      "status": "SUCCESS"
+    },
+    {
+      "version": 1,
+      "sequence": 52,
+      "timestamp": "2026-09-23T06:41:12.703Z",
+      "type": "JOB_START",
+      "jobId": "unit.kernel.math"
+    },
+    {
+      "version": 1,
+      "sequence": 53,
+      "timestamp": "2026-09-23T06:41:12.703Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "01-build-kernelBuild-unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 54,
+      "timestamp": "2026-09-23T06:41:30.815Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "uml-kernel:unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 55,
+      "timestamp": "2026-09-23T06:41:30.815Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "01-build-kernelBuild-unit_kernel_math",
+      "status": "SUCCESS",
+      "durationMs": 18112.482066000004
+    },
+    {
+      "version": 1,
+      "sequence": 56,
+      "timestamp": "2026-09-23T06:41:30.816Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "02-build-busyboxBuild-unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 57,
+      "timestamp": "2026-09-23T06:41:31.499Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "busybox:unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 58,
+      "timestamp": "2026-09-23T06:41:31.499Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "02-build-busyboxBuild-unit_kernel_math",
+      "status": "SUCCESS",
+      "durationMs": 683.4650840000031
+    },
+    {
+      "version": 1,
+      "sequence": 59,
+      "timestamp": "2026-09-23T06:41:31.499Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "03-build-kernelArtifactContext-unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 60,
+      "timestamp": "2026-09-23T06:41:31.626Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "kernel-context:unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 61,
+      "timestamp": "2026-09-23T06:41:31.626Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "03-build-kernelArtifactContext-unit_kernel_math",
+      "status": "SUCCESS",
+      "durationMs": 126.84446100000059
+    },
+    {
+      "version": 1,
+      "sequence": 62,
+      "timestamp": "2026-09-23T06:41:31.626Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "04-build-kernelModuleBuild-cautest_kernel"
+    },
+    {
+      "version": 1,
+      "sequence": 63,
+      "timestamp": "2026-09-23T06:41:31.693Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "kernel-module:cautest_kernel"
+    },
+    {
+      "version": 1,
+      "sequence": 64,
+      "timestamp": "2026-09-23T06:41:31.694Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "04-build-kernelModuleBuild-cautest_kernel",
+      "status": "SUCCESS",
+      "durationMs": 67.33014700000058
+    },
+    {
+      "version": 1,
+      "sequence": 65,
+      "timestamp": "2026-09-23T06:41:31.694Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "05-build-kernelRuntimeSymbols-unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 66,
+      "timestamp": "2026-09-23T06:41:31.694Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "05-build-kernelRuntimeSymbols-unit_kernel_math",
+      "status": "SUCCESS",
+      "durationMs": 0.07966699999815319
+    },
+    {
+      "version": 1,
+      "sequence": 67,
+      "timestamp": "2026-09-23T06:41:31.694Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "06-build-artifactBuild-test-module"
+    },
+    {
+      "version": 1,
+      "sequence": 68,
+      "timestamp": "2026-09-23T06:41:34.386Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "log:xmake-test.kernel"
+    },
+    {
+      "version": 1,
+      "sequence": 69,
+      "timestamp": "2026-09-23T06:41:34.515Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "build-artifact:test-module"
+    },
+    {
+      "version": 1,
+      "sequence": 70,
+      "timestamp": "2026-09-23T06:41:34.515Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "06-build-artifactBuild-test-module",
+      "status": "SUCCESS",
+      "durationMs": 2821.1165279999987
+    },
+    {
+      "version": 1,
+      "sequence": 71,
+      "timestamp": "2026-09-23T06:41:34.515Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "07-build-kernelArtifactValidate-test-module"
+    },
+    {
+      "version": 1,
+      "sequence": 72,
+      "timestamp": "2026-09-23T06:41:34.516Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "kernel-module:test-module"
+    },
+    {
+      "version": 1,
+      "sequence": 73,
+      "timestamp": "2026-09-23T06:41:34.516Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "07-build-kernelArtifactValidate-test-module",
+      "status": "SUCCESS",
+      "durationMs": 1.3830979999984265
+    },
+    {
+      "version": 1,
+      "sequence": 74,
+      "timestamp": "2026-09-23T06:41:34.516Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "08-build-umlRootfsBuild-unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 75,
+      "timestamp": "2026-09-23T06:41:34.781Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "uml-image:unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 76,
+      "timestamp": "2026-09-23T06:41:34.781Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "08-build-umlRootfsBuild-unit_kernel_math",
+      "status": "SUCCESS",
+      "durationMs": 264.4557339999956
+    },
+    {
+      "version": 1,
+      "sequence": 77,
+      "timestamp": "2026-09-23T06:41:34.781Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "09-provision-umlStart-unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 78,
+      "timestamp": "2026-09-23T06:41:34.785Z",
+      "type": "RESOURCE_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "resource": "uml:unit_kernel_math",
+      "state": "starting"
+    },
+    {
+      "version": 1,
+      "sequence": 79,
+      "timestamp": "2026-09-23T06:41:35.071Z",
+      "type": "RESOURCE_STATE",
+      "jobId": "unit.kernel.math",
+      "resource": "uml:unit_kernel_math",
+      "state": "ready"
+    },
+    {
+      "version": 1,
+      "sequence": 80,
+      "timestamp": "2026-09-23T06:41:35.072Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "09-provision-umlStart-unit_kernel_math",
+      "status": "SUCCESS",
+      "durationMs": 291.31626900000265
+    },
+    {
+      "version": 1,
+      "sequence": 81,
+      "timestamp": "2026-09-23T06:41:35.073Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "10-run-cTestRun-unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 90,
+      "timestamp": "2026-09-23T06:41:35.084Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "log:unit_kernel_math-kernel-target"
+    },
+    {
+      "version": 1,
+      "sequence": 91,
+      "timestamp": "2026-09-23T06:41:35.084Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "10-run-cTestRun-unit_kernel_math",
+      "status": "SUCCESS",
+      "durationMs": 11.456556999997701
+    },
+    {
+      "version": 1,
+      "sequence": 92,
+      "timestamp": "2026-09-23T06:41:35.085Z",
+      "type": "STEP_START",
+      "jobId": "unit.kernel.math",
+      "stepId": "11-collect-umlLogs-unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 93,
+      "timestamp": "2026-09-23T06:41:35.092Z",
+      "type": "RESOURCE_CLOSED",
+      "jobId": "unit.kernel.math",
+      "resource": "uml:unit_kernel_math"
+    },
+    {
+      "version": 1,
+      "sequence": 94,
+      "timestamp": "2026-09-23T06:41:35.092Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "log:unit_kernel_math-console"
+    },
+    {
+      "version": 1,
+      "sequence": 95,
+      "timestamp": "2026-09-23T06:41:35.092Z",
+      "type": "ARTIFACT_PUBLISHED",
+      "jobId": "unit.kernel.math",
+      "artifact": "log:unit_kernel_math-host-stderr"
+    },
+    {
+      "version": 1,
+      "sequence": 96,
+      "timestamp": "2026-09-23T06:41:35.092Z",
+      "type": "STEP_END",
+      "jobId": "unit.kernel.math",
+      "stepId": "11-collect-umlLogs-unit_kernel_math",
+      "status": "SUCCESS",
+      "durationMs": 7.945762999996077
+    },
+    {
+      "version": 1,
+      "sequence": 97,
+      "timestamp": "2026-09-23T06:41:35.093Z",
+      "type": "JOB_END",
+      "jobId": "unit.kernel.math",
+      "status": "SUCCESS"
+    },
+    {
+      "version": 1,
+      "sequence": 98,
+      "timestamp": "2026-09-23T06:41:35.093Z",
+      "type": "RUN_END",
+      "runId": "20260923064048018-f3990673",
+      "status": "SUCCESS"
+    }
+  ]
+}

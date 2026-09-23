@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="cautest" tests="1"><testsuite name="integration.driver.abi" tests="1" failures="0" errors="1" skipped="0" time="27.380012"><testcase classname="integration.driver.abi" name="infrastructure-1"><properties><property name="infrastructure" value="true"/></properties><error message="UML 已退出: code=null, signal=SIGABRT
+Core dump limits :
+	soft - 0
+	hard - NONE
+Checking that ptrace can change system call numbers...OK
+Checking syscall emulation patch for ptrace...OK
+Checking advanced syscall emulation patch for ptrace...OK
+Checking environment variables for a tempdir...none found
+Checking if /dev/shm is on tmpfs...OK
+Checking PROT_EXEC mmap in /dev/shm...OK
+Adding 692158464 bytes to physical memory to account for exec-shield gap
+">CautestError: UML 已退出: code=null, signal=SIGABRT
+Core dump limits :
+	soft - 0
+	hard - NONE
+Checking that ptrace can change system call numbers...OK
+Checking syscall emulation patch for ptrace...OK
+Checking advanced syscall emulation patch for ptrace...OK
+Checking environment variables for a tempdir...none found
+Checking if /dev/shm is on tmpfs...OK
+Checking PROT_EXEC mmap in /dev/shm...OK
+Adding 692158464 bytes to physical memory to account for exec-shield gap
+
+    at ChildProcess.&lt;anonymous&gt; (file:///mnt/data/run-uml/cautest/dist/uml/runtime.js:354:55)
+    at Object.onceWrapper (node:events:633:26)
+    at ChildProcess.emit (node:events:518:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:293:12)</error></testcase></testsuite></testsuites>

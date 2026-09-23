@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "cautest.artifact-receipt",
+  "target": "test.kernel",
+  "context": {
+    "arch": "x86_64",
+    "mode": "release",
+    "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+    "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+    "plat": "linux",
+    "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR"
+  },
+  "outputs": [
+    {
+      "role": "ko",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+      "size": 76256,
+      "sha256": "627c57a6171339531b73f11173cf2253e0188631fb37a91fa57691152f56cf42"
+    },
+    {
+      "role": "symbols",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/Module.symvers",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "role": "order",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/modules.order",
+      "size": 131,
+      "sha256": "50a428d2d42336b0d8b4a1042b454402b6568b18a6bbb59749d575ffd9ad6ee1"
+    },
+    {
+      "role": "kernel-context",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/kernel-context.json",
+      "size": 674,
+      "sha256": "e021298ff445effb91611e7979bb0258aa4f368f08510c368ca603a780854cdd"
+    }
+  ]
+}

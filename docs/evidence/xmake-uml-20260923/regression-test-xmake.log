@@ -1,0 +1,149 @@
+
+> cautest@0.2.1 test:xmake
+> npm run build && node scripts/test-xmake.mjs
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+TAP version 13
+# Subtest: real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs
+ok 1 - real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs
+  ---
+  duration_ms: 3426.816516
+  type: 'test'
+  ...
+# Subtest: real Native multi-module/suite CTP, same-build source reuse and product library macro isolation
+ok 2 - real Native multi-module/suite CTP, same-build source reuse and product library macro isolation
+  ---
+  duration_ms: 15734.605572
+  type: 'test'
+  ...
+# Subtest: real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP
+ok 3 - real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP
+  ---
+  duration_ms: 17594.331091
+  type: 'test'
+  ...
+# Subtest: real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks
+ok 4 - real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks
+  ---
+  duration_ms: 2042.953389
+  type: 'test'
+  ...
+# Subtest: real workflow module provider receives explicit artifact, reuses old engine, tracks source and rejects env sharing
+ok 5 - real workflow module provider receives explicit artifact, reuses old engine, tracks source and rejects env sharing
+  ---
+  duration_ms: 7747.419021
+  type: 'test'
+  ...
+# Subtest: four same-project Xmake sessions and a different project retain complete isolated receipts
+ok 6 - four same-project Xmake sessions and a different project retain complete isolated receipts
+  ---
+  duration_ms: 5634.364063
+  type: 'test'
+  ...
+# Subtest: real separate projects build GCC/debug and Clang/release concurrently without context or output sharing
+ok 7 - real separate projects build GCC/debug and Clang/release concurrently without context or output sharing
+  ---
+  duration_ms: 7842.653444
+  type: 'test'
+  ...
+# Subtest: real same-project reconfiguration between build and receipt fails closed before CTP and a fresh session recovers
+ok 8 - real same-project reconfiguration between build and receipt fails closed before CTP and a fresh session recovers
+  ---
+  duration_ms: 13528.554809
+  type: 'test'
+  ...
+# Subtest: real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+ok 9 - real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+  ---
+  duration_ms: 21236.672763
+  type: 'test'
+  ...
+# Subtest: portable Kernel/Driver factory plans and static Guest builds without source dist or dependencies (NO UML boot)
+ok 10 - portable Kernel/Driver factory plans and static Guest builds without source dist or dependencies (NO UML boot)
+  ---
+  duration_ms: 9831.748685
+  type: 'test'
+  ...
+# Subtest: real Xmake Kernel/Driver declarations are side-effect-free and the independent static guest rule builds and speaks CTP
+ok 11 - real Xmake Kernel/Driver declarations are side-effect-free and the independent static guest rule builds and speaks CTP
+  ---
+  duration_ms: 10905.506553
+  type: 'test'
+  ...
+# Subtest: real Xmake MCU firmware artifact, split serial CTP, shared build and physical alias identity
+ok 12 - real Xmake MCU firmware artifact, split serial CTP, shared build and physical alias identity
+  ---
+  duration_ms: 9063.959271
+  type: 'test'
+  ...
+# Subtest: MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong HELLO build identity fails
+ok 13 - MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong HELLO build identity fails
+  ---
+  duration_ms: 17615.015495
+  type: 'test'
+  ...
+# Subtest: source and relocated portable Board providers resolve a project npm package and a real N-API native addon lazily
+ok 14 - source and relocated portable Board providers resolve a project npm package and a real N-API native addon lazily
+  ---
+  duration_ms: 15246.392923
+  type: 'test'
+  ...
+# Subtest: real Xmake 3.1.1: exported table DSL, Node → nested build, options, failure, ordinary build
+ok 15 - real Xmake 3.1.1: exported table DSL, Node → nested build, options, failure, ordinary build
+  ---
+  duration_ms: 3501.71266
+  type: 'test'
+  ...
+# Subtest: real outer SIGINT cancels nested build and reaps a pipe-detached compiler grandchild
+ok 16 - real outer SIGINT cancels nested build and reaps a pipe-detached compiler grandchild
+  ---
+  duration_ms: 1704.301249
+  type: 'test'
+  ...
+# Subtest: real generation dependency, mocks and conditional source selection take effect on first build
+ok 17 - real generation dependency, mocks and conditional source selection take effect on first build
+  ---
+  duration_ms: 9191.615027
+  type: 'test'
+  ...
+# Xmake scale measurements [{"jobs":100,"elapsedMs":355.3747939999994},{"jobs":1000,"elapsedMs":430.5183699999998}]
+# Subtest: real 100/1000 job discovery, fragment addition/removal, changed cwd and deterministic config digest
+ok 18 - real 100/1000 job discovery, fragment addition/removal, changed cwd and deterministic config digest
+  ---
+  duration_ms: 3423.156212
+  type: 'test'
+  ...
+# Subtest: real mode/output isolation, profile env and strict registry C symbols
+ok 19 - real mode/output isolation, profile env and strict registry C symbols
+  ---
+  duration_ms: 6857.026974
+  type: 'test'
+  ...
+# Subtest: real Native richer fixtures retain PASS/FAIL/ERROR/SKIP and parameterized results
+ok 20 - real Native richer fixtures retain PASS/FAIL/ERROR/SKIP and parameterized results
+  ---
+  duration_ms: 3948.020363
+  type: 'test'
+  ...
+# Subtest: SPI behavioral model runs real Xmake firmware/CTP and detects a known receive fault as FAIL, then recovers
+ok 21 - SPI behavioral model runs real Xmake firmware/CTP and detects a known receive fault as FAIL, then recovers
+  ---
+  duration_ms: 9766.563419
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 75577.762829

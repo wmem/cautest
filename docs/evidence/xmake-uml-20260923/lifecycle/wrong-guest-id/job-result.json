@@ -1,0 +1,110 @@
+{
+  "jobId": "integration.real-uml.wrong-guest-id",
+  "level": "integration",
+  "status": "ERROR",
+  "startedAt": "2026-09-23T06:38:24.113Z",
+  "endedAt": "2026-09-23T06:38:24.878Z",
+  "durationMs": 765.4717579999706,
+  "steps": [
+    {
+      "id": "01-provision-umlStart-wrong-guest-id",
+      "kind": "umlStart",
+      "name": "wrong-guest-id",
+      "phase": "provision",
+      "status": "SUCCESS",
+      "durationMs": 187.22174599999562,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "02-run-cTestRun-wrong-guest-id",
+      "kind": "cTestRun",
+      "name": "wrong-guest-id",
+      "phase": "run",
+      "status": "ERROR",
+      "durationMs": 21.566336999996565,
+      "diagnostics": [],
+      "testResults": [],
+      "error": {
+        "name": "CautestError",
+        "code": "target_error",
+        "message": "Build ID 不匹配: expected=deliberately-wrong-guest, actual=14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+        "stack": "CautestError: Build ID 不匹配: expected=deliberately-wrong-guest, actual=14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b\n    at CTestSession.open (file:///mnt/data/run-uml/cautest/dist/protocol/session.js:134:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async runCTestSession (file:///mnt/data/run-uml/cautest/dist/protocol/session.js:351:23)\n    at async runCtpSession (file:///mnt/data/run-uml/cautest/dist/protocol/native-session.js:12:20)\n    at async runUmlEndpoint (file:///mnt/data/run-uml/cautest/dist/uml/runtime.js:409:16)\n    at async execute (file:///mnt/data/run-uml/cautest/test/integration/xmake-uml-matrix.mjs:59:31)\n    at async file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:71\n    at async runWithTimeout (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:24:16)\n    at async execute (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:32)\n    at async executeWorkflow (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:173:13)"
+      }
+    },
+    {
+      "id": "03-collect-umlLogs-wrong-guest-id",
+      "kind": "umlLogs",
+      "name": "wrong-guest-id",
+      "phase": "collect",
+      "status": "SUCCESS",
+      "durationMs": 556.4366440000013,
+      "diagnostics": [
+        {
+          "code": "uml_logs",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-guest-id/wrong-guest-id-console.log"
+        },
+        {
+          "code": "uml_host_stderr",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-guest-id/wrong-guest-id-host-stderr.log"
+        }
+      ],
+      "testResults": []
+    }
+  ],
+  "groups": [],
+  "cleanup": [
+    {
+      "name": "stop-uml:wrong-guest-id",
+      "status": "SUCCESS"
+    }
+  ],
+  "errors": [
+    {
+      "name": "CautestError",
+      "code": "target_error",
+      "message": "Build ID 不匹配: expected=deliberately-wrong-guest, actual=14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+      "stack": "CautestError: Build ID 不匹配: expected=deliberately-wrong-guest, actual=14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b\n    at CTestSession.open (file:///mnt/data/run-uml/cautest/dist/protocol/session.js:134:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async runCTestSession (file:///mnt/data/run-uml/cautest/dist/protocol/session.js:351:23)\n    at async runCtpSession (file:///mnt/data/run-uml/cautest/dist/protocol/native-session.js:12:20)\n    at async runUmlEndpoint (file:///mnt/data/run-uml/cautest/dist/uml/runtime.js:409:16)\n    at async execute (file:///mnt/data/run-uml/cautest/test/integration/xmake-uml-matrix.mjs:59:31)\n    at async file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:71\n    at async runWithTimeout (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:24:16)\n    at async execute (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:32)\n    at async executeWorkflow (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:173:13)"
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "log",
+      "name": "wrong-guest-id-driver-guest-target",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-guest-id/wrong-guest-id/wrong-guest-id-driver-guest-target.log",
+      "metadata": {
+        "source": "ctp-target",
+        "endpoint": "driver-guest"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "wrong-guest-id-console",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-guest-id/wrong-guest-id-console.log",
+      "metadata": {
+        "source": "uml-console"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "wrong-guest-id-host-stderr",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-guest-id/wrong-guest-id-host-stderr.log",
+      "metadata": {
+        "source": "uml-host-stderr"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "kind": "uml",
+      "name": "wrong-guest-id",
+      "state": "closed",
+      "owner": "integration.real-uml.wrong-guest-id",
+      "metadata": {
+        "buildId": "fbf941b51b211fc263ecb36e63eb8e6c096cf5abd1d73ed5580b9acec6d5e09a",
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/fbf941b51b211fc263ecb36e63eb8e6c096cf5abd1d73ed5580b9acec6d5e09a/rootfs.cpio"
+      }
+    }
+  ]
+}

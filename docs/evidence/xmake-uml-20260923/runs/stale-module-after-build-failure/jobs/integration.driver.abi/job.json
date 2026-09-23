@@ -1,0 +1,194 @@
+{
+  "jobId": "integration.driver.abi",
+  "level": "integration",
+  "status": "ERROR",
+  "startedAt": "2026-09-23T06:39:46.360Z",
+  "endedAt": "2026-09-23T06:40:15.117Z",
+  "durationMs": 28757.568266000002,
+  "steps": [
+    {
+      "id": "01-build-kernelBuild-integration-driver-abi",
+      "kind": "kernelBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 26034.567949,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "02-build-busyboxBuild-integration-driver-abi",
+      "kind": "busyboxBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 660.4322490000013,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "03-build-kernelArtifactContext-integration-driver-abi",
+      "kind": "kernelArtifactContext",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 134.14649099999951,
+      "diagnostics": [
+        {
+          "code": "kernel_context_ready",
+          "message": "6.6.157"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "04-build-artifactBuild-driver-1",
+      "kind": "artifactBuild",
+      "name": "driver-1",
+      "phase": "build",
+      "status": "ERROR",
+      "durationMs": 1924.6932799999995,
+      "diagnostics": [],
+      "testResults": [],
+      "error": {
+        "name": "CautestError",
+        "code": "build_error",
+        "message": "Xmake build failed (exit 255) for product.driver\nerror: make: Entering directory '/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29'\n  CC [M]  /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o\n/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.c:49:2: error: #error acceptance_driver_build_failure\n   49 | #error acceptance_driver_build_failure\n      |  ^~~~~\nmake[2]: *** [/mnt/data/run-uml/sources/linux-6.6.157/scripts/Makefile.build:243: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o] Error 1\nmake[1]: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:1933: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver] Error 2\nmake: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:234: __sub-make] Error 2\nmake: Leaving directory '/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29'\n\n",
+        "stack": "CautestError: Xmake build failed (exit 255) for product.driver\nerror: make: Entering directory '/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29'\n  CC [M]  /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o\n/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.c:49:2: error: #error acceptance_driver_build_failure\n   49 | #error acceptance_driver_build_failure\n      |  ^~~~~\nmake[2]: *** [/mnt/data/run-uml/sources/linux-6.6.157/scripts/Makefile.build:243: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o] Error 1\nmake[1]: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:1933: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver] Error 2\nmake: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:234: __sub-make] Error 2\nmake: Leaving directory '/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29'\n\n\n    at command (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:70:23)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async #buildLocked (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:81:13)\n    at async withBuildLock (file:///mnt/data/run-uml/cautest/dist/cache/build-lock.js:29:16)\n    at async #build (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:56:16)\n    at async XmakeBuildProvider.build (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:46:25)\n    at async Object.build (file:///mnt/data/run-uml/cautest/dist/jobs/kernel-artifact.js:78:29)\n    at async execute (file:///mnt/data/run-uml/cautest/dist/artifacts/index.js:101:29)\n    at async file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:71\n    at async runWithTimeout (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:24:16)"
+      }
+    },
+    {
+      "id": "05-build-kernelArtifactValidate-driver-1",
+      "kind": "kernelArtifactValidate",
+      "name": "driver-1",
+      "phase": "build",
+      "status": "SKIPPED",
+      "durationMs": 0,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "06-build-artifactBuild-driver-guest",
+      "kind": "artifactBuild",
+      "name": "driver-guest",
+      "phase": "build",
+      "status": "SKIPPED",
+      "durationMs": 0,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "07-build-driverGuestArtifactValidate-driver-guest",
+      "kind": "driverGuestArtifactValidate",
+      "name": "driver-guest",
+      "phase": "build",
+      "status": "SKIPPED",
+      "durationMs": 0,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "08-build-umlRootfsBuild-integration-driver-abi",
+      "kind": "umlRootfsBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SKIPPED",
+      "durationMs": 0,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "09-provision-umlStart-integration-driver-abi",
+      "kind": "umlStart",
+      "name": "integration-driver-abi",
+      "phase": "provision",
+      "status": "SKIPPED",
+      "durationMs": 0,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "10-run-cTestRun-integration-driver-abi",
+      "kind": "cTestRun",
+      "name": "integration-driver-abi",
+      "phase": "run",
+      "status": "SKIPPED",
+      "durationMs": 0,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "11-collect-umlLogs-integration-driver-abi",
+      "kind": "umlLogs",
+      "name": "integration-driver-abi",
+      "phase": "collect",
+      "status": "SUCCESS",
+      "durationMs": 0.2771119999997609,
+      "diagnostics": [
+        {
+          "code": "uml_not_started",
+          "message": "integration-driver-abi"
+        }
+      ],
+      "testResults": []
+    }
+  ],
+  "groups": [],
+  "cleanup": [],
+  "errors": [
+    {
+      "name": "CautestError",
+      "code": "build_error",
+      "message": "Xmake build failed (exit 255) for product.driver\nerror: make: Entering directory '/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29'\n  CC [M]  /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o\n/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.c:49:2: error: #error acceptance_driver_build_failure\n   49 | #error acceptance_driver_build_failure\n      |  ^~~~~\nmake[2]: *** [/mnt/data/run-uml/sources/linux-6.6.157/scripts/Makefile.build:243: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o] Error 1\nmake[1]: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:1933: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver] Error 2\nmake: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:234: __sub-make] Error 2\nmake: Leaving directory '/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29'\n\n",
+      "stack": "CautestError: Xmake build failed (exit 255) for product.driver\nerror: make: Entering directory '/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29'\n  CC [M]  /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o\n/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.c:49:2: error: #error acceptance_driver_build_failure\n   49 | #error acceptance_driver_build_failure\n      |  ^~~~~\nmake[2]: *** [/mnt/data/run-uml/sources/linux-6.6.157/scripts/Makefile.build:243: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o] Error 1\nmake[1]: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:1933: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver] Error 2\nmake: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:234: __sub-make] Error 2\nmake: Leaving directory '/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29'\n\n\n    at command (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:70:23)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async #buildLocked (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:81:13)\n    at async withBuildLock (file:///mnt/data/run-uml/cautest/dist/cache/build-lock.js:29:16)\n    at async #build (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:56:16)\n    at async XmakeBuildProvider.build (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:46:25)\n    at async Object.build (file:///mnt/data/run-uml/cautest/dist/jobs/kernel-artifact.js:78:29)\n    at async execute (file:///mnt/data/run-uml/cautest/dist/artifacts/index.js:101:29)\n    at async file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:71\n    at async runWithTimeout (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:24:16)"
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "uml-kernel",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "metadata": {
+        "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+        "cacheHit": true,
+        "arch": "um"
+      }
+    },
+    {
+      "kind": "busybox",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+      "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "metadata": {
+        "cacheHit": true
+      }
+    },
+    {
+      "kind": "kernel-context",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923063946349-5c93abd6/integration.driver.abi/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+      "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+      "metadata": {}
+    },
+    {
+      "kind": "log",
+      "name": "xmake-product.driver",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063946349-5c93abd6/integration.driver.abi/xmake-product.driver.log",
+      "metadata": {}
+    }
+  ],
+  "resources": []
+}

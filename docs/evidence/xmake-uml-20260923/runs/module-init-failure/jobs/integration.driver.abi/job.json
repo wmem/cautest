@@ -1,0 +1,381 @@
+{
+  "jobId": "integration.driver.abi",
+  "level": "integration",
+  "status": "ERROR",
+  "startedAt": "2026-09-23T06:39:20.202Z",
+  "endedAt": "2026-09-23T06:39:45.506Z",
+  "durationMs": 25303.800039,
+  "steps": [
+    {
+      "id": "01-build-kernelBuild-integration-driver-abi",
+      "kind": "kernelBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 14407.296193,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "02-build-busyboxBuild-integration-driver-abi",
+      "kind": "busyboxBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 771.5364129999998,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "03-build-kernelArtifactContext-integration-driver-abi",
+      "kind": "kernelArtifactContext",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 137.99879499999952,
+      "diagnostics": [
+        {
+          "code": "kernel_context_ready",
+          "message": "6.6.157"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "04-build-artifactBuild-driver-1",
+      "kind": "artifactBuild",
+      "name": "driver-1",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 3857.501210999999,
+      "diagnostics": [
+        {
+          "code": "artifact_ready",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+          "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "05-build-kernelArtifactValidate-driver-1",
+      "kind": "kernelArtifactValidate",
+      "name": "driver-1",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 1.6484569999993255,
+      "diagnostics": [
+        {
+          "code": "kernel_artifact_verified",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "06-build-artifactBuild-driver-guest",
+      "kind": "artifactBuild",
+      "name": "driver-guest",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 729.6406440000028,
+      "diagnostics": [
+        {
+          "code": "artifact_ready",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+          "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "07-build-driverGuestArtifactValidate-driver-guest",
+      "kind": "driverGuestArtifactValidate",
+      "name": "driver-guest",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 1.76481799999965,
+      "diagnostics": [
+        {
+          "code": "driver_guest_verified",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "08-build-umlRootfsBuild-integration-driver-abi",
+      "kind": "umlRootfsBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 297.6433279999983,
+      "diagnostics": [
+        {
+          "code": "cache_miss",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a/rootfs.cpio"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "09-provision-umlStart-integration-driver-abi",
+      "kind": "umlStart",
+      "name": "integration-driver-abi",
+      "phase": "provision",
+      "status": "ERROR",
+      "durationMs": 5085.498637000001,
+      "diagnostics": [],
+      "testResults": [],
+      "error": {
+        "name": "CautestError",
+        "code": "timeout_error",
+        "message": "等待 UML Guest Agent Ready 超时\nUML host stderr:\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 757030912 bytes to physical memory to account for exec-shield gap\nUML console (tail):\nLinux version 6.6.157 (root@42ccc97f624b) (gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 Wed Sep 23 06:35:27 UTC 2026\nZone ranges:\n  Normal   [mem 0x0000000000000000-0x000000009d1f5fff]\nMovable zone start for each node\nEarly memory node ranges\n  node   0: [mem 0x0000000000000000-0x000000003d1f5fff]\nInitmem setup node 0 [mem 0x0000000000000000-0x000000003d1f5fff]\nrandom: crng init done\nKernel command line: mem=256M initrd=/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a/rootfs.cpio root=/dev/ram0 rw init=/init con=null con0=fd:0,fd:1 ssl=null ssl0=fd:3,fd:3 console=tty0\nUnknown kernel command line parameters \"mem=256M\", will be passed to user space.\nDentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)\nInode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)\nSorting __ex_table...\nBuilt 1 zonelists, mobility grouping on.  Total pages: 246935\nmem auto-init: stack:all(zero), heap alloc:off, heap free:off\nMemory: 236276K/1001432K available (3685K kernel code, 990K rwdata, 1320K rodata, 173K init, 231K bss, 765156K reserved, 0K cma-reserved)\nSLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1\nNR_IRQS: 64\nclocksource: timer: mask: 0xffffffffffffffff max_cycles: 0x1cd42e205, max_idle_ns: 881590404426 ns\nCalibrating delay loop... 5591.85 BogoMIPS (lpj=27959296)\nChecking that host ptys support output SIGIO...Yes\npid_max: default: 32768 minimum: 301\nMount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\nMountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\ndevtmpfs: initialized\nclocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns\nfutex hash table entries: 256 (order: 1, 6144 bytes, linear)\nNET: Registered PF_NETLINK/PF_ROUTE protocol family\npps_core: LinuxPPS API ver. 1 registered\npps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>\nPTP clock support registered\nclocksource: Switched to clocksource timer\nVFS: Disk quotas dquot_6.6.0\nVFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)\nNET: Registered PF_INET protocol family\nIP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)\ntcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)\nTable-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)\nTCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)\nTCP bind hash table entries: 8192 (order: 5, 131072 bytes, linear)\nTCP: Hash tables configured (established 8192 bind 8192)\nUDP hash table entries: 512 (order: 2, 16384 bytes, linear)\nUDP-Lite hash table entries: 512 (order: 2, 16384 bytes, linear)\nNET: Registered PF_UNIX/PF_LOCAL protocol family\nprintk: console [stderr0] disabled\nmconsole (version 2) initialized on /home/oai/.uml/lCWpRt/mconsole\nChecking host MADV_REMOVE support...OK\nUnpacking initramfs...\nFreeing initrd memory: 4136K\nworkingset: timestamp_bits=62 max_order=16 bucket_order=0\nio scheduler mq-deadline registered\nio scheduler kyber registered\nNET: Registered PF_PACKET protocol family\nInitialized stdio console driver\nConsole initialized on /dev/tty0\nprintk: console [tty0] enabled\nInitializing software serial port version 1\nprintk: console [mc-1] enabled\nFailed to initialize ubd device 0 :Couldn't determine size of device's file\nepollctl add err fd 0, Operation not permitted\nThis architecture does not have kernel memory protection.\nRun /init as init process\ncautest_echo: loading out-of-tree module taints kernel.\ncautest acceptance: module init refused\ninsmod: can't insert '/opt/cautest/modules/00-driver-1.ko': invalid parameter\r\n/bin/sh: can't access tty; job control turned off\r\n~ #",
+        "stack": "CautestError: 等待 UML Guest Agent Ready 超时\nUML host stderr:\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 757030912 bytes to physical memory to account for exec-shield gap\nUML console (tail):\nLinux version 6.6.157 (root@42ccc97f624b) (gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 Wed Sep 23 06:35:27 UTC 2026\nZone ranges:\n  Normal   [mem 0x0000000000000000-0x000000009d1f5fff]\nMovable zone start for each node\nEarly memory node ranges\n  node   0: [mem 0x0000000000000000-0x000000003d1f5fff]\nInitmem setup node 0 [mem 0x0000000000000000-0x000000003d1f5fff]\nrandom: crng init done\nKernel command line: mem=256M initrd=/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a/rootfs.cpio root=/dev/ram0 rw init=/init con=null con0=fd:0,fd:1 ssl=null ssl0=fd:3,fd:3 console=tty0\nUnknown kernel command line parameters \"mem=256M\", will be passed to user space.\nDentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)\nInode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)\nSorting __ex_table...\nBuilt 1 zonelists, mobility grouping on.  Total pages: 246935\nmem auto-init: stack:all(zero), heap alloc:off, heap free:off\nMemory: 236276K/1001432K available (3685K kernel code, 990K rwdata, 1320K rodata, 173K init, 231K bss, 765156K reserved, 0K cma-reserved)\nSLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1\nNR_IRQS: 64\nclocksource: timer: mask: 0xffffffffffffffff max_cycles: 0x1cd42e205, max_idle_ns: 881590404426 ns\nCalibrating delay loop... 5591.85 BogoMIPS (lpj=27959296)\nChecking that host ptys support output SIGIO...Yes\npid_max: default: 32768 minimum: 301\nMount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\nMountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\ndevtmpfs: initialized\nclocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns\nfutex hash table entries: 256 (order: 1, 6144 bytes, linear)\nNET: Registered PF_NETLINK/PF_ROUTE protocol family\npps_core: LinuxPPS API ver. 1 registered\npps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>\nPTP clock support registered\nclocksource: Switched to clocksource timer\nVFS: Disk quotas dquot_6.6.0\nVFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)\nNET: Registered PF_INET protocol family\nIP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)\ntcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)\nTable-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)\nTCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)\nTCP bind hash table entries: 8192 (order: 5, 131072 bytes, linear)\nTCP: Hash tables configured (established 8192 bind 8192)\nUDP hash table entries: 512 (order: 2, 16384 bytes, linear)\nUDP-Lite hash table entries: 512 (order: 2, 16384 bytes, linear)\nNET: Registered PF_UNIX/PF_LOCAL protocol family\nprintk: console [stderr0] disabled\nmconsole (version 2) initialized on /home/oai/.uml/lCWpRt/mconsole\nChecking host MADV_REMOVE support...OK\nUnpacking initramfs...\nFreeing initrd memory: 4136K\nworkingset: timestamp_bits=62 max_order=16 bucket_order=0\nio scheduler mq-deadline registered\nio scheduler kyber registered\nNET: Registered PF_PACKET protocol family\nInitialized stdio console driver\nConsole initialized on /dev/tty0\nprintk: console [tty0] enabled\nInitializing software serial port version 1\nprintk: console [mc-1] enabled\nFailed to initialize ubd device 0 :Couldn't determine size of device's file\nepollctl add err fd 0, Operation not permitted\nThis architecture does not have kernel memory protection.\nRun /init as init process\ncautest_echo: loading out-of-tree module taints kernel.\ncautest acceptance: module init refused\ninsmod: can't insert '/opt/cautest/modules/00-driver-1.ko': invalid parameter\r\n/bin/sh: can't access tty; job control turned off\r\n~ #\n    at startUml (file:///mnt/data/run-uml/cautest/dist/uml/runtime.js:391:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async execute (file:///mnt/data/run-uml/cautest/dist/jobs/uml-runtime.js:18:30)\n    at async file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:71\n    at async runWithTimeout (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:24:16)\n    at async execute (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:32)\n    at async executeWorkflow (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:173:13)\n    at async executeRun (file:///mnt/data/run-uml/cautest/dist/result/run.js:28:24)\n    at async runCommand (file:///mnt/data/run-uml/cautest/dist/runtime/cli.js:429:17)\n    at async runCli (file:///mnt/data/run-uml/cautest/dist/runtime/cli.js:489:16)"
+      }
+    },
+    {
+      "id": "10-run-cTestRun-integration-driver-abi",
+      "kind": "cTestRun",
+      "name": "integration-driver-abi",
+      "phase": "run",
+      "status": "SKIPPED",
+      "durationMs": 0,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "11-collect-umlLogs-integration-driver-abi",
+      "kind": "umlLogs",
+      "name": "integration-driver-abi",
+      "phase": "collect",
+      "status": "SUCCESS",
+      "durationMs": 9.30561999999918,
+      "diagnostics": [
+        {
+          "code": "uml_logs",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063920186-1d981bd2/integration-driver-abi-console.log"
+        },
+        {
+          "code": "uml_host_stderr",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063920186-1d981bd2/integration-driver-abi-host-stderr.log"
+        }
+      ],
+      "testResults": []
+    }
+  ],
+  "groups": [],
+  "cleanup": [
+    {
+      "name": "stop-uml:integration-driver-abi",
+      "status": "SUCCESS"
+    }
+  ],
+  "errors": [
+    {
+      "name": "CautestError",
+      "code": "timeout_error",
+      "message": "等待 UML Guest Agent Ready 超时\nUML host stderr:\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 757030912 bytes to physical memory to account for exec-shield gap\nUML console (tail):\nLinux version 6.6.157 (root@42ccc97f624b) (gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 Wed Sep 23 06:35:27 UTC 2026\nZone ranges:\n  Normal   [mem 0x0000000000000000-0x000000009d1f5fff]\nMovable zone start for each node\nEarly memory node ranges\n  node   0: [mem 0x0000000000000000-0x000000003d1f5fff]\nInitmem setup node 0 [mem 0x0000000000000000-0x000000003d1f5fff]\nrandom: crng init done\nKernel command line: mem=256M initrd=/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a/rootfs.cpio root=/dev/ram0 rw init=/init con=null con0=fd:0,fd:1 ssl=null ssl0=fd:3,fd:3 console=tty0\nUnknown kernel command line parameters \"mem=256M\", will be passed to user space.\nDentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)\nInode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)\nSorting __ex_table...\nBuilt 1 zonelists, mobility grouping on.  Total pages: 246935\nmem auto-init: stack:all(zero), heap alloc:off, heap free:off\nMemory: 236276K/1001432K available (3685K kernel code, 990K rwdata, 1320K rodata, 173K init, 231K bss, 765156K reserved, 0K cma-reserved)\nSLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1\nNR_IRQS: 64\nclocksource: timer: mask: 0xffffffffffffffff max_cycles: 0x1cd42e205, max_idle_ns: 881590404426 ns\nCalibrating delay loop... 5591.85 BogoMIPS (lpj=27959296)\nChecking that host ptys support output SIGIO...Yes\npid_max: default: 32768 minimum: 301\nMount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\nMountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\ndevtmpfs: initialized\nclocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns\nfutex hash table entries: 256 (order: 1, 6144 bytes, linear)\nNET: Registered PF_NETLINK/PF_ROUTE protocol family\npps_core: LinuxPPS API ver. 1 registered\npps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>\nPTP clock support registered\nclocksource: Switched to clocksource timer\nVFS: Disk quotas dquot_6.6.0\nVFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)\nNET: Registered PF_INET protocol family\nIP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)\ntcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)\nTable-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)\nTCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)\nTCP bind hash table entries: 8192 (order: 5, 131072 bytes, linear)\nTCP: Hash tables configured (established 8192 bind 8192)\nUDP hash table entries: 512 (order: 2, 16384 bytes, linear)\nUDP-Lite hash table entries: 512 (order: 2, 16384 bytes, linear)\nNET: Registered PF_UNIX/PF_LOCAL protocol family\nprintk: console [stderr0] disabled\nmconsole (version 2) initialized on /home/oai/.uml/lCWpRt/mconsole\nChecking host MADV_REMOVE support...OK\nUnpacking initramfs...\nFreeing initrd memory: 4136K\nworkingset: timestamp_bits=62 max_order=16 bucket_order=0\nio scheduler mq-deadline registered\nio scheduler kyber registered\nNET: Registered PF_PACKET protocol family\nInitialized stdio console driver\nConsole initialized on /dev/tty0\nprintk: console [tty0] enabled\nInitializing software serial port version 1\nprintk: console [mc-1] enabled\nFailed to initialize ubd device 0 :Couldn't determine size of device's file\nepollctl add err fd 0, Operation not permitted\nThis architecture does not have kernel memory protection.\nRun /init as init process\ncautest_echo: loading out-of-tree module taints kernel.\ncautest acceptance: module init refused\ninsmod: can't insert '/opt/cautest/modules/00-driver-1.ko': invalid parameter\r\n/bin/sh: can't access tty; job control turned off\r\n~ #",
+      "stack": "CautestError: 等待 UML Guest Agent Ready 超时\nUML host stderr:\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 757030912 bytes to physical memory to account for exec-shield gap\nUML console (tail):\nLinux version 6.6.157 (root@42ccc97f624b) (gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 Wed Sep 23 06:35:27 UTC 2026\nZone ranges:\n  Normal   [mem 0x0000000000000000-0x000000009d1f5fff]\nMovable zone start for each node\nEarly memory node ranges\n  node   0: [mem 0x0000000000000000-0x000000003d1f5fff]\nInitmem setup node 0 [mem 0x0000000000000000-0x000000003d1f5fff]\nrandom: crng init done\nKernel command line: mem=256M initrd=/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a/rootfs.cpio root=/dev/ram0 rw init=/init con=null con0=fd:0,fd:1 ssl=null ssl0=fd:3,fd:3 console=tty0\nUnknown kernel command line parameters \"mem=256M\", will be passed to user space.\nDentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)\nInode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)\nSorting __ex_table...\nBuilt 1 zonelists, mobility grouping on.  Total pages: 246935\nmem auto-init: stack:all(zero), heap alloc:off, heap free:off\nMemory: 236276K/1001432K available (3685K kernel code, 990K rwdata, 1320K rodata, 173K init, 231K bss, 765156K reserved, 0K cma-reserved)\nSLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1\nNR_IRQS: 64\nclocksource: timer: mask: 0xffffffffffffffff max_cycles: 0x1cd42e205, max_idle_ns: 881590404426 ns\nCalibrating delay loop... 5591.85 BogoMIPS (lpj=27959296)\nChecking that host ptys support output SIGIO...Yes\npid_max: default: 32768 minimum: 301\nMount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\nMountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)\ndevtmpfs: initialized\nclocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns\nfutex hash table entries: 256 (order: 1, 6144 bytes, linear)\nNET: Registered PF_NETLINK/PF_ROUTE protocol family\npps_core: LinuxPPS API ver. 1 registered\npps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>\nPTP clock support registered\nclocksource: Switched to clocksource timer\nVFS: Disk quotas dquot_6.6.0\nVFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)\nNET: Registered PF_INET protocol family\nIP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)\ntcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)\nTable-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)\nTCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)\nTCP bind hash table entries: 8192 (order: 5, 131072 bytes, linear)\nTCP: Hash tables configured (established 8192 bind 8192)\nUDP hash table entries: 512 (order: 2, 16384 bytes, linear)\nUDP-Lite hash table entries: 512 (order: 2, 16384 bytes, linear)\nNET: Registered PF_UNIX/PF_LOCAL protocol family\nprintk: console [stderr0] disabled\nmconsole (version 2) initialized on /home/oai/.uml/lCWpRt/mconsole\nChecking host MADV_REMOVE support...OK\nUnpacking initramfs...\nFreeing initrd memory: 4136K\nworkingset: timestamp_bits=62 max_order=16 bucket_order=0\nio scheduler mq-deadline registered\nio scheduler kyber registered\nNET: Registered PF_PACKET protocol family\nInitialized stdio console driver\nConsole initialized on /dev/tty0\nprintk: console [tty0] enabled\nInitializing software serial port version 1\nprintk: console [mc-1] enabled\nFailed to initialize ubd device 0 :Couldn't determine size of device's file\nepollctl add err fd 0, Operation not permitted\nThis architecture does not have kernel memory protection.\nRun /init as init process\ncautest_echo: loading out-of-tree module taints kernel.\ncautest acceptance: module init refused\ninsmod: can't insert '/opt/cautest/modules/00-driver-1.ko': invalid parameter\r\n/bin/sh: can't access tty; job control turned off\r\n~ #\n    at startUml (file:///mnt/data/run-uml/cautest/dist/uml/runtime.js:391:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async execute (file:///mnt/data/run-uml/cautest/dist/jobs/uml-runtime.js:18:30)\n    at async file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:71\n    at async runWithTimeout (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:24:16)\n    at async execute (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:32)\n    at async executeWorkflow (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:173:13)\n    at async executeRun (file:///mnt/data/run-uml/cautest/dist/result/run.js:28:24)\n    at async runCommand (file:///mnt/data/run-uml/cautest/dist/runtime/cli.js:429:17)\n    at async runCli (file:///mnt/data/run-uml/cautest/dist/runtime/cli.js:489:16)"
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "uml-kernel",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "metadata": {
+        "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+        "cacheHit": true,
+        "arch": "um"
+      }
+    },
+    {
+      "kind": "busybox",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+      "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "metadata": {
+        "cacheHit": true
+      }
+    },
+    {
+      "kind": "kernel-context",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923063920186-1d981bd2/integration.driver.abi/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+      "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+      "metadata": {}
+    },
+    {
+      "kind": "log",
+      "name": "xmake-product.driver",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063920186-1d981bd2/integration.driver.abi/xmake-product.driver.log",
+      "metadata": {}
+    },
+    {
+      "kind": "build-artifact",
+      "name": "driver-1",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+      "fingerprint": "bb5566200139e4f4a17916c3cab717faee41548dd235e3337dc68c42208f5de4",
+      "metadata": {
+        "receipt": {
+          "schemaVersion": 1,
+          "kind": "cautest.artifact-receipt",
+          "target": "product.driver",
+          "context": {
+            "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+            "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+            "mode": "release",
+            "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+            "plat": "linux",
+            "arch": "x86_64"
+          },
+          "outputs": [
+            {
+              "role": "ko",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+              "size": 165552,
+              "sha256": "bb5566200139e4f4a17916c3cab717faee41548dd235e3337dc68c42208f5de4"
+            },
+            {
+              "role": "symbols",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+              "size": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "role": "order",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+              "size": 131,
+              "sha256": "4838f8d15b305e7fd15acbff06792af1788f60be9a68f54da4742ad1b1ae0bce"
+            },
+            {
+              "role": "kernel-context",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/kernel-context.json",
+              "size": 674,
+              "sha256": "49a52942b820e0e93430f5f0d6a0394687783b4ce5f53f656e5b696886bb3971"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "kernel-module",
+      "name": "driver-1",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+      "fingerprint": "bb5566200139e4f4a17916c3cab717faee41548dd235e3337dc68c42208f5de4",
+      "metadata": {
+        "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+        "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+        "externalArtifact": true
+      }
+    },
+    {
+      "kind": "log",
+      "name": "xmake-test.driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063920186-1d981bd2/integration.driver.abi/xmake-test.driver-guest.log",
+      "metadata": {}
+    },
+    {
+      "kind": "build-artifact",
+      "name": "driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+      "fingerprint": "ae5590d5b3ec5fa7d2e08d279701e36fb70edec1cfb41db79cf25d382df456ae",
+      "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+      "metadata": {
+        "receipt": {
+          "schemaVersion": 1,
+          "kind": "cautest.artifact-receipt",
+          "target": "test.driver-guest",
+          "context": {
+            "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+            "plat": "linux",
+            "mode": "release",
+            "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+            "arch": "x86_64",
+            "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6"
+          },
+          "outputs": [
+            {
+              "role": "primary",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+              "size": 821928,
+              "sha256": "ae5590d5b3ec5fa7d2e08d279701e36fb70edec1cfb41db79cf25d382df456ae"
+            }
+          ],
+          "protocolBuildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b"
+        }
+      }
+    },
+    {
+      "kind": "guest-program",
+      "name": "driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+      "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+      "metadata": {
+        "externalArtifact": true,
+        "endpoint": "driver-guest"
+      }
+    },
+    {
+      "kind": "uml-image",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a/rootfs.cpio",
+      "fingerprint": "df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a",
+      "buildId": "df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a",
+      "metadata": {
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "cacheHit": false,
+        "endpoints": [
+          "kernel",
+          "driver-guest"
+        ]
+      }
+    },
+    {
+      "kind": "log",
+      "name": "integration-driver-abi-console",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063920186-1d981bd2/integration-driver-abi-console.log",
+      "metadata": {
+        "source": "uml-console"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "integration-driver-abi-host-stderr",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063920186-1d981bd2/integration-driver-abi-host-stderr.log",
+      "metadata": {
+        "source": "uml-host-stderr"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "kind": "uml",
+      "name": "integration-driver-abi",
+      "state": "closed",
+      "owner": "integration.driver.abi",
+      "metadata": {
+        "buildId": "df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a",
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/df44ce66062ebdd6ff5a2e2fd20feb62a37b013759a97aea6bcb061d2aedb08a/rootfs.cpio"
+      },
+      "failure": {
+        "message": "等待 UML Guest Agent Ready 超时"
+      }
+    }
+  ]
+}

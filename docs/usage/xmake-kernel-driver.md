@@ -1,6 +1,6 @@
 # Xmake Kernel Test 与 Driver ABI
 
-本页描述已实现的产物接入接口。**真实 Linux 6.6.157 UML 验收尚未通过**：本轮上传的 BusyBox 1.36.1 已实际构建为静态程序，Linux 配置构建实际停在缺少 flex。单元测试、真实 Xmake Guest 编译和 Rootfs 组装不替代真实 UML 启动及 Driver ABI 验收。
+本页描述已实现并执行过真实验收的 Xmake 产物接入接口。验证环境为 Linux x86_64、Xmake 3.1.1、Node 22.16.0、GCC 14.2.0、Linux 6.6.157 和 BusyBox 1.36.1；Driver 的 read/write/ioctl/非法输入及 Kernel C Test 都在实际 UML 内执行。其他平台与实板 MCU 不由此推定通过。
 
 ## 单一 Environment、两条测试路线
 
@@ -22,7 +22,7 @@ ctest.driver {
 }
 ```
 
-Environment 模块导出 `createEnvironment({projectRoot, origin, options})`，返回现有 `umlKernelEnvironment({...})` 描述符。同名 Environment 在一次 Manifest 加载中只创建一次，其本地静态 import 依赖进入配置来源和摘要。工厂必须是纯声明，不得编译、开串口、启动 VM；`list`/`plan` 会调用工厂，但不会执行工作流。路径应相对 `projectRoot` 解析，而不是生成 Manifest 所在目录。
+Environment 模块导出 `createEnvironment({projectRoot, origin, options})`，返回现有 `umlKernelEnvironment({...})` 描述符。同名 Environment 在一次 Manifest 加载中只创建一次，其本地静态 import 依赖进入配置来源和摘要。工厂必须是纯声明，不得编译、开串口、启动 VM；`list`/`plan` 会调用工厂，但不会执行工作流。源码目录等普通路径应相对 `projectRoot` 解析，而不是生成 Manifest 所在目录。`configFragments` 是相对配置根的 File Pattern，必须写成 `{"uml-host.config"}` 对应的 JS 数组 `["uml-host.config"]`，不能传绝对路径。
 
 Kernel/BusyBox/Rootfs 仍由既有 JS build Steps 构建和缓存，所有 Job 使用同一个 Environment 描述。产品 `.ko` 与 Driver Guest 只由引用的 Xmake target 构建，JS 不复制其产品源码列表、宏或 Kbuild 模型。每个 Job 独立启动并清理 UML；共享产物不表示共享 VM 会话。
 
@@ -98,19 +98,23 @@ npm run test:xmake:uml
 ```
 
 入口先验证真实 `list/plan/doctor`，随后才执行 Kernel Test 与 Driver ABI 的冷构建和缓存复跑。
-缺源码、缺工具或 Host 不支持时为 **BLOCKED，退出码 77**；真实运行失败为 ERROR，退出码 2；
-只有真实 CTP Case、日志、资源关闭及第二次缓存验证通过才返回 SUCCESS。
+缺源码、缺工具或明确不支持的宿主平台时为 **BLOCKED，退出码 77**；实际启动/运行/断言验证失败为 ERROR，退出码 2；
+只有真实 CTP Case、日志、资源关闭、第二次缓存验证以及默认失败矩阵全部通过才返回 SUCCESS。
 可用 `CAUTEST_UML_ACCEPTANCE_DIR` 指定保存验收工程、日志和结果的位置。
 
-本轮离线实测 BusyBox 1.36.1 静态编译、运行、缓存命中及同大小损坏后重建均成功；
-Linux 6.6.157 的实际配置命令首先失败在 `flex`，Doctor 同时发现缺少 `bison` 与 `bc`。
-当前环境没有 libelf 开发头文件，但尚未执行到能证明它对该 UML 配置必需的构建阶段。
-不把 Host 6.12 headers 下的模块编译、模拟控制通道或 BLOCKED 入口当成真实 UML 通过。
+### 宿主加载器与日志
 
-UML 进程由启动步骤独占 POSIX 进程组。取消、Ready 超时、错误 Catalog Build ID、早退及
-spawn 错误会回收所属进程与后代；停止操作幂等，collect/defer 共同调用同一个清理动作。
-控制通道的超时或取消等待器会移除，避免吞掉下一条命令的响应。
-这些失败路径通过真实 OS 进程和明确的 Agent 模拟器验证，不等同于真实 UML 启动验收。
+示例携带 `uml-host.config`，开启 `CONFIG_EXPERT` 并关闭 `CONFIG_LD_SCRIPT_DYN_RPATH`。Linux 6.6 的默认 `/lib:/lib64` RUNPATH 在存在旧兼容 libc 的多架构宿主上可能先加载错误版本；关闭该项让宿主 ELF 加载器按正常规则选择库，不需要把私有 glibc 或绝对机器路径放进配置。
+
+首次实际运行遇到过上述 GLIBC 加载错误。现在启动步骤会在控制管道先 EOF 的情况下保留真实 host-stderr 和 console 尾部，完整日志仍独立保存；不会只显示“Control Channel 已关闭”。依赖包的 `activate.sh` 不会替用户设置整套 `LD_LIBRARY_PATH`。
+
+### 有界、可观察的验收
+
+验收工程下有 `acceptance-pending.json`、`commands.json`、各阶段的 `*-stdout.log` / `*-stderr.log` 和最终 `acceptance.json`。耗时命令每 30 秒输出进度，日志实时写入文件。`CAUTEST_UML_TIMEOUT_MS` 设置总命令预算（毫秒，默认 55 分钟）；Ctrl+C 会取消正在执行的命令。`CAUTEST_UML_MATRIX=0` 明确选择仅冷/热 smoke，报告把完整矩阵记为 `NOT_RUN`，不能代替完整 G6 验收。
+
+默认负向矩阵使用真实内核及 initramfs，覆盖 Ready 超时、取消、错误 Catalog/Guest Build ID、Guest Case 失败、Guest 早退、模块初始化失败、编译失败时拒用旧模块、Kernel Case 失败、恢复及损坏缓存重建。被测 Job 的预期 FAIL/ERROR 不等于验收程序失败；验收程序检查准确阶段、Case、退出码、日志与资源关闭。
+
+UML 进程由启动步骤独占 POSIX 进程组。取消、Ready 超时、错误身份、早退及 spawn 错误都会回收所属进程与后代；停止操作幂等，collect/defer 共用同一清理动作。单元测试的明确 Agent 模拟器只验证故障机制；真实验收另检查实际 Linux 控制台和所启动进程组没有存活成员。
 
 ## 离线宿主依赖准备
 

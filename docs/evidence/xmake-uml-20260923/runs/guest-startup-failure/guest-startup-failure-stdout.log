@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "command": "run",
+  "runId": "20260923063852344-f4bf9392",
+  "status": "ERROR",
+  "configHash": "4d9eb6828c53e398d5ceed3be02171224f58d2bd25e3a072faeeb0468ca56f06",
+  "resultDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392",
+  "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/result.json",
+  "summaryPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/summary.json",
+  "failuresPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/failures.jsonl"
+}

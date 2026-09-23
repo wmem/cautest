@@ -1,0 +1,182 @@
+[
+  {
+    "kind": "uml-kernel",
+    "name": "integration-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+    "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+    "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+    "metadata": {
+      "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "cacheHit": false,
+      "arch": "um"
+    }
+  },
+  {
+    "kind": "busybox",
+    "name": "integration-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+    "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+    "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+    "metadata": {
+      "cacheHit": false
+    }
+  },
+  {
+    "kind": "kernel-context",
+    "name": "integration-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923063157413-f5f1d041/integration.driver.abi/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+    "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+    "metadata": {}
+  },
+  {
+    "kind": "log",
+    "name": "xmake-product.driver",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041/integration.driver.abi/xmake-product.driver.log",
+    "metadata": {}
+  },
+  {
+    "kind": "build-artifact",
+    "name": "driver-1",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+    "fingerprint": "00525e79611b1c369a58f6945a1e6b197ae1f19be732dadf53fc7f0356d21505",
+    "metadata": {
+      "receipt": {
+        "schemaVersion": 1,
+        "kind": "cautest.artifact-receipt",
+        "target": "product.driver",
+        "context": {
+          "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+          "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+          "plat": "linux",
+          "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+          "arch": "x86_64",
+          "mode": "release"
+        },
+        "outputs": [
+          {
+            "role": "ko",
+            "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+            "size": 165456,
+            "sha256": "00525e79611b1c369a58f6945a1e6b197ae1f19be732dadf53fc7f0356d21505"
+          },
+          {
+            "role": "symbols",
+            "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+            "size": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "role": "order",
+            "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+            "size": 131,
+            "sha256": "cdb1a1cbc820fb3568f754da6aa8ce3f630c767c021dd103fc33562da5dc5304"
+          },
+          {
+            "role": "kernel-context",
+            "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/kernel-context.json",
+            "size": 674,
+            "sha256": "872e8318ebfb0eec9fd55409ce1a651a1b9a8fe117e444a39487525a297331a5"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "kind": "kernel-module",
+    "name": "driver-1",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+    "fingerprint": "00525e79611b1c369a58f6945a1e6b197ae1f19be732dadf53fc7f0356d21505",
+    "metadata": {
+      "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+      "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+      "externalArtifact": true
+    }
+  },
+  {
+    "kind": "log",
+    "name": "xmake-test.driver-guest",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041/integration.driver.abi/xmake-test.driver-guest.log",
+    "metadata": {}
+  },
+  {
+    "kind": "build-artifact",
+    "name": "driver-guest",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+    "fingerprint": "ae5590d5b3ec5fa7d2e08d279701e36fb70edec1cfb41db79cf25d382df456ae",
+    "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+    "metadata": {
+      "receipt": {
+        "schemaVersion": 1,
+        "kind": "cautest.artifact-receipt",
+        "target": "test.driver-guest",
+        "context": {
+          "mode": "release",
+          "arch": "x86_64",
+          "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+          "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+          "plat": "linux",
+          "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6"
+        },
+        "outputs": [
+          {
+            "role": "primary",
+            "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+            "size": 821928,
+            "sha256": "ae5590d5b3ec5fa7d2e08d279701e36fb70edec1cfb41db79cf25d382df456ae"
+          }
+        ],
+        "protocolBuildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b"
+      }
+    }
+  },
+  {
+    "kind": "guest-program",
+    "name": "driver-guest",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+    "buildId": "14ea631702f399407fbab2e6c4c8e70a5bc2197d08ba2a007828a4dc69634e1b",
+    "metadata": {
+      "externalArtifact": true,
+      "endpoint": "driver-guest"
+    }
+  },
+  {
+    "kind": "uml-image",
+    "name": "integration-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/3fc6912052beb0effe28d87bb181c78e9f8480672ccc6f04a4ca5fa6b0bce7fb/rootfs.cpio",
+    "fingerprint": "3fc6912052beb0effe28d87bb181c78e9f8480672ccc6f04a4ca5fa6b0bce7fb",
+    "buildId": "3fc6912052beb0effe28d87bb181c78e9f8480672ccc6f04a4ca5fa6b0bce7fb",
+    "metadata": {
+      "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "cacheHit": false,
+      "endpoints": [
+        "kernel",
+        "driver-guest"
+      ]
+    }
+  },
+  {
+    "kind": "log",
+    "name": "integration-driver-abi-driver-guest-target",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041/integration-driver-abi/integration-driver-abi-driver-guest-target.log",
+    "metadata": {
+      "source": "ctp-target",
+      "endpoint": "driver-guest"
+    }
+  },
+  {
+    "kind": "log",
+    "name": "integration-driver-abi-console",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041/integration-driver-abi-console.log",
+    "metadata": {
+      "source": "uml-console"
+    }
+  },
+  {
+    "kind": "log",
+    "name": "integration-driver-abi-host-stderr",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063157413-f5f1d041/integration-driver-abi-host-stderr.log",
+    "metadata": {
+      "source": "uml-host-stderr"
+    }
+  }
+]

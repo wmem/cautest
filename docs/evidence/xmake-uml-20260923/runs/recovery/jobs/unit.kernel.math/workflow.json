@@ -1,0 +1,235 @@
+[
+  {
+    "id": "01-build-kernelBuild-unit_kernel_math",
+    "kind": "kernelBuild",
+    "name": "unit_kernel_math",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 18112.482066000004,
+    "diagnostics": [
+      {
+        "code": "cache_hit",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "02-build-busyboxBuild-unit_kernel_math",
+    "kind": "busyboxBuild",
+    "name": "unit_kernel_math",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 683.4650840000031,
+    "diagnostics": [
+      {
+        "code": "cache_hit",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "03-build-kernelArtifactContext-unit_kernel_math",
+    "kind": "kernelArtifactContext",
+    "name": "unit_kernel_math",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 126.84446100000059,
+    "diagnostics": [
+      {
+        "code": "kernel_context_ready",
+        "message": "6.6.157"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "04-build-kernelModuleBuild-cautest_kernel",
+    "kind": "kernelModuleBuild",
+    "name": "cautest_kernel",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 67.33014700000058,
+    "diagnostics": [
+      {
+        "code": "cache_hit",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/cautest_kernel.ko"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "05-build-kernelRuntimeSymbols-unit_kernel_math",
+    "kind": "kernelRuntimeSymbols",
+    "name": "unit_kernel_math",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 0.07966699999815319,
+    "diagnostics": [],
+    "testResults": []
+  },
+  {
+    "id": "06-build-artifactBuild-test-module",
+    "kind": "artifactBuild",
+    "name": "test-module",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 2821.1165279999987,
+    "diagnostics": [
+      {
+        "code": "artifact_ready",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+        "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "07-build-kernelArtifactValidate-test-module",
+    "kind": "kernelArtifactValidate",
+    "name": "test-module",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 1.3830979999984265,
+    "diagnostics": [
+      {
+        "code": "kernel_artifact_verified",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "08-build-umlRootfsBuild-unit_kernel_math",
+    "kind": "umlRootfsBuild",
+    "name": "unit_kernel_math",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 264.4557339999956,
+    "diagnostics": [
+      {
+        "code": "cache_miss",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54/rootfs.cpio"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "09-provision-umlStart-unit_kernel_math",
+    "kind": "umlStart",
+    "name": "unit_kernel_math",
+    "phase": "provision",
+    "status": "SUCCESS",
+    "durationMs": 291.31626900000265,
+    "diagnostics": [
+      {
+        "code": "uml_ready",
+        "message": "pid=83553"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "10-run-cTestRun-unit_kernel_math",
+    "kind": "cTestRun",
+    "name": "unit_kernel_math",
+    "phase": "run",
+    "status": "SUCCESS",
+    "durationMs": 11.456556999997701,
+    "diagnostics": [
+      {
+        "code": "c_test_session",
+        "message": "Kernel C Test: catalog=2, selected=2, executions=1, cases=2, events=8",
+        "hello": {
+          "major": 3,
+          "minor": 1,
+          "buildId": "2b39905d86ba2f1a9878cdcd1c995653620c288f7d73d0cf9daefbffa5adcc54",
+          "bootId": "uml-1",
+          "rxLineMax": 64,
+          "txLineMax": 512
+        },
+        "catalog": [
+          {
+            "suiteId": 0,
+            "caseId": 0,
+            "paramId": 0,
+            "suite": "kernel_math",
+            "case": "add",
+            "parameter": "",
+            "name": "kernel_math/add"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 1,
+            "paramId": 0,
+            "suite": "kernel_math",
+            "case": "boundary",
+            "parameter": "",
+            "name": "kernel_math/boundary"
+          }
+        ],
+        "selection": [
+          {
+            "suiteId": 0,
+            "caseId": 0,
+            "paramId": 0,
+            "suite": "kernel_math",
+            "case": "add",
+            "parameter": "",
+            "name": "kernel_math/add"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 1,
+            "paramId": 0,
+            "suite": "kernel_math",
+            "case": "boundary",
+            "parameter": "",
+            "name": "kernel_math/boundary"
+          }
+        ],
+        "executionCount": 1,
+        "eventCount": 8
+      }
+    ],
+    "testResults": [
+      {
+        "name": "kernel_math",
+        "cases": [
+          {
+            "name": "add",
+            "status": "PASS",
+            "assertions": [],
+            "diagnostics": []
+          },
+          {
+            "name": "boundary",
+            "status": "PASS",
+            "assertions": [],
+            "diagnostics": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "11-collect-umlLogs-unit_kernel_math",
+    "kind": "umlLogs",
+    "name": "unit_kernel_math",
+    "phase": "collect",
+    "status": "SUCCESS",
+    "durationMs": 7.945762999996077,
+    "diagnostics": [
+      {
+        "code": "uml_logs",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/unit_kernel_math-console.log"
+      },
+      {
+        "code": "uml_host_stderr",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/unit_kernel_math-host-stderr.log"
+      }
+    ],
+    "testResults": []
+  }
+]

@@ -1,0 +1,392 @@
+{
+  "jobId": "integration.driver.abi",
+  "level": "integration",
+  "status": "ERROR",
+  "startedAt": "2026-09-23T06:38:52.349Z",
+  "endedAt": "2026-09-23T06:39:19.729Z",
+  "durationMs": 27380.012047,
+  "steps": [
+    {
+      "id": "01-build-kernelBuild-integration-driver-abi",
+      "kind": "kernelBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 22158.09138,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "02-build-busyboxBuild-integration-driver-abi",
+      "kind": "busyboxBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 431.6519650000009,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "03-build-kernelArtifactContext-integration-driver-abi",
+      "kind": "kernelArtifactContext",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 248.76937700000053,
+      "diagnostics": [
+        {
+          "code": "kernel_context_ready",
+          "message": "6.6.157"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "04-build-artifactBuild-driver-1",
+      "kind": "artifactBuild",
+      "name": "driver-1",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 3224.2113960000024,
+      "diagnostics": [
+        {
+          "code": "artifact_ready",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+          "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "05-build-kernelArtifactValidate-driver-1",
+      "kind": "kernelArtifactValidate",
+      "name": "driver-1",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 4.360864000002039,
+      "diagnostics": [
+        {
+          "code": "kernel_artifact_verified",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "06-build-artifactBuild-driver-guest",
+      "kind": "artifactBuild",
+      "name": "driver-guest",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 760.2721549999987,
+      "diagnostics": [
+        {
+          "code": "artifact_ready",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+          "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "07-build-driverGuestArtifactValidate-driver-guest",
+      "kind": "driverGuestArtifactValidate",
+      "name": "driver-guest",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 1.820701000000554,
+      "diagnostics": [
+        {
+          "code": "driver_guest_verified",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "08-build-umlRootfsBuild-integration-driver-abi",
+      "kind": "umlRootfsBuild",
+      "name": "integration-driver-abi",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 306.9513380000026,
+      "diagnostics": [
+        {
+          "code": "cache_miss",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/16d0aaea163e9715df05903293f850c79ddd37fd085036d628312fbeced98cab/rootfs.cpio"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "09-provision-umlStart-integration-driver-abi",
+      "kind": "umlStart",
+      "name": "integration-driver-abi",
+      "phase": "provision",
+      "status": "SUCCESS",
+      "durationMs": 211.43054299999858,
+      "diagnostics": [
+        {
+          "code": "uml_ready",
+          "message": "pid=79284"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "10-run-cTestRun-integration-driver-abi",
+      "kind": "cTestRun",
+      "name": "integration-driver-abi",
+      "phase": "run",
+      "status": "ERROR",
+      "durationMs": 24.8662719999993,
+      "diagnostics": [],
+      "testResults": [],
+      "error": {
+        "name": "CautestError",
+        "code": "transport_error",
+        "message": "UML 已退出: code=null, signal=SIGABRT\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 692158464 bytes to physical memory to account for exec-shield gap\n",
+        "stack": "CautestError: UML 已退出: code=null, signal=SIGABRT\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 692158464 bytes to physical memory to account for exec-shield gap\n\n    at ChildProcess.<anonymous> (file:///mnt/data/run-uml/cautest/dist/uml/runtime.js:354:55)\n    at Object.onceWrapper (node:events:633:26)\n    at ChildProcess.emit (node:events:518:28)\n    at ChildProcess._handle.onexit (node:internal/child_process:293:12)"
+      }
+    },
+    {
+      "id": "11-collect-umlLogs-integration-driver-abi",
+      "kind": "umlLogs",
+      "name": "integration-driver-abi",
+      "phase": "collect",
+      "status": "SUCCESS",
+      "durationMs": 2.439332000001741,
+      "diagnostics": [
+        {
+          "code": "uml_logs",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/integration-driver-abi-console.log"
+        },
+        {
+          "code": "uml_host_stderr",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/integration-driver-abi-host-stderr.log"
+        }
+      ],
+      "testResults": []
+    }
+  ],
+  "groups": [],
+  "cleanup": [
+    {
+      "name": "stop-uml:integration-driver-abi",
+      "status": "SUCCESS"
+    }
+  ],
+  "errors": [
+    {
+      "name": "CautestError",
+      "code": "transport_error",
+      "message": "UML 已退出: code=null, signal=SIGABRT\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 692158464 bytes to physical memory to account for exec-shield gap\n",
+      "stack": "CautestError: UML 已退出: code=null, signal=SIGABRT\nCore dump limits :\n\tsoft - 0\n\thard - NONE\nChecking that ptrace can change system call numbers...OK\nChecking syscall emulation patch for ptrace...OK\nChecking advanced syscall emulation patch for ptrace...OK\nChecking environment variables for a tempdir...none found\nChecking if /dev/shm is on tmpfs...OK\nChecking PROT_EXEC mmap in /dev/shm...OK\nAdding 692158464 bytes to physical memory to account for exec-shield gap\n\n    at ChildProcess.<anonymous> (file:///mnt/data/run-uml/cautest/dist/uml/runtime.js:354:55)\n    at Object.onceWrapper (node:events:633:26)\n    at ChildProcess.emit (node:events:518:28)\n    at ChildProcess._handle.onexit (node:internal/child_process:293:12)"
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "uml-kernel",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "metadata": {
+        "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+        "cacheHit": true,
+        "arch": "um"
+      }
+    },
+    {
+      "kind": "busybox",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+      "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "metadata": {
+        "cacheHit": true
+      }
+    },
+    {
+      "kind": "kernel-context",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923063852344-f4bf9392/integration.driver.abi/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+      "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+      "metadata": {}
+    },
+    {
+      "kind": "log",
+      "name": "xmake-product.driver",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/integration.driver.abi/xmake-product.driver.log",
+      "metadata": {}
+    },
+    {
+      "kind": "build-artifact",
+      "name": "driver-1",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+      "fingerprint": "54d1bd38413576128fbfe27595da830cdfee4ce7fba11fb0bfdfc2467c420078",
+      "metadata": {
+        "receipt": {
+          "schemaVersion": 1,
+          "kind": "cautest.artifact-receipt",
+          "target": "product.driver",
+          "context": {
+            "plat": "linux",
+            "mode": "release",
+            "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+            "arch": "x86_64",
+            "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+            "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR"
+          },
+          "outputs": [
+            {
+              "role": "ko",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+              "size": 165456,
+              "sha256": "54d1bd38413576128fbfe27595da830cdfee4ce7fba11fb0bfdfc2467c420078"
+            },
+            {
+              "role": "symbols",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+              "size": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "role": "order",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+              "size": 131,
+              "sha256": "f401c38c65a6aead300d7e6b331cc9cd9057ada827a7926cc1de242d3fb21094"
+            },
+            {
+              "role": "kernel-context",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/kernel-context.json",
+              "size": 674,
+              "sha256": "e1a65f431d550b7119cab6125a3fbf531e556b3bacff82f81880012a9d2a2abc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "kernel-module",
+      "name": "driver-1",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+      "fingerprint": "54d1bd38413576128fbfe27595da830cdfee4ce7fba11fb0bfdfc2467c420078",
+      "metadata": {
+        "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+        "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+        "externalArtifact": true
+      }
+    },
+    {
+      "kind": "log",
+      "name": "xmake-test.driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/integration.driver.abi/xmake-test.driver-guest.log",
+      "metadata": {}
+    },
+    {
+      "kind": "build-artifact",
+      "name": "driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+      "fingerprint": "6b78bef069d6af223175205aa1d76af5dcdec4d9d45d54318392146bc4179627",
+      "buildId": "01e965b82e65cbe1b31f8ceb1a0b0394d62aedb9f7c55ade40b6a7e0b56e2bb2",
+      "metadata": {
+        "receipt": {
+          "schemaVersion": 1,
+          "kind": "cautest.artifact-receipt",
+          "target": "test.driver-guest",
+          "context": {
+            "mode": "release",
+            "arch": "x86_64",
+            "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+            "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+            "plat": "linux",
+            "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR"
+          },
+          "outputs": [
+            {
+              "role": "primary",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+              "size": 822000,
+              "sha256": "6b78bef069d6af223175205aa1d76af5dcdec4d9d45d54318392146bc4179627"
+            }
+          ],
+          "protocolBuildId": "01e965b82e65cbe1b31f8ceb1a0b0394d62aedb9f7c55ade40b6a7e0b56e2bb2"
+        }
+      }
+    },
+    {
+      "kind": "guest-program",
+      "name": "driver-guest",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+      "buildId": "01e965b82e65cbe1b31f8ceb1a0b0394d62aedb9f7c55ade40b6a7e0b56e2bb2",
+      "metadata": {
+        "externalArtifact": true,
+        "endpoint": "driver-guest"
+      }
+    },
+    {
+      "kind": "uml-image",
+      "name": "integration-driver-abi",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/16d0aaea163e9715df05903293f850c79ddd37fd085036d628312fbeced98cab/rootfs.cpio",
+      "fingerprint": "16d0aaea163e9715df05903293f850c79ddd37fd085036d628312fbeced98cab",
+      "buildId": "16d0aaea163e9715df05903293f850c79ddd37fd085036d628312fbeced98cab",
+      "metadata": {
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "cacheHit": false,
+        "endpoints": [
+          "kernel",
+          "driver-guest"
+        ]
+      }
+    },
+    {
+      "kind": "log",
+      "name": "integration-driver-abi-driver-guest-target",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/integration-driver-abi/integration-driver-abi-driver-guest-target.log",
+      "metadata": {
+        "source": "ctp-target",
+        "endpoint": "driver-guest"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "integration-driver-abi-console",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/integration-driver-abi-console.log",
+      "metadata": {
+        "source": "uml-console"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "integration-driver-abi-host-stderr",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/integration-driver-abi-host-stderr.log",
+      "metadata": {
+        "source": "uml-host-stderr"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "kind": "uml",
+      "name": "integration-driver-abi",
+      "state": "closed",
+      "owner": "integration.driver.abi",
+      "metadata": {
+        "buildId": "16d0aaea163e9715df05903293f850c79ddd37fd085036d628312fbeced98cab",
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/16d0aaea163e9715df05903293f850c79ddd37fd085036d628312fbeced98cab/rootfs.cpio"
+      }
+    }
+  ]
+}

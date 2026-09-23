@@ -1,0 +1,460 @@
+{
+  "jobId": "unit.kernel.math",
+  "level": "unit",
+  "status": "FAIL",
+  "startedAt": "2026-09-23T06:40:15.640Z",
+  "endedAt": "2026-09-23T06:40:47.528Z",
+  "durationMs": 31887.707383999998,
+  "steps": [
+    {
+      "id": "01-build-kernelBuild-unit_kernel_math",
+      "kind": "kernelBuild",
+      "name": "unit_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 26665.338489,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "02-build-busyboxBuild-unit_kernel_math",
+      "kind": "busyboxBuild",
+      "name": "unit_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 937.2254350000003,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "03-build-kernelArtifactContext-unit_kernel_math",
+      "kind": "kernelArtifactContext",
+      "name": "unit_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 134.90763199999856,
+      "diagnostics": [
+        {
+          "code": "kernel_context_ready",
+          "message": "6.6.157"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "04-build-kernelModuleBuild-cautest_kernel",
+      "kind": "kernelModuleBuild",
+      "name": "cautest_kernel",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 69.80297100000098,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/cautest_kernel.ko"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "05-build-kernelRuntimeSymbols-unit_kernel_math",
+      "kind": "kernelRuntimeSymbols",
+      "name": "unit_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 0.2127570000011474,
+      "diagnostics": [],
+      "testResults": []
+    },
+    {
+      "id": "06-build-artifactBuild-test-module",
+      "kind": "artifactBuild",
+      "name": "test-module",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 3543.2220830000006,
+      "diagnostics": [
+        {
+          "code": "artifact_ready",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+          "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "07-build-kernelArtifactValidate-test-module",
+      "kind": "kernelArtifactValidate",
+      "name": "test-module",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 1.1260309999997844,
+      "diagnostics": [
+        {
+          "code": "kernel_artifact_verified",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "08-build-umlRootfsBuild-unit_kernel_math",
+      "kind": "umlRootfsBuild",
+      "name": "unit_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 269.21862300000066,
+      "diagnostics": [
+        {
+          "code": "cache_miss",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a83c82a117e9c1d7b241836de36d1dd76ae1fb4d686dbc453ee6e2aad450fd30/rootfs.cpio"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "09-provision-umlStart-unit_kernel_math",
+      "kind": "umlStart",
+      "name": "unit_kernel_math",
+      "phase": "provision",
+      "status": "SUCCESS",
+      "durationMs": 245.11300499999925,
+      "diagnostics": [
+        {
+          "code": "uml_ready",
+          "message": "pid=82383"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "10-run-cTestRun-unit_kernel_math",
+      "kind": "cTestRun",
+      "name": "unit_kernel_math",
+      "phase": "run",
+      "status": "FAIL",
+      "durationMs": 11.87919200000033,
+      "diagnostics": [
+        {
+          "code": "c_test_session",
+          "message": "Kernel C Test: catalog=2, selected=2, executions=1, cases=2, events=9",
+          "hello": {
+            "major": 3,
+            "minor": 1,
+            "buildId": "a83c82a117e9c1d7b241836de36d1dd76ae1fb4d686dbc453ee6e2aad450fd30",
+            "bootId": "uml-1",
+            "rxLineMax": 64,
+            "txLineMax": 512
+          },
+          "catalog": [
+            {
+              "suiteId": 0,
+              "caseId": 0,
+              "paramId": 0,
+              "suite": "kernel_math",
+              "case": "add",
+              "parameter": "",
+              "name": "kernel_math/add"
+            },
+            {
+              "suiteId": 0,
+              "caseId": 1,
+              "paramId": 0,
+              "suite": "kernel_math",
+              "case": "boundary",
+              "parameter": "",
+              "name": "kernel_math/boundary"
+            }
+          ],
+          "selection": [
+            {
+              "suiteId": 0,
+              "caseId": 0,
+              "paramId": 0,
+              "suite": "kernel_math",
+              "case": "add",
+              "parameter": "",
+              "name": "kernel_math/add"
+            },
+            {
+              "suiteId": 0,
+              "caseId": 1,
+              "paramId": 0,
+              "suite": "kernel_math",
+              "case": "boundary",
+              "parameter": "",
+              "name": "kernel_math/boundary"
+            }
+          ],
+          "executionCount": 1,
+          "eventCount": 9
+        }
+      ],
+      "testResults": [
+        {
+          "name": "kernel_math",
+          "cases": [
+            {
+              "name": "add",
+              "status": "FAIL",
+              "assertions": [
+                {
+                  "status": "FAIL",
+                  "file": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-7A369C36-A99A-4160-9197-3E7281A",
+                  "line": 5,
+                  "expression": "integer equality",
+                  "expected": {
+                    "type": "integer",
+                    "value": "5"
+                  },
+                  "actual": {
+                    "type": "integer",
+                    "value": "6"
+                  }
+                }
+              ],
+              "diagnostics": []
+            },
+            {
+              "name": "boundary",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "11-collect-umlLogs-unit_kernel_math",
+      "kind": "umlLogs",
+      "name": "unit_kernel_math",
+      "phase": "collect",
+      "status": "SUCCESS",
+      "durationMs": 7.014107999999396,
+      "diagnostics": [
+        {
+          "code": "uml_logs",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064015625-cd2bb472/unit_kernel_math-console.log"
+        },
+        {
+          "code": "uml_host_stderr",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064015625-cd2bb472/unit_kernel_math-host-stderr.log"
+        }
+      ],
+      "testResults": []
+    }
+  ],
+  "groups": [
+    {
+      "name": "kernel_math",
+      "cases": [
+        {
+          "name": "add",
+          "status": "FAIL",
+          "assertions": [
+            {
+              "status": "FAIL",
+              "file": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-7A369C36-A99A-4160-9197-3E7281A",
+              "line": 5,
+              "expression": "integer equality",
+              "expected": {
+                "type": "integer",
+                "value": "5"
+              },
+              "actual": {
+                "type": "integer",
+                "value": "6"
+              }
+            }
+          ],
+          "diagnostics": []
+        },
+        {
+          "name": "boundary",
+          "status": "PASS",
+          "assertions": [],
+          "diagnostics": []
+        }
+      ]
+    }
+  ],
+  "cleanup": [
+    {
+      "name": "stop-uml:unit_kernel_math",
+      "status": "SUCCESS"
+    }
+  ],
+  "errors": [],
+  "artifacts": [
+    {
+      "kind": "uml-kernel",
+      "name": "unit_kernel_math",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "metadata": {
+        "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+        "cacheHit": true,
+        "arch": "um"
+      }
+    },
+    {
+      "kind": "busybox",
+      "name": "unit_kernel_math",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+      "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "metadata": {
+        "cacheHit": true
+      }
+    },
+    {
+      "kind": "kernel-context",
+      "name": "unit_kernel_math",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/work/20260923064015625-cd2bb472/unit.kernel.math/kernel-context/c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91.json",
+      "fingerprint": "c1b5b690b62b2d6e23cbee432af8c94cb7ba595650cd5e8142a60d51712d2b91",
+      "metadata": {}
+    },
+    {
+      "kind": "kernel-module",
+      "name": "cautest_kernel",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/cautest_kernel.ko",
+      "fingerprint": "3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed",
+      "buildId": "3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed",
+      "metadata": {
+        "cacheHit": true,
+        "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/Module.symvers",
+        "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/modules.order",
+        "coverageNotes": [],
+        "coverageSources": []
+      }
+    },
+    {
+      "kind": "log",
+      "name": "xmake-test.kernel",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064015625-cd2bb472/unit.kernel.math/xmake-test.kernel.log",
+      "metadata": {}
+    },
+    {
+      "kind": "build-artifact",
+      "name": "test-module",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+      "fingerprint": "b6c3db18a6d9dd6a74ce151ff3d17fff427fa5ee0026123a637ebdb3274e902f",
+      "metadata": {
+        "receipt": {
+          "schemaVersion": 1,
+          "kind": "cautest.artifact-receipt",
+          "target": "test.kernel",
+          "context": {
+            "arch": "x86_64",
+            "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+            "plat": "linux",
+            "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+            "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+            "mode": "release"
+          },
+          "outputs": [
+            {
+              "role": "ko",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+              "size": 76256,
+              "sha256": "b6c3db18a6d9dd6a74ce151ff3d17fff427fa5ee0026123a637ebdb3274e902f"
+            },
+            {
+              "role": "symbols",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/Module.symvers",
+              "size": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "role": "order",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/modules.order",
+              "size": 131,
+              "sha256": "0740e9d0ff6ae280ba6d77ac8e7ea7239cb26c0728c173f4d6807a6fca8120b9"
+            },
+            {
+              "role": "kernel-context",
+              "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/kernel-context.json",
+              "size": 674,
+              "sha256": "29acb5173191de8fdc619d95eb0ca783261b24b1fd6508169183a66916f6f2c3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "kernel-module",
+      "name": "test-module",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/cautest_math.ko",
+      "fingerprint": "b6c3db18a6d9dd6a74ce151ff3d17fff427fa5ee0026123a637ebdb3274e902f",
+      "metadata": {
+        "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/Module.symvers",
+        "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_math/modules.order",
+        "externalArtifact": true
+      }
+    },
+    {
+      "kind": "uml-image",
+      "name": "unit_kernel_math",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a83c82a117e9c1d7b241836de36d1dd76ae1fb4d686dbc453ee6e2aad450fd30/rootfs.cpio",
+      "fingerprint": "a83c82a117e9c1d7b241836de36d1dd76ae1fb4d686dbc453ee6e2aad450fd30",
+      "buildId": "a83c82a117e9c1d7b241836de36d1dd76ae1fb4d686dbc453ee6e2aad450fd30",
+      "metadata": {
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "cacheHit": false,
+        "endpoints": [
+          "kernel"
+        ]
+      }
+    },
+    {
+      "kind": "log",
+      "name": "unit_kernel_math-kernel-target",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064015625-cd2bb472/unit_kernel_math/unit_kernel_math-kernel-target.log",
+      "metadata": {
+        "source": "ctp-target",
+        "endpoint": "kernel"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "unit_kernel_math-console",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064015625-cd2bb472/unit_kernel_math-console.log",
+      "metadata": {
+        "source": "uml-console"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "unit_kernel_math-host-stderr",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064015625-cd2bb472/unit_kernel_math-host-stderr.log",
+      "metadata": {
+        "source": "uml-host-stderr"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "kind": "uml",
+      "name": "unit_kernel_math",
+      "state": "closed",
+      "owner": "unit.kernel.math",
+      "metadata": {
+        "buildId": "a83c82a117e9c1d7b241836de36d1dd76ae1fb4d686dbc453ee6e2aad450fd30",
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a83c82a117e9c1d7b241836de36d1dd76ae1fb4d686dbc453ee6e2aad450fd30/rootfs.cpio"
+      }
+    }
+  ]
+}

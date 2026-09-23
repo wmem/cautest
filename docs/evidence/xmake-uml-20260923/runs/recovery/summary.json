@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "runId": "20260923064048018-f3990673",
+  "status": "SUCCESS",
+  "startedAt": "2026-09-23T06:40:48.019Z",
+  "endedAt": "2026-09-23T06:41:35.093Z",
+  "durationMs": 47072.655466000004,
+  "counts": {
+    "jobs": {
+      "total": 2,
+      "success": 2,
+      "fail": 0,
+      "error": 0,
+      "skip": 0
+    },
+    "cases": {
+      "total": 5,
+      "pass": 5,
+      "fail": 0,
+      "error": 0,
+      "skip": 0
+    },
+    "failureRecords": 0
+  },
+  "failedJobs": [],
+  "failuresRef": "failures.jsonl",
+  "resultRef": "result.json"
+}

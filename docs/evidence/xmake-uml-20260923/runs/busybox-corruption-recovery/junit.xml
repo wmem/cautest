@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="cautest" tests="3"><testsuite name="integration.driver.abi" tests="3" failures="0" errors="0" skipped="0" time="66.064776"><testcase classname="driver_abi" name="read_write" time="0.000000"></testcase><testcase classname="driver_abi" name="ioctl_value" time="0.000000"></testcase><testcase classname="driver_abi" name="invalid_input" time="0.000000"></testcase></testsuite></testsuites>

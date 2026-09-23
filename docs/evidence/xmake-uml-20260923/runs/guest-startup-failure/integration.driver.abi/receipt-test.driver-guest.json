@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "cautest.artifact-receipt",
+  "target": "test.driver-guest",
+  "context": {
+    "mode": "release",
+    "arch": "x86_64",
+    "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+    "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build",
+    "plat": "linux",
+    "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR"
+  },
+  "outputs": [
+    {
+      "role": "primary",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+      "size": 822000,
+      "sha256": "6b78bef069d6af223175205aa1d76af5dcdec4d9d45d54318392146bc4179627"
+    }
+  ],
+  "protocolBuildId": "01e965b82e65cbe1b31f8ceb1a0b0394d62aedb9f7c55ade40b6a7e0b56e2bb2"
+}

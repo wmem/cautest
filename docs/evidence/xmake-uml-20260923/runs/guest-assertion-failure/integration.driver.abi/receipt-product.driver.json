@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "cautest.artifact-receipt",
+  "target": "product.driver",
+  "context": {
+    "configDigest": "c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6",
+    "arch": "x86_64",
+    "plat": "linux",
+    "projectRoot": "/mnt/data/run-uml/acceptance-final/project-fRxMqR",
+    "mode": "release",
+    "buildDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build"
+  },
+  "outputs": [
+    {
+      "role": "ko",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+      "size": 165456,
+      "sha256": "bf2614f68cf93777bbd5c48545360016dc48fa9d9957b4b3ff751dee1886876a"
+    },
+    {
+      "role": "symbols",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/Module.symvers",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "role": "order",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/modules.order",
+      "size": 131,
+      "sha256": "4ec104b6899b2ee9d69203cbae50e3cd7fac909d7ef8706ab53883e3dc411af1"
+    },
+    {
+      "role": "kernel-context",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/kernel-context.json",
+      "size": 674,
+      "sha256": "fdcc01c6bb4e9de1174c42e8ef42f4fb2943e4e6becd044cf8fb9ec83ff9c9a5"
+    }
+  ]
+}

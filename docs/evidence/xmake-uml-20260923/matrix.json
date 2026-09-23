@@ -1,0 +1,98 @@
+{
+  "status": "SUCCESS",
+  "scope": "real UML kernel, modules, guest syscalls and process cleanup",
+  "records": [
+    {
+      "label": "rootfs-same-size-corruption",
+      "status": "PASS",
+      "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/fbf941b51b211fc263ecb36e63eb8e6c096cf5abd1d73ed5580b9acec6d5e09a/rootfs.cpio",
+      "buildId": "fbf941b51b211fc263ecb36e63eb8e6c096cf5abd1d73ed5580b9acec6d5e09a"
+    },
+    {
+      "label": "ready-timeout",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "pid": 75450,
+      "processGroupStopped": true,
+      "durationMs": 1218,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/ready-timeout/job-result.json"
+    },
+    {
+      "label": "cancel",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "pid": 75458,
+      "processGroupStopped": true,
+      "durationMs": 154,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/cancel/job-result.json"
+    },
+    {
+      "label": "wrong-catalog",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "pid": 75465,
+      "processGroupStopped": true,
+      "durationMs": 231,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-catalog/job-result.json"
+    },
+    {
+      "label": "wrong-guest-id",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "pid": 75482,
+      "processGroupStopped": true,
+      "durationMs": 770,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/lifecycle/wrong-guest-id/job-result.json"
+    },
+    {
+      "label": "guest-assertion-failure",
+      "status": "PASS",
+      "expectedStatus": "FAIL",
+      "exitCode": 1,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063825329-0e09c451/result.json"
+    },
+    {
+      "label": "guest-startup-failure",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "exitCode": 2,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063852344-f4bf9392/result.json"
+    },
+    {
+      "label": "module-init-failure",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "exitCode": 2,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063920186-1d981bd2/result.json"
+    },
+    {
+      "label": "stale-module-after-build-failure",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "exitCode": 2,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063946349-5c93abd6/result.json"
+    },
+    {
+      "label": "kernel-case-failure",
+      "status": "PASS",
+      "expectedStatus": "FAIL",
+      "exitCode": 1,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064015625-cd2bb472/result.json"
+    },
+    {
+      "label": "recovery",
+      "status": "PASS",
+      "expectedStatus": "SUCCESS",
+      "exitCode": 0,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064048018-f3990673/result.json"
+    },
+    {
+      "label": "busybox-corruption-recovery",
+      "status": "PASS",
+      "expectedStatus": "SUCCESS",
+      "exitCode": 0,
+      "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923064135576-8a8c52ca/result.json"
+    }
+  ],
+  "sourceFilesRestored": true
+}

@@ -1,0 +1,18 @@
+flex 2.6.4
+bison (GNU Bison) 3.8.2
+1099511627776
+cpio (GNU cpio) 2.15
+xmake v3.1.1+HEAD.3ba37a0, A cross-platform build utility based on Lua
+Copyright (C) 2015-present Ruki Wang, https://xmake.io
+                         _
+    __  ___ __  __  __ _| | ______
+5
+               total        used        free      shared  buff/cache   available
+Mem:           5.8Gi       1.0Gi       4.6Gi        20Ki       434Mi       4.8Gi
+Swap:             0B          0B          0B
+Filesystem      Size  Used Avail Use% Mounted on
+overlay          32G  343M   30G   2% /
+overlay          32G  343M   30G   2% /
+shm             3.0G     0  3.0G   0% /dev/shm
+400000 100000
+4294967296

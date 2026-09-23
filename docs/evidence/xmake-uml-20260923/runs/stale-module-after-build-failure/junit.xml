@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="cautest" tests="1"><testsuite name="integration.driver.abi" tests="1" failures="0" errors="1" skipped="0" time="28.757568"><testcase classname="integration.driver.abi" name="infrastructure-1"><properties><property name="infrastructure" value="true"/></properties><error message="Xmake build failed (exit 255) for product.driver
+error: make: Entering directory &apos;/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29&apos;
+  CC [M]  /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o
+/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.c:49:2: error: #error acceptance_driver_build_failure
+   49 | #error acceptance_driver_build_failure
+      |  ^~~~~
+make[2]: *** [/mnt/data/run-uml/sources/linux-6.6.157/scripts/Makefile.build:243: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o] Error 1
+make[1]: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:1933: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver] Error 2
+make: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:234: __sub-make] Error 2
+make: Leaving directory &apos;/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29&apos;
+
+">CautestError: Xmake build failed (exit 255) for product.driver
+error: make: Entering directory &apos;/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29&apos;
+  CC [M]  /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o
+/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.c:49:2: error: #error acceptance_driver_build_failure
+   49 | #error acceptance_driver_build_failure
+      |  ^~~~~
+make[2]: *** [/mnt/data/run-uml/sources/linux-6.6.157/scripts/Makefile.build:243: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver/cautest_echo.o] Error 1
+make[1]: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:1933: /mnt/data/run-uml/acceptance-final/project-fRxMqR/build/.module-C2CB957D-3938-4060-9AE0-62B6DC8C892B/product/driver] Error 2
+make: *** [/mnt/data/run-uml/sources/linux-6.6.157/Makefile:234: __sub-make] Error 2
+make: Leaving directory &apos;/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29&apos;
+
+
+    at command (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:70:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async #buildLocked (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:81:13)
+    at async withBuildLock (file:///mnt/data/run-uml/cautest/dist/cache/build-lock.js:29:16)
+    at async #build (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:56:16)
+    at async XmakeBuildProvider.build (file:///mnt/data/run-uml/cautest/dist/adapters/xmake/build.js:46:25)
+    at async Object.build (file:///mnt/data/run-uml/cautest/dist/jobs/kernel-artifact.js:78:29)
+    at async execute (file:///mnt/data/run-uml/cautest/dist/artifacts/index.js:101:29)
+    at async file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:114:71
+    at async runWithTimeout (file:///mnt/data/run-uml/cautest/dist/workflow/engine.js:24:16)</error></testcase></testsuite></testsuites>

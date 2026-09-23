@@ -1,0 +1,280 @@
+[
+  {
+    "id": "01-build-kernelBuild-integration-driver-abi",
+    "kind": "kernelBuild",
+    "name": "integration-driver-abi",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 19556.087749,
+    "diagnostics": [
+      {
+        "code": "cache_hit",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "02-build-busyboxBuild-integration-driver-abi",
+    "kind": "busyboxBuild",
+    "name": "integration-driver-abi",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 939.4418289999994,
+    "diagnostics": [
+      {
+        "code": "cache_hit",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "03-build-kernelArtifactContext-integration-driver-abi",
+    "kind": "kernelArtifactContext",
+    "name": "integration-driver-abi",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 251.94271599999774,
+    "diagnostics": [
+      {
+        "code": "kernel_context_ready",
+        "message": "6.6.157"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "04-build-artifactBuild-driver-1",
+    "kind": "artifactBuild",
+    "name": "driver-1",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 3675.9518110000026,
+    "diagnostics": [
+      {
+        "code": "artifact_ready",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko",
+        "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "05-build-kernelArtifactValidate-driver-1",
+    "kind": "kernelArtifactValidate",
+    "name": "driver-1",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 1.3388810000033118,
+    "diagnostics": [
+      {
+        "code": "kernel_artifact_verified",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/modules/cautest_echo/cautest_echo.ko"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "06-build-artifactBuild-driver-guest",
+    "kind": "artifactBuild",
+    "name": "driver-guest",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 724.414799000002,
+    "diagnostics": [
+      {
+        "code": "artifact_ready",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest",
+        "context": "{\"arch\":\"x86_64\",\"buildDir\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR/build\",\"configDigest\":\"c8b5c7baa2a81303e2f4d442b3f3ad6af5c913f3753363bf7deaa722963eecb6\",\"mode\":\"release\",\"plat\":\"linux\",\"projectRoot\":\"/mnt/data/run-uml/acceptance-final/project-fRxMqR\"}"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "07-build-driverGuestArtifactValidate-driver-guest",
+    "kind": "driverGuestArtifactValidate",
+    "name": "driver-guest",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 1.5496550000025309,
+    "diagnostics": [
+      {
+        "code": "driver_guest_verified",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/build/linux/x86_64/release/test.driver-guest"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "08-build-umlRootfsBuild-integration-driver-abi",
+    "kind": "umlRootfsBuild",
+    "name": "integration-driver-abi",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 520.755885999999,
+    "diagnostics": [
+      {
+        "code": "cache_miss",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a993ec6588873931fe9f37daf17ded309d2b17f508ed58c23be0e7c987f0a22b/rootfs.cpio"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "09-provision-umlStart-integration-driver-abi",
+    "kind": "umlStart",
+    "name": "integration-driver-abi",
+    "phase": "provision",
+    "status": "SUCCESS",
+    "durationMs": 415.72317699999985,
+    "diagnostics": [
+      {
+        "code": "uml_ready",
+        "message": "pid=76170"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "10-run-cTestRun-integration-driver-abi",
+    "kind": "cTestRun",
+    "name": "integration-driver-abi",
+    "phase": "run",
+    "status": "FAIL",
+    "durationMs": 90.91514499999903,
+    "diagnostics": [
+      {
+        "code": "c_test_session",
+        "message": "Driver Guest C Test: catalog=3, selected=3, executions=1, cases=3, events=11",
+        "hello": {
+          "major": 3,
+          "minor": 1,
+          "buildId": "f87d4c058d1fdf4b30da22806d2655c7ec2e6c6ec150ee4a834e8991349d1c4a",
+          "bootId": "native-25",
+          "rxLineMax": 64,
+          "txLineMax": 512
+        },
+        "catalog": [
+          {
+            "suiteId": 0,
+            "caseId": 0,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "read_write",
+            "parameter": "",
+            "name": "driver_abi/read_write"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 1,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "ioctl_value",
+            "parameter": "",
+            "name": "driver_abi/ioctl_value"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 2,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "invalid_input",
+            "parameter": "",
+            "name": "driver_abi/invalid_input"
+          }
+        ],
+        "selection": [
+          {
+            "suiteId": 0,
+            "caseId": 0,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "read_write",
+            "parameter": "",
+            "name": "driver_abi/read_write"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 1,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "ioctl_value",
+            "parameter": "",
+            "name": "driver_abi/ioctl_value"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 2,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "invalid_input",
+            "parameter": "",
+            "name": "driver_abi/invalid_input"
+          }
+        ],
+        "executionCount": 1,
+        "eventCount": 11
+      }
+    ],
+    "testResults": [
+      {
+        "name": "driver_abi",
+        "cases": [
+          {
+            "name": "read_write",
+            "status": "FAIL",
+            "assertions": [
+              {
+                "status": "FAIL",
+                "file": "product/guest/driver_test.c",
+                "line": 15,
+                "expression": "integer equality",
+                "expected": {
+                  "type": "integer",
+                  "value": "42"
+                },
+                "actual": {
+                  "type": "integer",
+                  "value": "43"
+                }
+              }
+            ],
+            "diagnostics": []
+          },
+          {
+            "name": "ioctl_value",
+            "status": "PASS",
+            "assertions": [],
+            "diagnostics": []
+          },
+          {
+            "name": "invalid_input",
+            "status": "PASS",
+            "assertions": [],
+            "diagnostics": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "11-collect-umlLogs-integration-driver-abi",
+    "kind": "umlLogs",
+    "name": "integration-driver-abi",
+    "phase": "collect",
+    "status": "SUCCESS",
+    "durationMs": 12.19986599999902,
+    "diagnostics": [
+      {
+        "code": "uml_logs",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063825329-0e09c451/integration-driver-abi-console.log"
+      },
+      {
+        "code": "uml_host_stderr",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923063825329-0e09c451/integration-driver-abi-host-stderr.log"
+      }
+    ],
+    "testResults": []
+  }
+]

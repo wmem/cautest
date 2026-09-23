@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "runId": "20260923064015625-cd2bb472",
+  "status": "FAIL",
+  "startedAt": "2026-09-23T06:40:15.626Z",
+  "endedAt": "2026-09-23T06:40:47.528Z",
+  "durationMs": 31900.624459,
+  "counts": {
+    "jobs": {
+      "total": 1,
+      "success": 0,
+      "fail": 1,
+      "error": 0,
+      "skip": 0
+    },
+    "cases": {
+      "total": 2,
+      "pass": 1,
+      "fail": 1,
+      "error": 0,
+      "skip": 0
+    },
+    "failureRecords": 1
+  },
+  "failedJobs": [
+    {
+      "jobId": "unit.kernel.math",
+      "status": "FAIL",
+      "detailRef": "jobs/unit.kernel.math/job.json"
+    }
+  ],
+  "failuresRef": "failures.jsonl",
+  "resultRef": "result.json"
+}
