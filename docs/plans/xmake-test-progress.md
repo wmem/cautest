@@ -1,76 +1,97 @@
-# Cautest Xmake continuation — verified incremental delivery
+# Cautest Xmake continuation — Kernel/Driver component delivery
 
-Start: **2026-09-23 10:12:13 +09:00**. Hard deadline: **11:12:13 +09:00**.
-New feature work stopped at **11:03:26 +09:00** (51m13s) to reserve delivery verification.
-The uploaded Xmake 3.1.1 executable removed the previous blocker. No network access used.
+This round started **2026-09-23 10:45:28 +08:00** (11:45:28 +09:00).
+The hard deadline is **11:45:28 +08:00** (12:45:28 +09:00).
+New implementation stopped at **11:33:20 +08:00**, reserving time for final
+bundle-clone verification and delivery. No network access was used.
+The final seal time and bundle SHA-256 are recorded in the external delivery report.
 
-## Implemented and independently committed
+This is an incremental delivery, **not complete platform acceptance**.
+BusyBox 1.36.1 was built and executed as a static binary. Real Linux 6.6.157
+configuration was attempted and stopped at `flex: not found`. The real Xmake UML
+runner returns **BLOCKED / 77**, not PASS. There was no UML boot, host module load,
+Driver device exercise or physical MCU/SPI test in this round.
 
-| Commit | Change | Evidence |
-|---|---|---|
-| eda42de | Real Xmake table DSL / Node nested-build PoC | xmake-poc-20260923.tap |
-| 76a683c | POSIX cancellation terminates compiler descendants | process-tree-20260923.tap |
-| cacef6d | Strict artifacts and shared Native/MCU runtime steps | artifact-runtime-20260923.tap |
-| 5b436a9 | Vendored root xmake.lua, ctest.*, real Native loop | xmake-adapter-20260923.tap |
-| b62364e | First-build generation fences and same-second compile/link invalidation | xmake-native-reliability-20260923.tap |
-| 1201fc1 | Real MCU host firmware simulation and physical locks | xmake-mcu-full-20260923.tap |
-| 26b4c68 | Relocated portable Native/MCU + real Kbuild multi-output product example | xmake-delivery-kbuild-20260923.tap |
-| cb9bd54 | Late factory cancellation: no flash, exactly-once owned close | xmake-late-cleanup-20260923.tap |
+## Independently verified commits
 
-Evidence files are under `docs/tests/evidence/`. Final source tests:
-**133/133 default Node; 14/14 real Xmake; 1/1 real Kbuild; zero failures/skips.**
-TypeScript, public declarations, C Runtime, versions and Markdown checks pass.
-Actual Kbuild evidence uses **preinstalled 6.12.96+deb13-amd64 headers**, NOT
-Linux 6.6.157 and NOT UML. No module is loaded into the host kernel.
-Portable Native and MCU simulation run without dist or node_modules, with manifest
-integrity retained. Registry-cold npm ci was not run; supplied local dependencies
-were used to prepare source checkouts.
+| Commit | Change |
+|---|---|
+| `71c6cbe` | One shared UML provision / CTP / collection implementation for old and artifact Jobs |
+| `db3024b` | Kernel Runtime Makefile defaults and no-seek compatibility with newer Kernel headers |
+| `362182a` | Artifact Kernel Test / Driver ABI Jobs, shared pure Environment factory, static Guest rule and product-owned Kbuild examples |
+| `f48fd4c` | Byte-validated Kernel / BusyBox / Agent / Guest / rootfs caches and explicit real-UML prerequisite gate |
+| `f4e18f8` | Owned UML process-group cleanup and removal of expired control waiters; portable runtime inclusion |
+| `4058d1e` | Real visibility, link propagation, GCC/Clang, output isolation and measured discovery matrix |
+| `535bef6` | Relocated portable Kernel/Driver component verification and corrected checkout README |
 
-## Application entry
+The application still uses the original integration direction:
 
 ```lua
 includes("tools/cautest/xmake.lua")
 includes("ctest.lua")
 ```
 
-```lua
-ctest.project {defaults = {resultDir = ".cautest/results"}}
-ctest.include {patterns = {"modules/**/test.lua"}}
-```
+A named `ctest.environment` factory returns one existing `umlKernelEnvironment`
+descriptor. Kernel Test consumes an explicit module Artifact; Driver ABI consumes
+separate Driver module refs and a static Guest target ref. Rootfs/UML/CTP/Result
+and cleanup reuse the original workflow engine. Shared Environment means shared
+declarations and verified build caches, **not a shared VM across Jobs**.
 
-```sh
-npm --prefix tools/cautest ci
-xmake ct --list --json
-xmake ct --plan --level=unit
-xmake ct --level=unit,component --tag=host,math
-xmake ct --test-profile=ci --reporter=json,junit
-```
+See [Xmake use](../usage/xmake.md), [Kernel/Driver use](../usage/xmake-kernel-driver.md)
+and [build-matrix measurements](../tests/xmake-build-matrix.md).
 
-Create explicit application-owned test targets as shown in
-[the Xmake guide](../usage/xmake.md). Runtime case filters do not generate Registry
-symbols. Ordinary product builds do not require Node. There is no auto-install,
-no implicit product-target cloning and no project-wide implicit test scan.
+## Verified scope
 
-## Remaining work and honest gates
+| Check | Result |
+|---|---|
+| Default Node suite, rebuilt TypeScript | **149/149**, no failures/skips |
+| Real Xmake integration | **16/16**, no failures/skips |
+| Real Kbuild components | **2/2**, no failures/skips |
+| Explicit real build matrix | **3/3**, no failures/skips |
+| Public types, C Runtime, versions and docs | PASS |
+| BusyBox 1.36.1 | Static build, shell execution, cache hit and same-size corruption recovery PASS |
+| Real Linux 6.6.157 configuration | BLOCKED at missing flex; bison and bc also absent |
+| Real Xmake Kernel/Driver UML runner | BLOCKED / 77 after actual list/plan/doctor |
+| Physical MCU/SPI | Not run; hardware not provided |
 
-G2 (collection) and G3 (real Native example) pass. G0/G1/G4 have extensive scoped
-Native evidence but the full planned matrix is not complete. G5 requires physical
-SPI and is blocked; G6 needs the not-yet-implemented artifact-backed Kernel/Driver
-runtimes plus real UML evidence. G7 full release remains not passed.
+Actual Kbuild checks compile Cautest Runtime, Kernel Test and product Driver
+against **preinstalled 6.12.96+deb13-amd64 headers**, not Linux 6.6.157.
+They check modules and role/context identity without loading them into the host.
+The static Driver Guest is built, but its device read/write/ioctl Cases still need
+real UML. Process-cleanup tests use real OS processes with an explicit Agent
+emulator; they are not actual UML acceptance.
 
-1. Finish XT-003/004/008/015–018 broad visibility/toolchain/concurrency/scale
-   coverage and the Environment factory; complete provider dependency tracking.
-2. Finish XT-019–021 for real MCU ELF/BIN, startup/linker integration and the
-   physical flash/reset/serial/SPI error/recovery matrix. No board was supplied.
-3. Complete XT-022–024: split the legacy Kernel/Driver runtime to consume explicit
-   module/Guest/Kernel roles from one Environment, then boot actual Linux 6.6.157
-   with BusyBox and test Driver read/write/ioctl. flex/bison/bc/libelf development
-   inputs and BusyBox source are unavailable here. The 6.12.96 Kbuild check does
-   not replace these gates.
-4. Complete XT-025–027 cold dependency deployment and all-platform release/CI.
-   Keep XT-028–030 deferred exactly as the original plan specifies.
+Portable Native/MCU runs and Kernel/Driver list/plan/static Guest construction
+pass from a relocated lib-only directory without `dist` or `node_modules`.
+Development dependency files came from the supplied archive; no pnpm was run,
+and no empty-Registry-cache `npm ci` success is claimed.
 
-The original uploaded plan in `xmake-test-v0.1.0/` is preserved without changing
-its historical acceptance claims. Current per-task status and boundaries are in
-[xmake-test-progress.json](xmake-test-progress.json). Fresh bundle verification
-and final delivery hash/time are reported in the external delivery files.
+Evidence is retained under `docs/tests/evidence/round3-*`. The default suite,
+Kbuild and matrix logs were collected in an independent cold-dist candidate
+bundle clone. The final Xmake log includes the extra portable component test.
+A fresh clone of the final delivery is checked again; its commands, HEAD and
+outcomes are recorded externally in `cautest-bundle-verification.log`.
+
+## Remaining plan items
+
+**G1/G2/G3 pass within their backend/collection/Native scope.** G0 and G4 are
+partial; G5 (physical MCU) and G6 (real UML) are blocked; G7 is not passed.
+
+1. XT-003/004/008/015–018: finish simultaneous cross-configuration/toolchain and
+   high-Case-count tests, lazy Board transitive-source snapshots, full cache-writer
+   concurrency and cross-architecture/startup/linker boundaries.
+2. XT-019–021: real MCU ELF/BIN, startup/linker integration, board flash/reset/
+   transport failure matrix and physical SPI acceptance. Host simulation does
+   not replace these.
+3. XT-022–024: artifact workflows and components now exist. Supply Linux build
+   tools and execute actual Linux 6.6.157 Kernel Test + Driver ABI, cold/cache-hot,
+   read/write/ioctl, bad input and real boot/module/Guest failure/cleanup cases.
+   `flex`, `bison` and `bc` are absent. libelf development headers are also absent,
+   but the build has not reached evidence that they are required for this UML
+   configuration. BusyBox source is no longer a blocker.
+4. XT-025–027: cold dependency deployment, supported native-addon deployment and
+   full platform CI/release candidate acceptance. No push/tag/publish was done.
+
+The original uploaded plan under `xmake-test-v0.1.0/` remains unchanged.
+Task-by-task status is in [xmake-test-progress.json](xmake-test-progress.json).
+XT-028–030 remain deferred as the original plan specifies.

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED",
+  "code": "uml_environment_not_ready",
+  "command": "npm run test:xmake:uml",
+  "root": "/mnt/data/run3/real-uml/project-G4qUjT",
+  "doctor": {
+    "status": "ERROR",
+    "issues": [
+      {
+        "code": "CT-DOCTOR-TOOL-001",
+        "severity": "error",
+        "jobId": "integration.driver.abi",
+        "step": "kernelBuild",
+        "message": "Linux flex 不可执行: flex (spawn flex ENOENT)",
+        "hint": "安装 Linux flex 或修正该 Step 的工具路径/PATH"
+      },
+      {
+        "code": "CT-DOCTOR-TOOL-001",
+        "severity": "error",
+        "jobId": "integration.driver.abi",
+        "step": "kernelBuild",
+        "message": "Linux bison 不可执行: bison (spawn bison ENOENT)",
+        "hint": "安装 Linux bison 或修正该 Step 的工具路径/PATH"
+      },
+      {
+        "code": "CT-DOCTOR-TOOL-001",
+        "severity": "error",
+        "jobId": "integration.driver.abi",
+        "step": "kernelBuild",
+        "message": "Linux bc 不可执行: bc (spawn bc ENOENT)",
+        "hint": "安装 Linux bc 或修正该 Step 的工具路径/PATH"
+      },
+      {
+        "code": "CT-DOCTOR-TOOL-001",
+        "severity": "error",
+        "jobId": "unit.kernel.math",
+        "step": "kernelBuild",
+        "message": "Linux flex 不可执行: flex (spawn flex ENOENT)",
+        "hint": "安装 Linux flex 或修正该 Step 的工具路径/PATH"
+      },
+      {
+        "code": "CT-DOCTOR-TOOL-001",
+        "severity": "error",
+        "jobId": "unit.kernel.math",
+        "step": "kernelBuild",
+        "message": "Linux bison 不可执行: bison (spawn bison ENOENT)",
+        "hint": "安装 Linux bison 或修正该 Step 的工具路径/PATH"
+      },
+      {
+        "code": "CT-DOCTOR-TOOL-001",
+        "severity": "error",
+        "jobId": "unit.kernel.math",
+        "step": "kernelBuild",
+        "message": "Linux bc 不可执行: bc (spawn bc ENOENT)",
+        "hint": "安装 Linux bc 或修正该 Step 的工具路径/PATH"
+      }
+    ]
+  },
+  "records": [
+    {
+      "label": "list",
+      "args": [
+        "ct",
+        "--list",
+        "--json"
+      ],
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "label": "plan",
+      "args": [
+        "ct",
+        "--plan",
+        "--json"
+      ],
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "label": "doctor",
+      "args": [
+        "ct",
+        "--doctor",
+        "--json"
+      ],
+      "exitCode": 2,
+      "signal": null
+    }
+  ]
+}

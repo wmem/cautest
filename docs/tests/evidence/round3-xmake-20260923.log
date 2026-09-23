@@ -1,0 +1,119 @@
+
+> cautest@0.2.1 test:xmake
+> npm run build && node scripts/test-xmake.mjs
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+TAP version 13
+# Subtest: real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs
+ok 1 - real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs
+  ---
+  duration_ms: 1696.956489
+  type: 'test'
+  ...
+# Subtest: real Native multi-module/suite CTP, same-build source reuse and product library macro isolation
+ok 2 - real Native multi-module/suite CTP, same-build source reuse and product library macro isolation
+  ---
+  duration_ms: 4915.337172
+  type: 'test'
+  ...
+# Subtest: real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP
+ok 3 - real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP
+  ---
+  duration_ms: 5620.090883
+  type: 'test'
+  ...
+# Subtest: real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks
+ok 4 - real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks
+  ---
+  duration_ms: 684.322151
+  type: 'test'
+  ...
+# Subtest: real workflow module provider receives explicit artifact, reuses old engine, tracks source and rejects env sharing
+ok 5 - real workflow module provider receives explicit artifact, reuses old engine, tracks source and rejects env sharing
+  ---
+  duration_ms: 2922.235427
+  type: 'test'
+  ...
+# Subtest: real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+ok 6 - real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+  ---
+  duration_ms: 4588.484188
+  type: 'test'
+  ...
+# Subtest: portable Kernel/Driver factory plans and static Guest builds without source dist or dependencies (NO UML boot)
+ok 7 - portable Kernel/Driver factory plans and static Guest builds without source dist or dependencies (NO UML boot)
+  ---
+  duration_ms: 1785.776005
+  type: 'test'
+  ...
+# Subtest: real Xmake Kernel/Driver declarations are side-effect-free and the independent static guest rule builds and speaks CTP
+ok 8 - real Xmake Kernel/Driver declarations are side-effect-free and the independent static guest rule builds and speaks CTP
+  ---
+  duration_ms: 3859.294037
+  type: 'test'
+  ...
+# Subtest: real Xmake MCU firmware artifact, split serial CTP, shared build and physical alias identity
+ok 9 - real Xmake MCU firmware artifact, split serial CTP, shared build and physical alias identity
+  ---
+  duration_ms: 2578.451177
+  type: 'test'
+  ...
+# Subtest: MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong HELLO build identity fails
+ok 10 - MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong HELLO build identity fails
+  ---
+  duration_ms: 7030.661436
+  type: 'test'
+  ...
+# Subtest: real Xmake 3.1.1: exported table DSL, Node → nested build, options, failure, ordinary build
+ok 11 - real Xmake 3.1.1: exported table DSL, Node → nested build, options, failure, ordinary build
+  ---
+  duration_ms: 1099.560305
+  type: 'test'
+  ...
+# Subtest: real outer SIGINT cancels nested build and reaps a pipe-detached compiler grandchild
+ok 12 - real outer SIGINT cancels nested build and reaps a pipe-detached compiler grandchild
+  ---
+  duration_ms: 437.576359
+  type: 'test'
+  ...
+# Subtest: real generation dependency, mocks and conditional source selection take effect on first build
+ok 13 - real generation dependency, mocks and conditional source selection take effect on first build
+  ---
+  duration_ms: 5246.46927
+  type: 'test'
+  ...
+# Xmake scale measurements [{"jobs":100,"elapsedMs":195.16358299999956},{"jobs":1000,"elapsedMs":226.63062999999966}]
+# Subtest: real 100/1000 job discovery, fragment addition/removal, changed cwd and deterministic config digest
+ok 14 - real 100/1000 job discovery, fragment addition/removal, changed cwd and deterministic config digest
+  ---
+  duration_ms: 2088.063023
+  type: 'test'
+  ...
+# Subtest: real mode/output isolation, profile env and strict registry C symbols
+ok 15 - real mode/output isolation, profile env and strict registry C symbols
+  ---
+  duration_ms: 4282.590347
+  type: 'test'
+  ...
+# Subtest: real Native richer fixtures retain PASS/FAIL/ERROR/SKIP and parameterized results
+ok 16 - real Native richer fixtures retain PASS/FAIL/ERROR/SKIP and parameterized results
+  ---
+  duration_ms: 2481.253086
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 22198.958715

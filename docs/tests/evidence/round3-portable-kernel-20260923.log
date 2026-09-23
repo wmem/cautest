@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: Markdown link checks ignore fenced excerpts but retain surrounding prose
+ok 1 - Markdown link checks ignore fenced excerpts but retain surrounding prose
+  ---
+  duration_ms: 0.944509
+  type: 'test'
+  ...
+# Subtest: 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+ok 2 - 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+  ---
+  duration_ms: 36.49561
+  type: 'test'
+  ...
+# Subtest: Usage 提供按需入口并绑定完整可执行示例
+ok 3 - Usage 提供按需入口并绑定完整可执行示例
+  ---
+  duration_ms: 7.693309
+  type: 'test'
+  ...
+# Subtest: 开发者索引覆盖 Project Docs 核心阅读路径
+ok 4 - 开发者索引覆盖 Project Docs 核心阅读路径
+  ---
+  duration_ms: 0.794334
+  type: 'test'
+  ...
+# Subtest: 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+ok 5 - 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+  ---
+  duration_ms: 1.664781
+  type: 'test'
+  ...
+# Subtest: real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+ok 6 - real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+  ---
+  duration_ms: 3962.859337
+  type: 'test'
+  ...
+# Subtest: portable Kernel/Driver factory plans and static Guest builds without source dist or dependencies (NO UML boot)
+ok 7 - portable Kernel/Driver factory plans and static Guest builds without source dist or dependencies (NO UML boot)
+  ---
+  duration_ms: 1667.342974
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5692.266567

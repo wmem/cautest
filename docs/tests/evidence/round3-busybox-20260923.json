@@ -1,0 +1,10 @@
+{
+  "source": "busybox-1.36.1",
+  "path": "/mnt/data/run3/cache/busybox/ec181331582dcb4a77fb9bb7b3f3aa5c0b4a2374bedd27651939d7c1934e9633/busybox",
+  "buildId": "ec181331582dcb4a77fb9bb7b3f3aa5c0b4a2374bedd27651939d7c1934e9633",
+  "cacheHit": true,
+  "coldBuild": true,
+  "sameSizeCorruptionRebuilt": true,
+  "staticExecutable": true,
+  "shellExecuted": true
+}

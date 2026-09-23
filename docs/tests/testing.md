@@ -10,6 +10,10 @@ Cautest 同时测试 Host 编排和真实 C Target 行为。只通过 TypeScript
 | `npm run test:uml` | 真实 Linux UML、`examples/kernel-lib`、`examples/linux-driver-unit`、自动 Test Module、Rootfs、Guest Agent 和 CTP3 Case |
 | `npm run test:driver:uml` | 真实 Linux UML、Driver Module、test-only Probe、Guest ABI Test 和 CTP3 Case |
 | `npm run test:e2e` | 从固定 Git Commit 使用 npx 与 npm exec 编译、安装和执行便携版本 |
+| `npm run test:xmake` | 真实 Xmake 3.1.1 的 DSL、Native、MCU Host 模拟、失败清理及便携组件；需 `CAUTEST_XMAKE` |
+| `npm run test:xmake:kbuild` | 实际 Runtime/Test/Driver 模块构建及 Context/角色校验；需 `CAUTEST_XMAKE`、`KERNEL_BUILD`，不加载模块、不启动 UML |
+| `npm run test:xmake:matrix` | private/public/interface、链接传递、GCC/Clang、配置输出隔离及 100/1000/2000 Job 测量 |
+| `npm run test:xmake:uml` | 显式真实 Kernel Test + Driver ABI 冷/热验收；需 Xmake 与 Kernel/BusyBox 源码，缺前提返回 BLOCKED/77 |
 | `npm run versions:check` | 校验 Release、C API、CTP、Kernel/Probe ABI、Result/Event/CLI/Manifest/Cache 版本没有漂移 |
 
 默认 Node 测试使用临时目录和伪 Make 隔离外部成本，但不会用伪输出替代关键行为：Native/Driver Guest/MCU Firmware 会真实编译并执行；Kernel Module 测试会验证源码树前后文件集合、损坏 Manifest 重建和不同 ARCH/Kernel 并发。
@@ -64,3 +68,12 @@ KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox npm run test:driver:uml
 ## npm 工具链迁移
 
 开发使用 `npm ci` 和 `npm test`。完整门禁包含空消费项目中的离线 npm tarball 安装、`npm exec` 安装器与实际 Workflow 运行；固定 Git Commit 的安装另用 `npm run test:e2e`。本轮环境、原始基线与离线验证边界见 [npm 迁移验证](npm-migration.md)。
+
+
+## Xmake 增量的验收边界
+
+当前逐项状态见 [实施进度](../plans/xmake-test-progress.md)。原方案和历史基线不改写为通过报告。
+`test:xmake:kbuild` 可以使用显式 Host headers 做真实构建组件检查，但不能代替
+`test:xmake:uml`。后者只有真实 Kernel Test 与 Driver Guest CTP、日志、清理及缓存复跑均通过
+才成功；缺失前提的退出码 77 不是测试通过。默认套件中的 Agent 模拟器、人工 Kernel fixture
+和假 Make 只覆盖各自组件契约，不会满足真实 UML 或实板门禁。

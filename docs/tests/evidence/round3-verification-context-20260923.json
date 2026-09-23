@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "cautest.verification-context",
+  "featureHead": "535bef646a286c600435e4b5e23818af4b681f14",
+  "firstIndependentCloneHead": "4058d1eb1728bdce5926388ebac54742dcc851e4",
+  "defaultKbuildMatrixTypecheckOrigin": "independent candidate bundle clone, dist removed, dependency files copied from supplied archive",
+  "finalXmakeOrigin": "source checkout after portable component test; final delivery clone rerun recorded externally",
+  "networkUsed": false,
+  "coldRegistryNpmCi": false,
+  "host": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.3\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"\n",
+  "node": "v22.16.0",
+  "npm": "10.9.2",
+  "xmake": "3.1.1+HEAD.3ba37a0 supplied Linux x86_64 bundle",
+  "kbuildHeaders": "/usr/src/linux-headers-6.12.96+deb13-amd64",
+  "requestedKernel": "Linux 6.6.157; configuration failed at missing flex; NOT built or booted",
+  "busybox": "uploaded 1.36.1 statically built and cache-corruption recovery verified",
+  "defaultCommand": "npm test",
+  "xmakeCommand": "CAUTEST_XMAKE=/mnt/data/run3/bin/xmake npm run test:xmake",
+  "kbuildCommand": "CAUTEST_XMAKE=/mnt/data/run3/bin/xmake KERNEL_BUILD=/usr/src/linux-headers-6.12.96+deb13-amd64 npm run test:xmake:kbuild",
+  "matrixCommand": "CAUTEST_XMAKE=/mnt/data/run3/bin/xmake npm run test:xmake:matrix",
+  "umlCommand": "CAUTEST_XMAKE=/mnt/data/run3/bin/xmake KERNEL_SRC=/mnt/data/run3/sources/linux-6.6.157 BUSYBOX_SRC=/mnt/data/run3/sources/busybox-1.36.1 CAUTEST_UML_ACCEPTANCE_DIR=/mnt/data/run3/real-uml node test/integration/xmake-uml-smoke.mjs",
+  "umlExitCode": 77,
+  "originalPlan": {
+    "archiveSha256": "4daeb65cf0bbb10798e798f65f9ee083a980bf9a3ca92934662931d9a551e554",
+    "matched": 9,
+    "mismatches": []
+  },
+  "knownCorrections": [
+    "Portable regression initially exposed missing owned-process.js in whitelist; fixed, default 149 and final Xmake 16 rerun PASS.",
+    "Initial source full-test command was killed by outer command timeout while BusyBox compilation competed for CPU; rerun complete suites without competing BusyBox succeeded."
+  ]
+}

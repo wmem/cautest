@@ -1,0 +1,15 @@
+make: Entering directory '/mnt/data/run3/sources/linux-6.6.157'
+make[1]: Entering directory '/mnt/data/run3/kernel-preflight'
+  GEN     Makefile
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/confdata.o
+  HOSTCC  scripts/kconfig/expr.o
+  LEX     scripts/kconfig/lexer.lex.c
+/bin/sh: 1: flex: not found
+make[3]: *** [/mnt/data/run3/sources/linux-6.6.157/scripts/Makefile.host:9: scripts/kconfig/lexer.lex.c] Error 127
+make[2]: *** [/mnt/data/run3/sources/linux-6.6.157/Makefile:697: x86_64_defconfig] Error 2
+make[1]: *** [/mnt/data/run3/sources/linux-6.6.157/Makefile:234: __sub-make] Error 2
+make[1]: Leaving directory '/mnt/data/run3/kernel-preflight'
+make: *** [Makefile:234: __sub-make] Error 2
+make: Leaving directory '/mnt/data/run3/sources/linux-6.6.157'

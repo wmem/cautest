@@ -6,12 +6,17 @@
 
 ## 未发布
 
+- 新增可直接 vendoring 的根 `xmake.lua`、分散 `ctest.*` 声明、Manifest/Receipt 与 `xmake ct`，继续复用既有 Workflow、CTP 和 Result。Native 与 MCU Host 模拟已实测；真实 MCU/SPI 尚未验收。
+- 新增 Kernel Test / Driver ABI 的显式 Artifact 路线、共享声明式 Environment、静态 Driver Guest rule 和产品 Kbuild 示例。模块、Guest、Context 和便携包组件已实测；真实 Linux 6.6.157 UML 受缺失构建工具阻断，不能标为平台支持完成。
+- 修复 UML 所属进程组取消/超时/启动失败清理及过期控制等待器；Kernel/BusyBox/Agent/Guest/rootfs 缓存改为完整标记和字节校验。引入 Kernel Context v1 与 UML 构建 Manifest v1，提升对应 Cache 版本；保持 CTP 3.1、Kernel ABI 3.0 与 Probe ABI 1.0。
+- 增加真实 Xmake 可见性/链接/GCC-Clang/输出隔离及 100/1000/2000 Job 测量入口；全平台发行门禁仍未通过。当前变化保留为未发布，不新增发布 tag。
+
 - 增加源码仓库根 `cautest.js`、`npm run cli` 和 npm ESM 公共导出；直接 clone 到 `tools/cautest` 后可以使用原有 JS CLI。源码和便携入口共用中断与退出码处理。
 
 - 抽出无副作用的公共 `selectJobs()`，旧 CLI 共用相同 ID/Level/Tag/enabled 规则；不改变 Suite/Case 覆盖语义。
 
 - 开发、构建、安装与便携打包统一使用 npm；以 npm v3 `package-lock.json` 替代 pnpm 锁文件，保留原有依赖版本和完整性摘要。
-- 保留固定 Git Commit 的 `npx` 安装器及旧 JS 配置入口；不改变 CTP、C API、ABI、结果和缓存版本。
+- 保留固定 Git Commit 的 `npx` 安装器及旧 JS 配置入口；npm 迁移本身不改变 CTP、C API、ABI 或结果；后续缓存版本变化见本节上方说明。
 
 ## 0.2.1 — 2026-09-04
 
