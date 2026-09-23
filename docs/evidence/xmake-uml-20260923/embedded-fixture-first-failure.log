@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: real Cortex-M ELF/BIN build preserves explicit startup/linker files and per-consumer product macros (not hardware execution)
+not ok 1 - real Cortex-M ELF/BIN build preserves explicit startup/linker files and per-consumer product macros (not hardware execution)
+  ---
+  duration_ms: 1024.198303
+  type: 'test'
+  location: '/mnt/data/run-uml/cautest/test/xmake-embedded-build.test.js:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    error: toolchain("arm-clang"): not found!
+    
+    
+    255 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 255
+  operator: 'strictEqual'
+  stack: |-
+    invoke (file:///mnt/data/run-uml/cautest/test/xmake-embedded-build.test.js:15:23)
+    TestContext.<anonymous> (file:///mnt/data/run-uml/cautest/test/xmake-embedded-build.test.js:41:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1688.618792

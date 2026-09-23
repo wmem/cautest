@@ -12,7 +12,7 @@ Cautest 同时测试 Host 编排和真实 C Target 行为。只通过 TypeScript
 | `npm run test:e2e` | 从固定 Git Commit 使用 npx 与 npm exec 编译、安装和执行便携版本 |
 | `npm run test:xmake` | 真实 Xmake 3.1.1 的 DSL、Native、MCU Host 模拟、失败清理及便携组件；需 `CAUTEST_XMAKE` |
 | `npm run test:xmake:kbuild` | 实际 Runtime/Test/Driver 模块构建及 Context/角色校验；需 `CAUTEST_XMAKE`、`KERNEL_BUILD`，不加载模块、不启动 UML |
-| `npm run test:xmake:matrix` | private/public/interface、链接传递、GCC/Clang、配置输出隔离及 100/1000/2000 Job 测量 |
+| `npm run test:xmake:matrix` | private/public/interface、链接传递、GCC/Clang、配置输出隔离、100/1000/2000 Job 测量及 Cortex-M ELF/BIN 构建（需 LLVM 工具） |
 | `npm run test:xmake:uml` | 显式真实 Kernel Test + Driver ABI 冷/热、12 项故障/恢复、旧 JS 入口等价验收；需 Xmake 与 Kernel/BusyBox 源码，缺前提返回 BLOCKED/77 |
 | `npm run versions:check` | 校验 Release、C API、CTP、Kernel/Probe ABI、Result/Event/CLI/Manifest/Cache 版本没有漂移 |
 

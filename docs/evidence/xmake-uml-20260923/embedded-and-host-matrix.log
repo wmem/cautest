@@ -1,0 +1,55 @@
+
+> cautest@0.2.1 test:xmake:matrix
+> npm run build && node scripts/test-xmake.mjs --matrix
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+TAP version 13
+# Subtest: real Xmake public/interface/private compile configuration and public link dependencies preserve product boundaries
+ok 1 - real Xmake public/interface/private compile configuration and public link dependencies preserve product boundaries
+  ---
+  duration_ms: 7729.105834
+  type: 'test'
+  ...
+# Subtest: real native compiler/config transitions cannot reuse the prior compiler receipt
+ok 2 - real native compiler/config transitions cannot reuse the prior compiler receipt
+  ---
+  duration_ms: 8755.663515
+  type: 'test'
+  ...
+# Xmake discovery measurements (GNU time max RSS, not sum of simultaneous processes) [{"jobs":100,"selected":50,"elapsedMs":510,"peakRssKiB":53632},{"jobs":1000,"selected":500,"elapsedMs":565,"peakRssKiB":65240},{"jobs":2000,"selected":1000,"elapsedMs":703,"peakRssKiB":71840}]
+# Subtest: real 100/1000/2000-job list/filter measures command-tree peak RSS and emits no build artifacts
+ok 3 - real 100/1000/2000-job list/filter measures command-tree peak RSS and emits no build artifacts
+  ---
+  duration_ms: 1881.366237
+  type: 'test'
+  ...
+# Large runtime catalog measurement {"suites":16,"cases":1024,"elapsedMs":5032,"peakRssKiB":70636}
+# Subtest: real 1024 C cases across 16 suites reuse one product artifact and preserve selected runtime counts
+ok 4 - real 1024 C cases across 16 suites reuse one product artifact and preserve selected runtime counts
+  ---
+  duration_ms: 5069.270949
+  type: 'test'
+  ...
+# ARM compile-only verification {"variants":[{"name":"fw_a","flash":134217728,"ramSize":16384,"value":17},{"name":"fw_b","flash":134283264,"ramSize":8192,"value":29}],"binarySha256":["a4c33fe7c5a51af42b4af7c422fb0128eba80597c9bf3a84c7a31ed18dc6d76a","2da9a07f4f072bf0e83217a21603a6db7eb5421e1dac6d36eef435b5e2bfc476"],"duplicateStartupRejected":true,"recovered":true,"firmwareExecuted":false}
+# Subtest: real Cortex-M ELF/BIN build preserves explicit startup/linker files and per-consumer product macros (not hardware execution)
+ok 5 - real Cortex-M ELF/BIN build preserves explicit startup/linker files and per-consumer product macros (not hardware execution)
+  ---
+  duration_ms: 6489.57141
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 23599.948984
