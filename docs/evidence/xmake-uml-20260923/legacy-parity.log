@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "jobs": 2,
+  "cases": 5,
+  "resultDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc",
+  "kernelAndBusyboxCacheReused": true,
+  "sameCtpCaseResults": true
+}

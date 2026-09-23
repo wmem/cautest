@@ -1,0 +1,98 @@
+[
+  {
+    "kind": "uml-kernel",
+    "name": "legacy-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+    "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+    "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+    "metadata": {
+      "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "cacheHit": true,
+      "arch": "um"
+    }
+  },
+  {
+    "kind": "busybox",
+    "name": "legacy-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+    "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+    "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+    "metadata": {
+      "cacheHit": true
+    }
+  },
+  {
+    "kind": "kernel-module",
+    "name": "cautest_echo",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/539c6f9eb8d6b7be476ca053047eeb1528edcd23c3c21c888f4aa4e4ffd2c828/cautest_echo.ko",
+    "fingerprint": "539c6f9eb8d6b7be476ca053047eeb1528edcd23c3c21c888f4aa4e4ffd2c828",
+    "buildId": "539c6f9eb8d6b7be476ca053047eeb1528edcd23c3c21c888f4aa4e4ffd2c828",
+    "metadata": {
+      "cacheHit": false,
+      "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/539c6f9eb8d6b7be476ca053047eeb1528edcd23c3c21c888f4aa4e4ffd2c828/Module.symvers",
+      "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/539c6f9eb8d6b7be476ca053047eeb1528edcd23c3c21c888f4aa4e4ffd2c828/modules.order",
+      "coverageNotes": []
+    }
+  },
+  {
+    "kind": "guest-program",
+    "name": "legacy-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/driver-guest/91b0751ca3ec20c6f15183b5602d66a09f6d854faeb0c9124d8d4c2b49e22058/legacy-driver-abi",
+    "fingerprint": "91b0751ca3ec20c6f15183b5602d66a09f6d854faeb0c9124d8d4c2b49e22058",
+    "buildId": "91b0751ca3ec20c6f15183b5602d66a09f6d854faeb0c9124d8d4c2b49e22058",
+    "metadata": {
+      "cacheHit": false,
+      "endpoint": "legacy-driver-abi",
+      "installPath": "/opt/cautest/bin/legacy-driver-abi"
+    }
+  },
+  {
+    "kind": "uml-image",
+    "name": "legacy-driver-abi",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/c1f135ecc4be17409659e27e82278346d3b2dacfac127c7758f07b0fdb3b288f/rootfs.cpio",
+    "fingerprint": "c1f135ecc4be17409659e27e82278346d3b2dacfac127c7758f07b0fdb3b288f",
+    "buildId": "c1f135ecc4be17409659e27e82278346d3b2dacfac127c7758f07b0fdb3b288f",
+    "metadata": {
+      "cacheHit": false,
+      "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/c1f135ecc4be17409659e27e82278346d3b2dacfac127c7758f07b0fdb3b288f/rootfs.cpio",
+      "endpoints": [
+        {
+          "endpoint": "kernel",
+          "type": "kernel",
+          "buildId": "c1f135ecc4be17409659e27e82278346d3b2dacfac127c7758f07b0fdb3b288f"
+        },
+        {
+          "endpoint": "legacy-driver-abi",
+          "type": "process",
+          "buildId": "91b0751ca3ec20c6f15183b5602d66a09f6d854faeb0c9124d8d4c2b49e22058"
+        }
+      ]
+    }
+  },
+  {
+    "kind": "log",
+    "name": "legacy-driver-abi-legacy-driver-abi-target",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy-driver-abi/legacy-driver-abi-legacy-driver-abi-target.log",
+    "metadata": {
+      "source": "ctp-target",
+      "endpoint": "legacy-driver-abi"
+    }
+  },
+  {
+    "kind": "log",
+    "name": "legacy-driver-abi-console",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy-driver-abi-console.log",
+    "metadata": {
+      "source": "uml-console"
+    }
+  },
+  {
+    "kind": "log",
+    "name": "legacy-driver-abi-host-stderr",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy-driver-abi-host-stderr.log",
+    "metadata": {
+      "source": "uml-host-stderr"
+    }
+  }
+]

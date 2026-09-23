@@ -22,7 +22,7 @@ ctest.driver {
 }
 ```
 
-Environment 模块导出 `createEnvironment({projectRoot, origin, options})`，返回现有 `umlKernelEnvironment({...})` 描述符。同名 Environment 在一次 Manifest 加载中只创建一次，其本地静态 import 依赖进入配置来源和摘要。工厂必须是纯声明，不得编译、开串口、启动 VM；`list`/`plan` 会调用工厂，但不会执行工作流。源码目录等普通路径应相对 `projectRoot` 解析，而不是生成 Manifest 所在目录。`configFragments` 是相对配置根的 File Pattern，必须写成 `{"uml-host.config"}` 对应的 JS 数组 `["uml-host.config"]`，不能传绝对路径。
+Environment 模块导出 `createEnvironment({projectRoot, origin, options})`，返回现有 `umlKernelEnvironment({...})` 描述符。同名 Environment 在一次 Manifest 加载中只创建一次，其本地静态 import 依赖进入配置来源和摘要。工厂必须是纯声明，不得编译、开串口、启动 VM；`list`/`plan` 会调用工厂，但不会执行工作流。源码目录等普通路径应相对 `projectRoot` 解析，而不是生成 Manifest 所在目录。`configFragments` 是相对配置根的 File Pattern，应写成 `configFragments: ["uml-host.config"]`，不能传绝对路径。
 
 Kernel/BusyBox/Rootfs 仍由既有 JS build Steps 构建和缓存，所有 Job 使用同一个 Environment 描述。产品 `.ko` 与 Driver Guest 只由引用的 Xmake target 构建，JS 不复制其产品源码列表、宏或 Kbuild 模型。每个 Job 独立启动并清理 UML；共享产物不表示共享 VM 会话。
 
@@ -111,6 +111,8 @@ npm run test:xmake:uml
 ### 有界、可观察的验收
 
 验收工程下有 `acceptance-pending.json`、`commands.json`、各阶段的 `*-stdout.log` / `*-stderr.log` 和最终 `acceptance.json`。耗时命令每 30 秒输出进度，日志实时写入文件。`CAUTEST_UML_TIMEOUT_MS` 设置总命令预算（毫秒，默认 55 分钟）；Ctrl+C 会取消正在执行的命令。`CAUTEST_UML_MATRIX=0` 明确选择仅冷/热 smoke，报告把完整矩阵记为 `NOT_RUN`，不能代替完整 G6 验收。
+
+默认验收还通过旧 `kernelCTestJob` / `driverAbiCTestJob` 编译入口运行相同 C Case，逐项比较新旧 CTP Case 结果；只改变构建来源，不新建执行器。
 
 默认负向矩阵使用真实内核及 initramfs，覆盖 Ready 超时、取消、错误 Catalog/Guest Build ID、Guest Case 失败、Guest 早退、模块初始化失败、编译失败时拒用旧模块、Kernel Case 失败、恢复及损坏缓存重建。被测 Job 的预期 FAIL/ERROR 不等于验收程序失败；验收程序检查准确阶段、Case、退出码、日志与资源关闭。
 

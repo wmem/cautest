@@ -93,7 +93,9 @@ else {
       }
       const matrix = process.env.CAUTEST_UML_MATRIX === '0' ? {status: 'NOT_RUN', reason: 'Explicit smoke-only request'}
         : await (await import('./xmake-uml-matrix.mjs')).runUmlMatrix({root, xmake, passedRun});
-      const report = {schemaVersion: 1, status: 'SUCCESS', command, root, runs, matrix, records};
+      const parity = process.env.CAUTEST_UML_MATRIX === '0' ? {status: 'NOT_RUN', reason: 'Explicit smoke-only request'}
+        : await (await import('./xmake-uml-parity.mjs')).runUmlParity({root, passedRun});
+      const report = {schemaVersion: 1, status: 'SUCCESS', command, root, runs, matrix, parity, records};
       await writeFile(path.join(root, 'acceptance.json'), JSON.stringify(report, null, 2) + '\n');
       console.log(JSON.stringify(report, null, 2));
     }

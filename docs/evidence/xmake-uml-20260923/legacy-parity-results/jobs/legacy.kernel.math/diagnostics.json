@@ -1,0 +1,9 @@
+{
+  "errors": [],
+  "cleanup": [
+    {
+      "name": "stop-uml:legacy_kernel_math",
+      "status": "SUCCESS"
+    }
+  ]
+}

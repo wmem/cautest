@@ -1,0 +1,337 @@
+{
+  "jobId": "legacy.kernel.math",
+  "level": "unit",
+  "status": "SUCCESS",
+  "startedAt": "2026-09-23T06:43:02.621Z",
+  "endedAt": "2026-09-23T06:43:24.163Z",
+  "durationMs": 21542.37751,
+  "steps": [
+    {
+      "id": "01-build-kernelBuild-legacy_kernel_math",
+      "kind": "kernelBuild",
+      "name": "legacy_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 19036.308374,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "02-build-busyboxBuild-legacy_kernel_math",
+      "kind": "busyboxBuild",
+      "name": "legacy_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 634.9338790000038,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "03-build-kernelModuleBuild-cautest_kernel",
+      "kind": "kernelModuleBuild",
+      "name": "cautest_kernel",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 59.49600400000054,
+      "diagnostics": [
+        {
+          "code": "cache_hit",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/cautest_kernel.ko"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "04-build-generatedKernelTestModule-legacy_kernel_math",
+      "kind": "generatedKernelTestModule",
+      "name": "legacy_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 1331.7286669999958,
+      "diagnostics": [
+        {
+          "code": "cache_miss",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6/legacy_kernel_math.ko"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "05-build-umlRootfsBuild-legacy_kernel_math",
+      "kind": "umlRootfsBuild",
+      "name": "legacy_kernel_math",
+      "phase": "build",
+      "status": "SUCCESS",
+      "durationMs": 134.73004400000355,
+      "diagnostics": [
+        {
+          "code": "cache_miss",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c/rootfs.cpio"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "06-provision-umlStart-legacy_kernel_math",
+      "kind": "umlStart",
+      "name": "legacy_kernel_math",
+      "phase": "provision",
+      "status": "SUCCESS",
+      "durationMs": 334.5954289999936,
+      "diagnostics": [
+        {
+          "code": "uml_ready",
+          "message": "pid=92295"
+        }
+      ],
+      "testResults": []
+    },
+    {
+      "id": "07-run-cTestRun-legacy_kernel_math",
+      "kind": "cTestRun",
+      "name": "legacy_kernel_math",
+      "phase": "run",
+      "status": "SUCCESS",
+      "durationMs": 5.782431999999972,
+      "diagnostics": [
+        {
+          "code": "c_test_session",
+          "message": "Kernel C Test: catalog=2, selected=2, executions=1, cases=2, events=8",
+          "hello": {
+            "major": 3,
+            "minor": 1,
+            "buildId": "a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c",
+            "bootId": "uml-1",
+            "rxLineMax": 64,
+            "txLineMax": 512
+          },
+          "catalog": [
+            {
+              "suiteId": 0,
+              "caseId": 0,
+              "paramId": 0,
+              "suite": "kernel_math",
+              "case": "add",
+              "parameter": "",
+              "name": "kernel_math/add"
+            },
+            {
+              "suiteId": 0,
+              "caseId": 1,
+              "paramId": 0,
+              "suite": "kernel_math",
+              "case": "boundary",
+              "parameter": "",
+              "name": "kernel_math/boundary"
+            }
+          ],
+          "selection": [
+            {
+              "suiteId": 0,
+              "caseId": 0,
+              "paramId": 0,
+              "suite": "kernel_math",
+              "case": "add",
+              "parameter": "",
+              "name": "kernel_math/add"
+            },
+            {
+              "suiteId": 0,
+              "caseId": 1,
+              "paramId": 0,
+              "suite": "kernel_math",
+              "case": "boundary",
+              "parameter": "",
+              "name": "kernel_math/boundary"
+            }
+          ],
+          "executionCount": 1,
+          "eventCount": 8
+        }
+      ],
+      "testResults": [
+        {
+          "name": "kernel_math",
+          "cases": [
+            {
+              "name": "add",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            },
+            {
+              "name": "boundary",
+              "status": "PASS",
+              "assertions": [],
+              "diagnostics": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "08-collect-umlLogs-legacy_kernel_math",
+      "kind": "umlLogs",
+      "name": "legacy_kernel_math",
+      "phase": "collect",
+      "status": "SUCCESS",
+      "durationMs": 4.341513999999734,
+      "diagnostics": [
+        {
+          "code": "uml_logs",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy_kernel_math-console.log"
+        },
+        {
+          "code": "uml_host_stderr",
+          "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy_kernel_math-host-stderr.log"
+        }
+      ],
+      "testResults": []
+    }
+  ],
+  "groups": [
+    {
+      "name": "kernel_math",
+      "cases": [
+        {
+          "name": "add",
+          "status": "PASS",
+          "assertions": [],
+          "diagnostics": []
+        },
+        {
+          "name": "boundary",
+          "status": "PASS",
+          "assertions": [],
+          "diagnostics": []
+        }
+      ]
+    }
+  ],
+  "cleanup": [
+    {
+      "name": "stop-uml:legacy_kernel_math",
+      "status": "SUCCESS"
+    }
+  ],
+  "errors": [],
+  "artifacts": [
+    {
+      "kind": "uml-kernel",
+      "name": "legacy_kernel_math",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "metadata": {
+        "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+        "cacheHit": true,
+        "arch": "um"
+      }
+    },
+    {
+      "kind": "busybox",
+      "name": "legacy_kernel_math",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+      "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+      "metadata": {
+        "cacheHit": true
+      }
+    },
+    {
+      "kind": "kernel-module",
+      "name": "cautest_kernel",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/cautest_kernel.ko",
+      "fingerprint": "3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed",
+      "buildId": "3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed",
+      "metadata": {
+        "cacheHit": true,
+        "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/Module.symvers",
+        "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/modules.order",
+        "coverageNotes": [],
+        "coverageSources": []
+      }
+    },
+    {
+      "kind": "kernel-module",
+      "name": "legacy_kernel_math",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6/legacy_kernel_math.ko",
+      "fingerprint": "ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6",
+      "buildId": "ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6",
+      "metadata": {
+        "cacheHit": false,
+        "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6/Module.symvers",
+        "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6/modules.order",
+        "coverageNotes": [],
+        "coverageSources": []
+      }
+    },
+    {
+      "kind": "uml-image",
+      "name": "legacy_kernel_math",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c/rootfs.cpio",
+      "fingerprint": "a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c",
+      "buildId": "a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c",
+      "metadata": {
+        "cacheHit": false,
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c/rootfs.cpio",
+        "endpoints": [
+          {
+            "endpoint": "kernel",
+            "type": "kernel",
+            "buildId": "a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "log",
+      "name": "legacy_kernel_math-kernel-target",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy_kernel_math/legacy_kernel_math-kernel-target.log",
+      "metadata": {
+        "source": "ctp-target",
+        "endpoint": "kernel"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "legacy_kernel_math-console",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy_kernel_math-console.log",
+      "metadata": {
+        "source": "uml-console"
+      }
+    },
+    {
+      "kind": "log",
+      "name": "legacy_kernel_math-host-stderr",
+      "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy_kernel_math-host-stderr.log",
+      "metadata": {
+        "source": "uml-host-stderr"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "kind": "uml",
+      "name": "legacy_kernel_math",
+      "state": "closed",
+      "owner": "legacy.kernel.math",
+      "metadata": {
+        "buildId": "a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c",
+        "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+        "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c/rootfs.cpio"
+      }
+    }
+  ]
+}

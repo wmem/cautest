@@ -1,0 +1,218 @@
+[
+  {
+    "id": "01-build-kernelBuild-legacy-driver-abi",
+    "kind": "kernelBuild",
+    "name": "legacy-driver-abi",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 17121.388719000002,
+    "diagnostics": [
+      {
+        "code": "cache_hit",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "02-build-busyboxBuild-legacy-driver-abi",
+    "kind": "busyboxBuild",
+    "name": "legacy-driver-abi",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 551.8221559999984,
+    "diagnostics": [
+      {
+        "code": "cache_hit",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "03-build-kernelModuleBuild-cautest_echo",
+    "kind": "kernelModuleBuild",
+    "name": "cautest_echo",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 1358.3508480000019,
+    "diagnostics": [
+      {
+        "code": "cache_miss",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/539c6f9eb8d6b7be476ca053047eeb1528edcd23c3c21c888f4aa4e4ffd2c828/cautest_echo.ko"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "04-build-driverGuestCTestBuild-legacy-driver-abi",
+    "kind": "driverGuestCTestBuild",
+    "name": "legacy-driver-abi",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 403.19550700000036,
+    "diagnostics": [
+      {
+        "code": "cache_miss",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/driver-guest/91b0751ca3ec20c6f15183b5602d66a09f6d854faeb0c9124d8d4c2b49e22058/legacy-driver-abi"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "05-build-umlRootfsBuild-legacy-driver-abi",
+    "kind": "umlRootfsBuild",
+    "name": "legacy-driver-abi",
+    "phase": "build",
+    "status": "SUCCESS",
+    "durationMs": 142.15421200000128,
+    "diagnostics": [
+      {
+        "code": "cache_miss",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/c1f135ecc4be17409659e27e82278346d3b2dacfac127c7758f07b0fdb3b288f/rootfs.cpio"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "06-provision-umlStart-legacy-driver-abi",
+    "kind": "umlStart",
+    "name": "legacy-driver-abi",
+    "phase": "provision",
+    "status": "SUCCESS",
+    "durationMs": 232.5450720000008,
+    "diagnostics": [
+      {
+        "code": "uml_ready",
+        "message": "pid=91734"
+      }
+    ],
+    "testResults": []
+  },
+  {
+    "id": "07-run-cTestRun-legacy-driver-abi",
+    "kind": "cTestRun",
+    "name": "legacy-driver-abi",
+    "phase": "run",
+    "status": "SUCCESS",
+    "durationMs": 49.238366000001406,
+    "diagnostics": [
+      {
+        "code": "c_test_session",
+        "message": "Driver Guest C Test: catalog=3, selected=3, executions=1, cases=3, events=10",
+        "hello": {
+          "major": 3,
+          "minor": 1,
+          "buildId": "91b0751ca3ec20c6f15183b5602d66a09f6d854faeb0c9124d8d4c2b49e22058",
+          "bootId": "native-26",
+          "rxLineMax": 64,
+          "txLineMax": 512
+        },
+        "catalog": [
+          {
+            "suiteId": 0,
+            "caseId": 0,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "read_write",
+            "parameter": "",
+            "name": "driver_abi/read_write"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 1,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "ioctl_value",
+            "parameter": "",
+            "name": "driver_abi/ioctl_value"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 2,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "invalid_input",
+            "parameter": "",
+            "name": "driver_abi/invalid_input"
+          }
+        ],
+        "selection": [
+          {
+            "suiteId": 0,
+            "caseId": 0,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "read_write",
+            "parameter": "",
+            "name": "driver_abi/read_write"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 1,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "ioctl_value",
+            "parameter": "",
+            "name": "driver_abi/ioctl_value"
+          },
+          {
+            "suiteId": 0,
+            "caseId": 2,
+            "paramId": 0,
+            "suite": "driver_abi",
+            "case": "invalid_input",
+            "parameter": "",
+            "name": "driver_abi/invalid_input"
+          }
+        ],
+        "executionCount": 1,
+        "eventCount": 10
+      }
+    ],
+    "testResults": [
+      {
+        "name": "driver_abi",
+        "cases": [
+          {
+            "name": "read_write",
+            "status": "PASS",
+            "assertions": [],
+            "diagnostics": []
+          },
+          {
+            "name": "ioctl_value",
+            "status": "PASS",
+            "assertions": [],
+            "diagnostics": []
+          },
+          {
+            "name": "invalid_input",
+            "status": "PASS",
+            "assertions": [],
+            "diagnostics": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "08-collect-umlLogs-legacy-driver-abi",
+    "kind": "umlLogs",
+    "name": "legacy-driver-abi",
+    "phase": "collect",
+    "status": "SUCCESS",
+    "durationMs": 10.480031999999483,
+    "diagnostics": [
+      {
+        "code": "uml_logs",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy-driver-abi-console.log"
+      },
+      {
+        "code": "uml_host_stderr",
+        "message": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy-driver-abi-host-stderr.log"
+      }
+    ],
+    "testResults": []
+  }
+]

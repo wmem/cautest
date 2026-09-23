@@ -1,0 +1,65 @@
+Linux version 6.6.157 (root@42ccc97f624b) (gcc (Debian 14.2.0-19) 14.2.0, GNU ld (GNU Binutils for Debian) 2.44) #1 Wed Sep 23 06:35:27 UTC 2026
+Zone ranges:
+  Normal   [mem 0x0000000000000000-0x00000000753f6fff]
+Movable zone start for each node
+Early memory node ranges
+  node   0: [mem 0x0000000000000000-0x00000000153f6fff]
+Initmem setup node 0 [mem 0x0000000000000000-0x00000000153f6fff]
+random: crng init done
+Kernel command line: mem=256M initrd=/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c/rootfs.cpio root=/dev/ram0 rw init=/init con=null con0=fd:0,fd:1 ssl=null ssl0=fd:3,fd:3 console=tty0
+Unknown kernel command line parameters "mem=256M", will be passed to user space.
+Dentry cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+Inode-cache hash table entries: 32768 (order: 6, 262144 bytes, linear)
+Sorting __ex_table...
+Built 1 zonelists, mobility grouping on.  Total pages: 85841
+mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+Memory: 246544K/348124K available (3685K kernel code, 990K rwdata, 1320K rodata, 173K init, 231K bss, 101580K reserved, 0K cma-reserved)
+SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+NR_IRQS: 64
+clocksource: timer: mask: 0xffffffffffffffff max_cycles: 0x1cd42e205, max_idle_ns: 881590404426 ns
+Calibrating delay loop... 5230.59 BogoMIPS (lpj=26152960)
+Checking that host ptys support output SIGIO...Yes
+pid_max: default: 32768 minimum: 301
+Mount-cache hash table entries: 1024 (order: 1, 8192 bytes, linear)
+Mountpoint-cache hash table entries: 1024 (order: 1, 8192 bytes, linear)
+devtmpfs: initialized
+clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+futex hash table entries: 256 (order: 1, 6144 bytes, linear)
+NET: Registered PF_NETLINK/PF_ROUTE protocol family
+pps_core: LinuxPPS API ver. 1 registered
+pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+PTP clock support registered
+clocksource: Switched to clocksource timer
+VFS: Disk quotas dquot_6.6.0
+VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+NET: Registered PF_INET protocol family
+IP idents hash table entries: 8192 (order: 4, 65536 bytes, linear)
+tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)
+Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+TCP established hash table entries: 4096 (order: 3, 32768 bytes, linear)
+TCP bind hash table entries: 4096 (order: 4, 65536 bytes, linear)
+TCP: Hash tables configured (established 4096 bind 4096)
+UDP hash table entries: 256 (order: 1, 8192 bytes, linear)
+UDP-Lite hash table entries: 256 (order: 1, 8192 bytes, linear)
+NET: Registered PF_UNIX/PF_LOCAL protocol family
+printk: console [stderr0] disabled
+mconsole (version 2) initialized on /home/oai/.uml/3m1zsI/mconsole
+Checking host MADV_REMOVE support...OK
+Unpacking initramfs...
+Freeing initrd memory: 3596K
+workingset: timestamp_bits=62 max_order=16 bucket_order=0
+io scheduler mq-deadline registered
+io scheduler kyber registered
+NET: Registered PF_PACKET protocol family
+Initialized stdio console driver
+Console initialized on /dev/tty0
+printk: console [tty0] enabled
+Initializing software serial port version 1
+printk: console [mc-1] enabled
+Failed to initialize ubd device 0 :Couldn't determine size of device's file
+epollctl add err fd 0, Operation not permitted
+This architecture does not have kernel memory protection.
+Run /init as init process
+cautest_kernel: loading out-of-tree module taints kernel.
+cautest: modules loaded
+reboot: System halted

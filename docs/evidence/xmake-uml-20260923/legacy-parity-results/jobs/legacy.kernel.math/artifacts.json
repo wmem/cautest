@@ -1,0 +1,96 @@
+[
+  {
+    "kind": "uml-kernel",
+    "name": "legacy_kernel_math",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+    "fingerprint": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+    "buildId": "a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+    "metadata": {
+      "outputDir": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29",
+      "cacheHit": true,
+      "arch": "um"
+    }
+  },
+  {
+    "kind": "busybox",
+    "name": "legacy_kernel_math",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/busybox/e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7/busybox",
+    "fingerprint": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+    "buildId": "e80f111b15fcb7efacf87453468385a2fc2960b85e4bb2dfc67c0b5271d8a4f7",
+    "metadata": {
+      "cacheHit": true
+    }
+  },
+  {
+    "kind": "kernel-module",
+    "name": "cautest_kernel",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/cautest_kernel.ko",
+    "fingerprint": "3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed",
+    "buildId": "3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed",
+    "metadata": {
+      "cacheHit": true,
+      "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/Module.symvers",
+      "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/3aef9ad6ca500907dbd0d4925d6210d7f9d2adce543527f8ccabbc4b518bf6ed/modules.order",
+      "coverageNotes": [],
+      "coverageSources": []
+    }
+  },
+  {
+    "kind": "kernel-module",
+    "name": "legacy_kernel_math",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6/legacy_kernel_math.ko",
+    "fingerprint": "ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6",
+    "buildId": "ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6",
+    "metadata": {
+      "cacheHit": false,
+      "symbols": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6/Module.symvers",
+      "modulesOrder": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel-modules/ef3a808c95404761d23ea18e878d7a478f445b43394dee683b9227a31ae957a6/modules.order",
+      "coverageNotes": [],
+      "coverageSources": []
+    }
+  },
+  {
+    "kind": "uml-image",
+    "name": "legacy_kernel_math",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c/rootfs.cpio",
+    "fingerprint": "a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c",
+    "buildId": "a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c",
+    "metadata": {
+      "cacheHit": false,
+      "kernelPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/kernel/a8ccd88ceb52ad193dd88b7cf2eccfeef8ed6a8835a9bf9f0f3a2c2cffaafd29/linux",
+      "rootfsPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/cache/rootfs/a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c/rootfs.cpio",
+      "endpoints": [
+        {
+          "endpoint": "kernel",
+          "type": "kernel",
+          "buildId": "a2b4aa394476d6c24cbbd016312893eb06de695c3ca25fc3d0b12f1cafa4621c"
+        }
+      ]
+    }
+  },
+  {
+    "kind": "log",
+    "name": "legacy_kernel_math-kernel-target",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy_kernel_math/legacy_kernel_math-kernel-target.log",
+    "metadata": {
+      "source": "ctp-target",
+      "endpoint": "kernel"
+    }
+  },
+  {
+    "kind": "log",
+    "name": "legacy_kernel_math-console",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy_kernel_math-console.log",
+    "metadata": {
+      "source": "uml-console"
+    }
+  },
+  {
+    "kind": "log",
+    "name": "legacy_kernel_math-host-stderr",
+    "path": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/legacy-parity/116fec46-eb6b-40bf-9aeb-46a75f57bfbc/legacy_kernel_math-host-stderr.log",
+    "metadata": {
+      "source": "uml-host-stderr"
+    }
+  }
+]
