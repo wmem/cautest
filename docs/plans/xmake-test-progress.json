@@ -5,13 +5,15 @@
   "execution": {
     "startedAt": "2026-09-23T02:45:28+00:00",
     "deadlineAt": "2026-09-23T03:45:28+00:00",
-    "implementationStoppedAt": "2026-09-23T03:33:20+00:00",
+    "implementationStoppedAt": "2026-09-23T03:38:13+00:00",
     "reason": "Seal independently verified Kernel/Driver components, BusyBox and reliability changes; actual Linux 6.6.157 build is blocked on flex, bison and bc. Reserve time for final bundle-clone verification. No physical MCU supplied.",
     "timeLimitExceeded": false,
-    "verifiedFeatureHead": "535bef646a286c600435e4b5e23818af4b681f14",
+    "verifiedFeatureHead": "62903e80ec22eec11635f90f83141d56460a97a6",
     "priorHead": "cb5c296bcf0dfbfa38bd009fad2c884560aaee22",
     "userDisplayTimezone": "UTC+08:00",
-    "finalSealedAt": "recorded in external delivery report after final clone verification"
+    "finalSealedAt": "recorded in external delivery report after final clone verification",
+    "plannedFeatureWorkStoppedAt": "2026-09-23T03:33:20+00:00",
+    "deliveryVerificationCorrection": "Cold final clone exposed a pre-existing fixture race: Ready file is published before stdout. Test now waits for observed stdout before taking a log snapshot; 15 complete system-step suite repetitions passed (75/75). Full final clone suites rerun after fix; failure evidence retained."
   },
   "requirements": {
     "firstPriority": "npm migration",
@@ -527,6 +529,14 @@
     {
       "commit": "535bef6",
       "subject": "test: verify portable Kernel Driver components and correct checkout documentation"
+    },
+    {
+      "commit": "062c42e",
+      "subject": "docs: archive verified Kernel Driver progress and distinguish blocked real UML acceptance"
+    },
+    {
+      "commit": "62903e8",
+      "subject": "test: synchronize log collection with observed stdout rather than a separate Ready file"
     }
   ]
 }

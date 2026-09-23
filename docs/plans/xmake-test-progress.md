@@ -2,8 +2,9 @@
 
 This round started **2026-09-23 10:45:28 +08:00** (11:45:28 +09:00).
 The hard deadline is **11:45:28 +08:00** (12:45:28 +09:00).
-New implementation stopped at **11:33:20 +08:00**, reserving time for final
-bundle-clone verification and delivery. No network access was used.
+Planned feature work stopped at **11:33:20 +08:00**. Final cold-clone verification
+exposed a pre-existing test synchronization race, corrected at **11:38:13 +08:00**,
+with time still reserved for a complete final clone rerun and delivery. No network access was used.
 The final seal time and bundle SHA-256 are recorded in the external delivery report.
 
 This is an incremental delivery, **not complete platform acceptance**.
@@ -23,6 +24,7 @@ Driver device exercise or physical MCU/SPI test in this round.
 | `f4e18f8` | Owned UML process-group cleanup and removal of expired control waiters; portable runtime inclusion |
 | `4058d1e` | Real visibility, link propagation, GCC/Clang, output isolation and measured discovery matrix |
 | `535bef6` | Relocated portable Kernel/Driver component verification and corrected checkout README |
+| `62903e8` | Deterministic log test: wait for observed stdout, not a Ready file written before stdout |
 
 The application still uses the original integration direction:
 
@@ -95,3 +97,14 @@ partial; G5 (physical MCU) and G6 (real UML) are blocked; G7 is not passed.
 The original uploaded plan under `xmake-test-v0.1.0/` remains unchanged.
 Task-by-task status is in [xmake-test-progress.json](xmake-test-progress.json).
 XT-028–030 remain deferred as the original plan specifies.
+
+
+## Final clone correction
+
+The first final cold-dist clone exposed one pre-existing fixture race: the server
+writes a Ready file before emitting stdout, but the test immediately expected that
+future stdout in a snapshot. The test now explicitly waits until stdout has been
+observed before collecting it, without changing runtime semantics or relaxing the
+assertion. Fifteen full system-step suite repetitions passed (75/75, no skips).
+The initial 148/149 result is retained in `round3-cold-clone-initial-failure-20260923.log`;
+only the complete final rerun is used as final delivery verification.

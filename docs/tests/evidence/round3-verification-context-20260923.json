@@ -27,6 +27,7 @@
   },
   "knownCorrections": [
     "Portable regression initially exposed missing owned-process.js in whitelist; fixed, default 149 and final Xmake 16 rerun PASS.",
-    "Initial source full-test command was killed by outer command timeout while BusyBox compilation competed for CPU; rerun complete suites without competing BusyBox succeeded."
+    "Initial source full-test command was killed by outer command timeout while BusyBox compilation competed for CPU; rerun complete suites without competing BusyBox succeeded.",
+    "Final cold clone first ran 148/149 due Ready-file-before-stdout fixture race; 62903e8 adds observed-stdout readiness. 15 system suite repetitions passed; initial failure retained and final full clone rerun required."
   ]
 }
