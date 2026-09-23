@@ -34,7 +34,8 @@
     "test:xmake:poc": "node --test test/xmake-poc.test.js",
     "test:xmake": "npm run build && node scripts/test-xmake.mjs",
     "test:xmake:kbuild": "npm run build && node scripts/test-xmake.mjs --kbuild",
-    "test:xmake:uml": "npm run build && node test/integration/xmake-uml-smoke.mjs"
+    "test:xmake:uml": "npm run build && node test/integration/xmake-uml-smoke.mjs",
+    "test:xmake:matrix": "npm run build && node scripts/test-xmake.mjs --matrix"
   },
   "devDependencies": {
     "@types/node": "24.3.0",
