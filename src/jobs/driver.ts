@@ -1,3 +1,4 @@
+import { umlRuntimeSteps } from "./uml-runtime.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { DriverAbiCTestJobFactoryInput, DriverAbiCTestJobInput, TestJob } from "../config/schema/index.js";
@@ -84,9 +85,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
       return { diagnostics: [{ code: image.cacheHit ? "cache_hit" : "cache_miss", message: image.rootfsPath }] };
     },
   });
-  const start = defineStep({ kind: "umlStart", name, phase: "provision", details: { ...environment.machine }, ...(environment.machine?.startTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.startTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("Driver UML Image 不存在", { code: "provision_error" }); const resource = await startUml(name, image, environment, context); return { diagnostics: [{ code: "uml_ready", message: `pid=${resource.child.pid}` }] }; } });
-  const run = defineStep({ kind: "cTestRun", name, phase: "run", details: { endpoint: input.guest.endpoint ?? guestName, selection: input.run ?? {} }, ...(input.run?.stepTimeoutMs === undefined ? {} : { timeoutMs: input.run.stepTimeoutMs }), async execute(context) { const image = context.state.get(`image:${name}`) as UmlImageArtifact | undefined; if (image === undefined) throw new CautestError("Driver UML Image 不存在", { code: "transport_error" }); const effectiveRun = effectiveWorkflowCTestRun(context, input.run ?? {}, name); const session = await runUmlEndpoint(name, input.guest.endpoint ?? guestName, image, effectiveRun, context); return workflowSessionResult(session, { label: "Driver Guest C Test", allowEmpty: input.policy?.allowEmpty === true }); } });
-  const collect = defineStep({ kind: "umlLogs", name, phase: "collect", runWhen: "always", details: {}, ...(environment.machine?.collectTimeoutMs === undefined ? {} : { timeoutMs: environment.machine.collectTimeoutMs }), async execute(context) { return { diagnostics: await collectUml(name, context) }; } });
+  const { start, run, collect } = umlRuntimeSteps({ name, environment, endpoint: input.guest.endpoint ?? guestName, label: "Driver Guest C Test", ...(input.run === undefined ? {} : {run: input.run}), allowEmpty: input.policy?.allowEmpty === true });
   return testJob({ id: input.id, level: input.level ?? "integration", tags: input.tags ?? ["integration", "driver", "uml"], workflow: [kernelBuild, busyboxBuild, ...probe, ...modules, guest, rootfs, start, run, collect], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }
 
