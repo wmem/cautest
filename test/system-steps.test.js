@@ -4,7 +4,7 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { collectLogs, externalTest, parseJUnit, processAttach, processStart, testJob, waitForReady } from "../dist/config/index.js";
+import { collectLogs, externalTest, parseJUnit, processAttach, processStart, testJob, waitForReady, waitReady } from "../dist/config/index.js";
 import { executeWorkflow } from "../dist/workflow/engine.js";
 
 const projectRoot = path.resolve(new URL("..", import.meta.url).pathname);
@@ -27,6 +27,9 @@ test("processStart Ready 后收集日志且 Cleanup 不泄漏进程", async (t) 
   const ready = path.join(directory, "port");
   const job = testJob({ id: "system.server", level: "system", policy: { allowEmpty: true }, workflow: [
     processStart({ name: "server", program: process.execPath, args: [fixture("server.js"), ready], ready: { kind: "file", path: ready }, readyTimeoutMs: 2_000 }),
+    // The fixture publishes its Ready file before emitting stdout. File readiness
+    // is not a guarantee that a different pipe's data event has reached the Host.
+    waitReady({ from: "process:server", readyTimeoutMs: 2_000, probe: { type: "custom", check: ({ resource }) => Buffer.concat(resource.handle.stdout).includes(Buffer.from("server:")) } }),
     collectLogs({ from: "server" }),
   ] });
   const result = await executeWorkflow(job, { project: { configDir: projectRoot, resultDir: path.join(directory, "results") } });
