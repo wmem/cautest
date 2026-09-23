@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { chmod, copyFile, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { CDefineValue, NativeCTestJobFactoryInput, NativeCTestJobInput, TestJob } from "../config/schema/index.js";
+import type { CDefineValue, NativeCTestJobFactoryInput, NativeCTestJobInput, TestJob, StepExecutionContext, WorkflowStep, CTestRunInput } from "../config/schema/index.js";
 import { CAUTEST_CACHE_VERSIONS } from "../config/versions.js";
 import { expandFilePatterns } from "../config/file-pattern.js";
 import { testJob } from "../config/define.js";
@@ -121,6 +121,55 @@ function validateConfiguredCacheRoot(project: string, configured: string | undef
   }
 }
 
+/** Runtime shared by the legacy compiler helper and artifact-driven providers. */
+export interface NativeRuntimeArtifact { readonly path: string; readonly buildId: string; readonly coverage?: boolean }
+export function nativeRuntimeStep(options: {
+  readonly name: string;
+  readonly run?: CTestRunInput;
+  readonly allowEmpty?: boolean;
+  readonly artifact: (context: StepExecutionContext) => NativeRuntimeArtifact | undefined;
+}): WorkflowStep {
+  const artifactName = options.name;
+  const run = options.run ?? {};
+  return defineStep({
+    kind: "cTestRun", name: artifactName, phase: "run", ...(run.stepTimeoutMs === undefined ? {} : { timeoutMs: run.stepTimeoutMs }),
+    details: { transport: "process", artifactName, selection: run },
+    async execute(context) {
+      const effectiveRun = effectiveWorkflowCTestRun(context, run, artifactName);
+      const artifact = options.artifact(context);
+      if (artifact === undefined) throw new CautestError(`Native Artifact 不存在: ${artifactName}`, { code: "build_error" });
+      const coverageRaw = path.join(context.project.resultDir, "coverage", artifactName, "raw");
+      if (artifact.coverage) await mkdir(coverageRaw, { recursive: true });
+      const logDir = path.join(context.project.resultDir, context.job.id);
+      const stdoutFile = path.join(logDir, `${artifactName}.stdout.log`);
+      const stderrFile = path.join(logDir, `${artifactName}.stderr.log`);
+      const targetFile = path.join(logDir, `${artifactName}.target.log`);
+      const targetLogs: string[] = [];
+      await mkdir(logDir, { recursive: true });
+      const hostRun = effectiveRun.caseTimeoutMs === undefined ? effectiveRun : Object.freeze({
+        ...effectiveRun,
+        // Native Target 自己按配置终止隔离 Case；Host 只需为 FAULT/END 事件留出传输宽限。
+        caseTimeoutMs: Math.min(Number.MAX_SAFE_INTEGER, effectiveRun.caseTimeoutMs + nativeCaseTimeoutGraceMs),
+      });
+      const session = await runNativeSession({
+        program: artifact.path,
+        cwd: context.project.configDir,
+        env: { ...effectiveEnvironment(context), ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: "100" } : {}) },
+        expectedBuildId: artifact.buildId,
+        run: hostRun,
+        signal: context.signal,
+        onEvent: workflowSessionEventSink(context.events, context.job.id),
+        onLog(log) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },
+        async onComplete(output) { await Promise.all([writeFile(stdoutFile, output.stdout), writeFile(stderrFile, output.stderr), writeFile(targetFile, `${targetLogs.join("\n")}${targetLogs.length === 0 ? "" : "\n"}`)]); },
+      });
+      context.artifacts.publish({ kind: "log", name: `${artifactName}-stdout`, path: stdoutFile });
+      context.artifacts.publish({ kind: "log", name: `${artifactName}-stderr`, path: stderrFile });
+      context.artifacts.publish({ kind: "log", name: `${artifactName}-target`, path: targetFile });
+      return workflowSessionResult(session, { label: "Native C Test", allowEmpty: options.allowEmpty === true });
+    },
+  });
+}
+
 /** 把一个完整 Native C Test 声明展开为 build → run → collect Workflow。 */
 export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
   if (typeof input !== "object" || input === null || Array.isArray(input)) throw new CautestError("nativeCTestJob() 参数必须是对象", { code: "config_error" });
@@ -201,43 +250,8 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       return { diagnostics: [{ code: hit ? "cache_hit" : (cacheEnabled ? "cache_miss" : "cache_disabled"), message: targetPath }] };
     },
   });
-  const execute = defineStep({
-    kind: "cTestRun", name: artifactName, phase: "run", ...(run.stepTimeoutMs === undefined ? {} : { timeoutMs: run.stepTimeoutMs }),
-    details: { transport: "process", artifactName, selection: run },
-    async execute(context) {
-      const effectiveRun = effectiveWorkflowCTestRun(context, run, artifactName);
-      const artifact = context.state.get(`native:${artifactName}`) as NativeArtifact | undefined;
-      if (artifact === undefined) throw new CautestError(`Native Artifact 不存在: ${artifactName}`, { code: "build_error" });
-      const coverageRaw = path.join(context.project.resultDir, "coverage", artifactName, "raw");
-      if (artifact.coverage) await mkdir(coverageRaw, { recursive: true });
-      const logDir = path.join(context.project.resultDir, context.job.id);
-      const stdoutFile = path.join(logDir, `${artifactName}.stdout.log`);
-      const stderrFile = path.join(logDir, `${artifactName}.stderr.log`);
-      const targetFile = path.join(logDir, `${artifactName}.target.log`);
-      const targetLogs: string[] = [];
-      await mkdir(logDir, { recursive: true });
-      const hostRun = effectiveRun.caseTimeoutMs === undefined ? effectiveRun : Object.freeze({
-        ...effectiveRun,
-        // Native Target 自己按配置终止隔离 Case；Host 只需为 FAULT/END 事件留出传输宽限。
-        caseTimeoutMs: Math.min(Number.MAX_SAFE_INTEGER, effectiveRun.caseTimeoutMs + nativeCaseTimeoutGraceMs),
-      });
-      const session = await runNativeSession({
-        program: artifact.path,
-        cwd: context.project.configDir,
-        env: { ...effectiveEnvironment(context), ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: "100" } : {}) },
-        expectedBuildId: artifact.buildId,
-        run: hostRun,
-        signal: context.signal,
-        onEvent: workflowSessionEventSink(context.events, context.job.id),
-        onLog(log) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },
-        async onComplete(output) { await Promise.all([writeFile(stdoutFile, output.stdout), writeFile(stderrFile, output.stderr), writeFile(targetFile, `${targetLogs.join("\n")}${targetLogs.length === 0 ? "" : "\n"}`)]); },
-      });
-      context.artifacts.publish({ kind: "log", name: `${artifactName}-stdout`, path: stdoutFile });
-      context.artifacts.publish({ kind: "log", name: `${artifactName}-stderr`, path: stderrFile });
-      context.artifacts.publish({ kind: "log", name: `${artifactName}-target`, path: targetFile });
-      return workflowSessionResult(session, { label: "Native C Test", allowEmpty: input.policy?.allowEmpty === true });
-    },
-  });
+  const execute = nativeRuntimeStep({ name: artifactName, run, allowEmpty: input.policy?.allowEmpty === true,
+    artifact: (context) => context.state.get(`native:${artifactName}`) as NativeArtifact | undefined });
   const coverage = input.coverage === undefined ? [] : [defineStep({
     kind: "nativeCoverage", name: artifactName, phase: "collect", runWhen: "always", ...(input.coverage.timeoutMs === undefined ? {} : { timeoutMs: input.coverage.timeoutMs }),
     details: { tool: input.coverage.tool ?? "gcov", artifactName },

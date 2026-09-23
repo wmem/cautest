@@ -5,7 +5,7 @@ export const CAUTEST_VERSIONS = Object.freeze({
   ctp: {"major":3,"minor":1},
   kernelAbi: {"major":3,"minor":0,"magic":"0xca7e57U"},
   probeAbi: {"major":1,"minor":0,"magic":"0xca7e50U"},
-  schemas: {"config":2,"result":1,"event":1,"cli":1,"buildInfo":1,"portableManifest":1,"cacheManifest":1,"fingerprint":1},
+  schemas: {"config":2,"result":1,"event":1,"cli":1,"buildInfo":1,"portableManifest":1,"cacheManifest":1,"fingerprint":1,"xmakeManifest":1,"artifactReceipt":1},
   caches: {"nativeFingerprint":1,"nativeManifest":2,"kernelFingerprint":3,"busyboxFingerprint":2,"mcuFingerprint":1,"moduleFingerprint":2,"moduleManifest":4,"agentFingerprint":1,"guestFingerprint":2,"rootfsFingerprint":3},
 } as const);
 

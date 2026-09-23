@@ -1,9 +1,23 @@
 {
   "release": "0.2.1",
-  "cApi": { "major": 2, "minor": 1 },
-  "ctp": { "major": 3, "minor": 1 },
-  "kernelAbi": { "major": 3, "minor": 0, "magic": "0xca7e57U" },
-  "probeAbi": { "major": 1, "minor": 0, "magic": "0xca7e50U" },
+  "cApi": {
+    "major": 2,
+    "minor": 1
+  },
+  "ctp": {
+    "major": 3,
+    "minor": 1
+  },
+  "kernelAbi": {
+    "major": 3,
+    "minor": 0,
+    "magic": "0xca7e57U"
+  },
+  "probeAbi": {
+    "major": 1,
+    "minor": 0,
+    "magic": "0xca7e50U"
+  },
   "schemas": {
     "config": 2,
     "result": 1,
@@ -12,7 +26,9 @@
     "buildInfo": 1,
     "portableManifest": 1,
     "cacheManifest": 1,
-    "fingerprint": 1
+    "fingerprint": 1,
+    "xmakeManifest": 1,
+    "artifactReceipt": 1
   },
   "caches": {
     "nativeFingerprint": 1,

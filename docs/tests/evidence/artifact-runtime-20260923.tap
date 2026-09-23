@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: receipt strictly validates version/target/output/context/bytes and separates protocol identity
+ok 1 - receipt strictly validates version/target/output/context/bytes and separates protocol identity
+  ---
+  duration_ms: 10.712985
+  type: 'test'
+  ...
+# Subtest: Native artifact provider and legacy compiler use identical real CTP runtime and case results
+ok 2 - Native artifact provider and legacy compiler use identical real CTP runtime and case results
+  ---
+  duration_ms: 347.271618
+  type: 'test'
+  ...
+# Subtest: provider errors and missing CTP identities block every downstream Native run
+ok 3 - provider errors and missing CTP identities block every downstream Native run
+  ---
+  duration_ms: 4.196772
+  type: 'test'
+  ...
+# Subtest: MCU registers owned cleanup before flash/reset; borrowed boards remain untouched
+ok 4 - MCU registers owned cleanup before flash/reset; borrowed boards remain untouched
+  ---
+  duration_ms: 8.976806
+  type: 'test'
+  ...
+# Subtest: MCU artifact provider consumes the same real simulated firmware and runtime as legacy builder
+ok 5 - MCU artifact provider consumes the same real simulated firmware and runtime as legacy builder
+  ---
+  duration_ms: 331.749762
+  type: 'test'
+  ...
+# Subtest: Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+ok 6 - Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+  ---
+  duration_ms: 296.727138
+  type: 'test'
+  ...
+# Subtest: External MCU Adapter 通过统一 CTP3 Transport 执行
+ok 7 - External MCU Adapter 通过统一 CTP3 Transport 执行
+  ---
+  duration_ms: 10.995916
+  type: 'test'
+  ...
+# Subtest: Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+ok 8 - Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+  ---
+  duration_ms: 1763.560373
+  type: 'test'
+  ...
+# Subtest: External MCU 校验 Reset 返回的 Boot ID
+ok 9 - External MCU 校验 Reset 返回的 Boot ID
+  ---
+  duration_ms: 3.999886
+  type: 'test'
+  ...
+# Subtest: Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+ok 10 - Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+  ---
+  duration_ms: 499.120563
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+ok 11 - 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+  ---
+  duration_ms: 241.443967
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+ok 12 - 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+  ---
+  duration_ms: 228.425254
+  type: 'test'
+  ...
+# Subtest: External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+ok 13 - External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+  ---
+  duration_ms: 3.654218
+  type: 'test'
+  ...
+# Subtest: Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓存命中
+ok 14 - Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓存命中
+  ---
+  duration_ms: 825.638012
+  type: 'test'
+  ...
+# Subtest: Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性
+ok 15 - Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性
+  ---
+  duration_ms: 1060.631295
+  type: 'test'
+  ...
+# Subtest: Native Header 与 fingerprintEnv 进入指纹，自定义 Cache 根受边界保护
+ok 16 - Native Header 与 fingerprintEnv 进入指纹，自定义 Cache 根受边界保护
+  ---
+  duration_ms: 789.111264
+  type: 'test'
+  ...
+# Subtest: Profile Env 覆盖 Native Job Env，并进入构建、运行和 Cache 指纹
+ok 17 - Profile Env 覆盖 Native Job Env，并进入构建、运行和 Cache 指纹
+  ---
+  duration_ms: 493.907142
+  type: 'test'
+  ...
+# Subtest: Native Crash/Timeout 映射 ERROR 且后续 Case 继续
+ok 18 - Native Crash/Timeout 映射 ERROR 且后续 Case 继续
+  ---
+  duration_ms: 345.615043
+  type: 'test'
+  ...
+# Subtest: Native 保留 FAIL/SKIP/ERROR，并让 Suite Fixture 使用同一初始快照
+ok 19 - Native 保留 FAIL/SKIP/ERROR，并让 Suite Fixture 使用同一初始快照
+  ---
+  duration_ms: 267.778155
+  type: 'test'
+  ...
+# Subtest: Native Suite Setup 错误保留 Session 诊断并映射基础设施 ERROR
+ok 20 - Native Suite Setup 错误保留 Session 诊断并映射基础设施 ERROR
+  ---
+  duration_ms: 233.91916
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4383.243493

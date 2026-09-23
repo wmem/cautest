@@ -87,7 +87,7 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   const publicDeclarations = await collectPublicDeclarations();
   const libraryFilter = portableLibraryFilter(publicDeclarations);
   await mkdir(path.join(root, "lib"), { recursive: true });
-  for (const directory of ["cache", "config", "doctor", "integration", "jobs", "kernel", "model", "pattern", "protocol", "reporters", "result", "steps", "system", "uml", "workflow"]) {
+  for (const directory of ["artifacts", "cache", "config", "doctor", "integration", "jobs", "kernel", "model", "pattern", "protocol", "reporters", "result", "steps", "system", "uml", "workflow"]) {
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true, filter: libraryFilter });
   }
   await mkdir(path.join(root, "lib/runtime"));
