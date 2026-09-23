@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "real-uml-and-mcu-simulation-verified-candidate-distribution-verification",
+  "status": "release-candidate-verified-linux-uml-and-mcu-simulation",
   "baselineCommit": "062044d66d582781033393422a555b0c30195cc9",
   "execution": {
     "startedAt": "2026-09-23T06:16:28+00:00",
@@ -10,7 +10,7 @@
     "timeLimitExceeded": false,
     "userDisplayTimezone": "UTC+08:00",
     "finalSealedAt": "recorded in external report after exact-HEAD bundle verification",
-    "reason": "Core functionality and real UML matrix verified. Final candidate distribution, independent clone and report verification in progress."
+    "reason": "Independently cloned candidate passed complete real cold/hot UML matrix and parity. Relocated portable real UML passed. Exact final source bundle re-verification and sealing recorded in external delivery report."
   },
   "requirements": {
     "firstPriority": "npm migration",
@@ -51,7 +51,7 @@
     "G4": "PASS in tested Linux x86_64 scope: cache/concurrency/config isolation, 2000 jobs, 1024 C cases, and explicit two-variant Cortex-M ELF/BIN compile checks. Not an unbounded or other-host guarantee.",
     "G5": "User-approved MCU SPI behavioral simulation PASS. Original physical MCU-04/G5 gate explicitly deferred, NOT passed. ARM ELF/BIN compile-only evidence is separate from simulation execution.",
     "G6": "PASS: real Linux 6.6.157 / BusyBox 1.36.1 cold and hot Kernel Test + Driver ABI, 12 real negative/recovery/integrity scenarios, legacy-vs-Artifact same-case parity and pristine source trees. No VM/Agent emulator substitutes.",
-    "G7": "In final candidate distribution verification; original all-platform gate not claimed. Supported scope is Linux x86_64 + MCU software simulation; physical MCU explicitly deferred."
+    "G7": "PASS for the declared Linux x86_64 + user-approved MCU software simulation release-candidate scope. Original physical MCU gate remains deferred, so original all-platform G7 is NOT asserted. No Registry release/tag/push."
   },
   "notImplemented": [
     "Artifact Driver Probe / Kernel Coverage extra DSL (legacy helpers retained; not claimed as new Xmake features)",
@@ -91,7 +91,7 @@
     "kbuildKernel": "preinstalled linux-headers-6.12.96+deb13-amd64; NOT supplied Linux 6.6.157 and NOT booted/loaded",
     "xmakeEvidence": "../evidence/xmake-uml-20260923/regression-test-xmake.log",
     "kbuildEvidence": "../evidence/xmake-uml-20260923/regression-test-xmake-kbuild-configured.log",
-    "portable": "PASS: relocated lib-only Native/MCU run; Kernel/Driver factory list/plan and actual static Guest build; no dist/node_modules; manifest integrity retained. NOT UML boot.",
+    "portable": "PASS: relocated lib-only package, no dist or node_modules, BOTH real UML Jobs / 5 Cases and post-run manifest verification. Explicitly reuses byte-validated Kernel/BusyBox cache; rebuilds product modules. Previous Native/MCU/N-API source/portable regressions retained.",
     "freshBundleClone": "Full cold-dist source build/default/Xmake/Kbuild/matrix/type/Git verification recorded in external cautest-bundle-verification.log; dependency files copied from supplied archive, not cold Registry npm ci.",
     "realBuildMatrixTests": {
       "passed": 5,
@@ -125,7 +125,23 @@
     "realUmlLegacyParityEvidence": "../evidence/xmake-uml-20260923/legacy-parity.json",
     "sourceIntegrity": "81703 Linux and 2788 BusyBox source files byte-compared, no changed/added files; nine original plan files unchanged.",
     "sourceIntegrityEvidence": "../evidence/xmake-uml-20260923/source-integrity.json",
-    "embeddedBuild": "PASS: Clang/LLD 17 generated 2 Cortex-M3 ARM ELF32 + BIN variants, vector/stack/Flash/RAM/macro isolation and duplicate-startup rejection/recovery. ARM firmware not executed."
+    "embeddedBuild": "PASS: Clang/LLD 17 generated 2 Cortex-M3 ARM ELF32 + BIN variants, vector/stack/Flash/RAM/macro isolation and duplicate-startup rejection/recovery. ARM firmware not executed.",
+    "independentColdUmlCandidate": {
+      "head": "7c1cadf",
+      "status": "PASS",
+      "coldAndHot": {
+        "jobs": 2,
+        "cases": 5
+      },
+      "realNegativeRecoveryScenarios": 12,
+      "legacyParity": {
+        "jobs": 2,
+        "cases": 5
+      },
+      "productionChangesAfterCandidate": false,
+      "evidence": "../evidence/xmake-uml-20260923/independent-candidate/acceptance.json"
+    },
+    "portableRealUmlEvidence": "../evidence/xmake-uml-20260923/independent-candidate/portable-real.json"
   },
   "tasks": [
     {
@@ -356,7 +372,7 @@
         "XT-016"
       ],
       "status": "completed-in-simulation-scope",
-      "notes": "Actual Xmake host firmware ELF and distinct CTP identity, stale image/Boot ID checks verified. Embedded ELF/BIN/linker/startup verification deferred by simulation scope.",
+      "notes": "Actual Xmake host firmware and CTP identity/negative checks passed; independent Cortex-M3 ARM ELF32/BIN startup/linker/macro boundaries compiled with LLVM. ARM execution and physical hardware deferred.",
       "commit": "1aaf931"
     },
     {
@@ -416,7 +432,7 @@
       ],
       "status": "completed",
       "notes": "Cold/hot 2 jobs/5 cases; 12 real fault/recovery/cache scenarios; live process-group cleanup; same-byte source/plan integrity; evidence in docs/evidence/xmake-uml-20260923.",
-      "commit": "1bea7a0"
+      "commit": "0c7503b"
     },
     {
       "id": "XT-025",
@@ -427,8 +443,8 @@
         "XT-021",
         "XT-024"
       ],
-      "status": "partial",
-      "notes": "Source/vendoring and portable regressions PASS. Independent full bundle cold-UML replay and real portable UML verification in progress. No cold Registry access or arbitrary platform/addon guarantee.",
+      "status": "completed-in-supported-offline-scope",
+      "notes": "Independent full-history bundle clone cold-dist build and real cold/hot UML replay passed. Relocated lib-only portable actually boots BOTH UML routes, 5 Cases, post-run manifest unchanged. No cold Registry or arbitrary addon/platform guarantee.",
       "commit": "cf26552"
     },
     {
@@ -443,7 +459,7 @@
       ],
       "status": "completed-in-current-scope",
       "notes": "Version consistency, support matrix and explicit live-log/budgeted real UML CI entry with default matrix/parity; missing preconditions remain BLOCKED/77.",
-      "commit": "fba3ec5"
+      "commit": "84f3381"
     },
     {
       "id": "XT-027",
@@ -452,8 +468,8 @@
       "dependsOn": [
         "XT-026"
       ],
-      "status": "partial",
-      "notes": "Real UML now verified; final candidate packaging and exact-HEAD bundle verification in progress. Original physical gate deferred by user, other runtime/host versions not certified; no publish/tag/push."
+      "status": "completed-in-declared-release-candidate-scope",
+      "notes": "Independent candidate default158/Xmake21/Kbuild2/matrix4 and real UML cold/hot+12 negative+legacy parity passed; expanded Cortex/host matrix5 passed independently. Final exact-HEAD full regression and source consumption recorded in external verification log. Original physical gate deferred, not passed; other runtimes not certified; no publication."
     },
     {
       "id": "XT-028",
@@ -551,11 +567,17 @@
     }
   ],
   "blockedAcceptance": [
-    "XT-024/G6: flex missing from supplied archive and host; actual Linux 6.6.157 configuration cannot complete. bc now source-built, bison available. Later build/runtime issues are unknown until this blocker is removed.",
-    "XT-027/G7: real UML cold/hot cache, Kernel Test/Driver read/write/ioctl/negative and real failure cleanup not executed; cold Registry and broader runtime/host matrix not executed.",
-    "Original physical MCU/SPI gate explicitly deferred by user, not an input requirement for the current software simulation scope."
+    "Original physical MCU/SPI gate explicitly deferred by user. MCU behavior simulation and separate ARM compile-only scope passed.",
+    "Other host/Node/addon versions and network Registry provisioning are not certified; not required additional uploads for the completed supported scope."
   ],
-  "roundCommits": [
+  "scopedAcceptance": {
+    "status": "PASS",
+    "scope": "Linux x86_64 / Xmake 3.1.1 / Node 22.16.0 / GCC14.2 / Clang-LLD17 / real Linux6.6.157 UML and BusyBox1.36.1 / MCU SPI software behavior simulation",
+    "originalAllPlatformGate": "NOT ASSERTED: physical MCU gate deferred by user",
+    "additionalRequiredUploads": [],
+    "finalExactHeadEvidence": "external cautest-bundle-verification.log"
+  },
+  "previousRoundCommits": [
     {
       "commit": "ac00a1b",
       "subject": "fix: serialize Linux build cache and Xmake receipt transactions across processes"
@@ -593,11 +615,30 @@
       "subject": "test: verify portable SPI simulation and record actual offline prerequisites"
     }
   ],
-  "scopedAcceptance": {
-    "scope": "Linux x86_64 + Xmake 3.1.1 + Node 22.16.0; Native and MCU host behavior simulation",
-    "mcuSoftware": "PASS (CTP, artifact identity, SPI model/known fault/recovery, owned/borrowed 16-scenario matrix)",
-    "physicalMcu": "DEFERRED by user; no real hardware claim",
-    "realKernelDriverUml": "BLOCKED missing flex",
-    "finalRelease": "NOT PASSED"
-  }
+  "roundCommits": [
+    {
+      "commit": "7b62cd4",
+      "subject": "fix: retain UML startup diagnostics and synchronize cancellation regression fixtures"
+    },
+    {
+      "commit": "e6ac098",
+      "subject": "fix: use the host ELF loader policy for real UML example builds"
+    },
+    {
+      "commit": "0c7503b",
+      "subject": "test: validate real Linux UML cold hot failure and corruption paths"
+    },
+    {
+      "commit": "7c1cadf",
+      "subject": "test: compare legacy helpers and Xmake artifacts on the same real UML cases"
+    },
+    {
+      "commit": "cab2d50",
+      "subject": "test: verify Cortex-M startup linker and ELF BIN product boundaries with LLVM"
+    },
+    {
+      "commit": "84f3381",
+      "subject": "docs: record real UML acceptance and explicit simulation support boundaries"
+    }
+  ]
 }

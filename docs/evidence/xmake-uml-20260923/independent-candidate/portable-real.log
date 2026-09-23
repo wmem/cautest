@@ -1,0 +1,15 @@
+84f338125e86341dde506148f7e2a6202f63f9b4
+
+> cautest@0.2.1 pack:portable
+> npm run build && node dist/build-info.js && node dist/archive.js --output /mnt/data/run-uml/portable-candidate.tar.gz
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+便携包: /mnt/data/run-uml/portable-candidate.tar.gz
+SHA-256: /mnt/data/run-uml/portable-candidate.tar.gz.sha256

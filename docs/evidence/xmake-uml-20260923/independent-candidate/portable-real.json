@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "jobs": 2,
+  "cases": 5,
+  "realUml": true,
+  "sourceDist": false,
+  "nodeModules": false,
+  "manifestAfterRun": "PASS",
+  "cache": "Byte-validated Kernel and BusyBox reused from prior real source build; product modules rebuilt against portable headers",
+  "resultPath": "/mnt/data/run-uml/acceptance-final/project-fRxMqR/.cautest/results/20260923065530125-e7ef5e3d/result.json"
+}

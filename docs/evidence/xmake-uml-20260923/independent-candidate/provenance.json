@@ -1,0 +1,12 @@
+{
+  "candidateHead": "7c1cadf565eaae3b20777ef2687134734e1e6d06",
+  "portableHead": "84f3381",
+  "candidateColdDist": true,
+  "candidateColdUml": true,
+  "candidateMatrixScenarios": 12,
+  "candidateLegacyParityCases": 5,
+  "portableRealUmlCases": 5,
+  "productionChangesAfterCandidate": false,
+  "laterChanges": "ARM compile-only fixture, matrix runner selection, documentation and evidence only",
+  "dependencySource": "original supplied cautest.tar.gz development dependency files; no Registry install"
+}

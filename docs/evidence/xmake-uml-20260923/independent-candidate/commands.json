@@ -1,0 +1,128 @@
+[
+  {
+    "label": "list",
+    "args": [
+      "ct",
+      "--list",
+      "--json"
+    ],
+    "exitCode": 0,
+    "durationMs": 330
+  },
+  {
+    "label": "plan",
+    "args": [
+      "ct",
+      "--plan",
+      "--json"
+    ],
+    "exitCode": 0,
+    "durationMs": 411
+  },
+  {
+    "label": "doctor",
+    "args": [
+      "ct",
+      "--doctor",
+      "--json"
+    ],
+    "exitCode": 0,
+    "durationMs": 623
+  },
+  {
+    "label": "cold",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit"
+    ],
+    "exitCode": 0,
+    "durationMs": 415044
+  },
+  {
+    "label": "cache-hit",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit"
+    ],
+    "exitCode": 0,
+    "durationMs": 54284
+  },
+  {
+    "label": "guest-assertion-failure",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit",
+      "integration.driver.abi"
+    ],
+    "exitCode": 1,
+    "durationMs": 35854
+  },
+  {
+    "label": "guest-startup-failure",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit",
+      "integration.driver.abi"
+    ],
+    "exitCode": 2,
+    "durationMs": 35899
+  },
+  {
+    "label": "module-init-failure",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit",
+      "integration.driver.abi"
+    ],
+    "exitCode": 2,
+    "durationMs": 38762
+  },
+  {
+    "label": "stale-module-after-build-failure",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit",
+      "integration.driver.abi"
+    ],
+    "exitCode": 2,
+    "durationMs": 25849
+  },
+  {
+    "label": "kernel-case-failure",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit",
+      "unit.kernel.math"
+    ],
+    "exitCode": 1,
+    "durationMs": 38962
+  },
+  {
+    "label": "recovery",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit"
+    ],
+    "exitCode": 0,
+    "durationMs": 57669
+  },
+  {
+    "label": "busybox-corruption-recovery",
+    "args": [
+      "ct",
+      "--json",
+      "--reporter=json,junit",
+      "integration.driver.abi"
+    ],
+    "exitCode": 0,
+    "durationMs": 63069
+  }
+]

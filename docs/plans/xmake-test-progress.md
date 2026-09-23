@@ -6,7 +6,7 @@
 
 Native、MCU SPI 软件行为模拟和 **真实 Linux 6.6.157 UML 的 Kernel Test / Driver ABI** 已执行验证。此前缺 flex 的阻断已解除，完整离线包中的工具已实际运行；没有安装系统 `.deb`、访问 Registry、加载宿主 `.ko` 或使用 VM 模拟器代替真实 UML。
 
-本轮的主体证据在 [真实验收记录](../evidence/xmake-uml-20260923/acceptance.json)、[12 项负向/恢复矩阵](../evidence/xmake-uml-20260923/matrix.json) 和 [旧入口等价检查](../evidence/xmake-uml-20260923/legacy-parity.json)。当前正在做候选包的独立克隆及分发复验，最终封存时间与精确 HEAD 记录在交付旁的工作报告中。
+本轮的主体证据在 [真实验收记录](../evidence/xmake-uml-20260923/acceptance.json)、[12 项负向/恢复矩阵](../evidence/xmake-uml-20260923/matrix.json) 和 [旧入口等价检查](../evidence/xmake-uml-20260923/legacy-parity.json)。候选包已独立克隆并完成真实 UML 冷/热、12 项矩阵及旧入口等价复验；便携包在无 dist/node_modules 的目录完成两条真实 UML 路线及清单校验。最终封存时间、精确 HEAD 的完整复验记录在交付旁的工作报告中。
 
 ## 已验证内容
 
@@ -31,7 +31,7 @@ UML 默认 `/lib:/lib64` RUNPATH 在本宿主加载到了旧兼容 libc。示例
 
 ## 范围与剩余事项
 
-G6 在上述明确环境中通过。G5 的原始物理 MCU-04 门禁按用户要求延期，**没有标为通过**；G7 的全原始平台结论不会因模拟而自动通过。最终候选验证仅覆盖声明的 Linux x86_64 / Xmake 3.1.1 / Node 22.16.0、GCC 14.2.0 / Clang 17 和指定 Kernel/BusyBox。
+G6 在上述明确环境中通过。G5 的原始物理 MCU-04 门禁按用户要求延期，**没有标为通过**；G7 在声明的 Linux + MCU 软件模拟发布候选范围完成验证，原始全平台结论不会因模拟而自动通过。最终候选验证仅覆盖声明的 Linux x86_64 / Xmake 3.1.1 / Node 22.16.0、GCC 14.2.0 / Clang 17 和指定 Kernel/BusyBox。
 
 当前不再需要额外上传构建依赖。实板烧写、物理 SPI、其他主机/Node 版本、网络 Registry 冷安装及任意第三方原生扩展均不在本次证据内。可选 namespace/preset、共享硬件会话、host/SSH Provider 与额外 Artifact Probe/Coverage DSL 单独列为后续，不通过隐式功能承诺冒充已实现。
 

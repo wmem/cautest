@@ -1,0 +1,48 @@
+
+> cautest@0.2.1 test:xmake:matrix
+> npm run build && node scripts/test-xmake.mjs --matrix
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+TAP version 13
+# Subtest: real Xmake public/interface/private compile configuration and public link dependencies preserve product boundaries
+ok 1 - real Xmake public/interface/private compile configuration and public link dependencies preserve product boundaries
+  ---
+  duration_ms: 6219.11576
+  type: 'test'
+  ...
+# Subtest: real native compiler/config transitions cannot reuse the prior compiler receipt
+ok 2 - real native compiler/config transitions cannot reuse the prior compiler receipt
+  ---
+  duration_ms: 11406.413395
+  type: 'test'
+  ...
+# Xmake discovery measurements (GNU time max RSS, not sum of simultaneous processes) [{"jobs":100,"selected":50,"elapsedMs":640,"peakRssKiB":53760},{"jobs":1000,"selected":500,"elapsedMs":1102,"peakRssKiB":65276},{"jobs":2000,"selected":1000,"elapsedMs":1291,"peakRssKiB":77304}]
+# Subtest: real 100/1000/2000-job list/filter measures command-tree peak RSS and emits no build artifacts
+ok 3 - real 100/1000/2000-job list/filter measures command-tree peak RSS and emits no build artifacts
+  ---
+  duration_ms: 3194.806748
+  type: 'test'
+  ...
+# Large runtime catalog measurement {"suites":16,"cases":1024,"elapsedMs":7874,"peakRssKiB":71696}
+# Subtest: real 1024 C cases across 16 suites reuse one product artifact and preserve selected runtime counts
+ok 4 - real 1024 C cases across 16 suites reuse one product artifact and preserve selected runtime counts
+  ---
+  duration_ms: 7949.43544
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 28874.547427

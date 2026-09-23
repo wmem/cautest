@@ -1,0 +1,327 @@
+START 2026-09-23T06:45:06Z
+7c1cadf565eaae3b20777ef2687134734e1e6d06
+
+> cautest@0.2.1 test:xmake:uml
+> npm run build && node test/integration/xmake-uml-smoke.mjs
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json && node dist/build-info.js
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+[uml-acceptance] project: /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] list: starting
+[uml-acceptance] list: exit 0
+[uml-acceptance] plan: starting
+[uml-acceptance] plan: exit 0
+[uml-acceptance] doctor: starting
+[uml-acceptance] doctor: exit 0
+[uml-acceptance] cold: starting
+[uml-acceptance] cold: 30s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 60s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 90s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 120s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 150s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 180s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 210s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 240s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 270s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 300s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 330s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 360s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: 390s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cold: exit 0
+[uml-acceptance] cache-hit: starting
+[uml-acceptance] cache-hit: 30s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] cache-hit: exit 0
+[uml-acceptance] guest-assertion-failure: starting
+[uml-acceptance] guest-assertion-failure: 30s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] guest-assertion-failure: exit 1
+[uml-acceptance] guest-startup-failure: starting
+[uml-acceptance] guest-startup-failure: 30s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] guest-startup-failure: exit 2
+[uml-acceptance] module-init-failure: starting
+[uml-acceptance] module-init-failure: 30s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] module-init-failure: exit 2
+[uml-acceptance] stale-module-after-build-failure: starting
+[uml-acceptance] stale-module-after-build-failure: exit 2
+[uml-acceptance] kernel-case-failure: starting
+[uml-acceptance] kernel-case-failure: 30s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] kernel-case-failure: exit 1
+[uml-acceptance] recovery: starting
+[uml-acceptance] recovery: 30s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] recovery: exit 0
+[uml-acceptance] busybox-corruption-recovery: starting
+[uml-acceptance] busybox-corruption-recovery: 30s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] busybox-corruption-recovery: 60s; logs in /mnt/data/run-uml/candidate-real/project-XenCau
+[uml-acceptance] busybox-corruption-recovery: exit 0
+{
+  "schemaVersion": 1,
+  "status": "SUCCESS",
+  "command": "npm run test:xmake:uml",
+  "root": "/mnt/data/run-uml/candidate-real/project-XenCau",
+  "runs": [
+    {
+      "label": "cold",
+      "schemaVersion": 1,
+      "command": "run",
+      "runId": "20260923064515273-a50e0bf7",
+      "status": "SUCCESS",
+      "configHash": "a3034095356563b0f87ada604ee8a1b0e765dcd2f99c69c10ed9c5a817e87cd6",
+      "resultDir": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923064515273-a50e0bf7",
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923064515273-a50e0bf7/result.json",
+      "summaryPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923064515273-a50e0bf7/summary.json",
+      "failuresPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923064515273-a50e0bf7/failures.jsonl"
+    },
+    {
+      "label": "cache-hit",
+      "schemaVersion": 1,
+      "command": "run",
+      "runId": "20260923065210058-e0260a6f",
+      "status": "SUCCESS",
+      "configHash": "467ee599c1cafe9026c0fa06fcf8a390dc8c0632831d31eb0c18402446e37d4d",
+      "resultDir": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065210058-e0260a6f",
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065210058-e0260a6f/result.json",
+      "summaryPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065210058-e0260a6f/summary.json",
+      "failuresPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065210058-e0260a6f/failures.jsonl"
+    }
+  ],
+  "matrix": {
+    "status": "SUCCESS",
+    "scope": "real UML kernel, modules, guest syscalls and process cleanup",
+    "records": [
+      {
+        "label": "rootfs-same-size-corruption",
+        "status": "PASS",
+        "rootfsPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/cache/rootfs/acb6f8042e58b93a97f3f57db57f9890f3f081b10e9c2caecc850736589467e0/rootfs.cpio",
+        "buildId": "acb6f8042e58b93a97f3f57db57f9890f3f081b10e9c2caecc850736589467e0"
+      },
+      {
+        "label": "ready-timeout",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "pid": 138227,
+        "processGroupStopped": true,
+        "durationMs": 1229,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/lifecycle/ready-timeout/job-result.json"
+      },
+      {
+        "label": "cancel",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "pid": 138235,
+        "processGroupStopped": true,
+        "durationMs": 76,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/lifecycle/cancel/job-result.json"
+      },
+      {
+        "label": "wrong-catalog",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "pid": 138242,
+        "processGroupStopped": true,
+        "durationMs": 241,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/lifecycle/wrong-catalog/job-result.json"
+      },
+      {
+        "label": "wrong-guest-id",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "pid": 138259,
+        "processGroupStopped": true,
+        "durationMs": 825,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/lifecycle/wrong-guest-id/job-result.json"
+      },
+      {
+        "label": "guest-assertion-failure",
+        "status": "PASS",
+        "expectedStatus": "FAIL",
+        "exitCode": 1,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065307112-f1436d0c/result.json"
+      },
+      {
+        "label": "guest-startup-failure",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "exitCode": 2,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065343201-c784b264/result.json"
+      },
+      {
+        "label": "module-init-failure",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "exitCode": 2,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065419008-9b69f725/result.json"
+      },
+      {
+        "label": "stale-module-after-build-failure",
+        "status": "PASS",
+        "expectedStatus": "ERROR",
+        "exitCode": 2,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065457668-2fe6b55f/result.json"
+      },
+      {
+        "label": "kernel-case-failure",
+        "status": "PASS",
+        "expectedStatus": "FAIL",
+        "exitCode": 1,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065523882-e81a2724/result.json"
+      },
+      {
+        "label": "recovery",
+        "status": "PASS",
+        "expectedStatus": "SUCCESS",
+        "exitCode": 0,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065602595-a001ceaf/result.json"
+      },
+      {
+        "label": "busybox-corruption-recovery",
+        "status": "PASS",
+        "expectedStatus": "SUCCESS",
+        "exitCode": 0,
+        "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065700204-e0070100/result.json"
+      }
+    ],
+    "sourceFilesRestored": true
+  },
+  "parity": {
+    "status": "PASS",
+    "jobs": 2,
+    "cases": 5,
+    "resultDir": "/mnt/data/run-uml/candidate-real/project-XenCau/legacy-parity/727f0548-3cbe-46a5-b84b-bd38b3e5e3a5",
+    "kernelAndBusyboxCacheReused": true,
+    "sameCtpCaseResults": true
+  },
+  "records": [
+    {
+      "label": "list",
+      "args": [
+        "ct",
+        "--list",
+        "--json"
+      ],
+      "exitCode": 0,
+      "durationMs": 330
+    },
+    {
+      "label": "plan",
+      "args": [
+        "ct",
+        "--plan",
+        "--json"
+      ],
+      "exitCode": 0,
+      "durationMs": 411
+    },
+    {
+      "label": "doctor",
+      "args": [
+        "ct",
+        "--doctor",
+        "--json"
+      ],
+      "exitCode": 0,
+      "durationMs": 623
+    },
+    {
+      "label": "cold",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit"
+      ],
+      "exitCode": 0,
+      "durationMs": 415044
+    },
+    {
+      "label": "cache-hit",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit"
+      ],
+      "exitCode": 0,
+      "durationMs": 54284
+    },
+    {
+      "label": "guest-assertion-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 1,
+      "durationMs": 35854
+    },
+    {
+      "label": "guest-startup-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 2,
+      "durationMs": 35899
+    },
+    {
+      "label": "module-init-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 2,
+      "durationMs": 38762
+    },
+    {
+      "label": "stale-module-after-build-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 2,
+      "durationMs": 25849
+    },
+    {
+      "label": "kernel-case-failure",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "unit.kernel.math"
+      ],
+      "exitCode": 1,
+      "durationMs": 38962
+    },
+    {
+      "label": "recovery",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit"
+      ],
+      "exitCode": 0,
+      "durationMs": 57669
+    },
+    {
+      "label": "busybox-corruption-recovery",
+      "args": [
+        "ct",
+        "--json",
+        "--reporter=json,junit",
+        "integration.driver.abi"
+      ],
+      "exitCode": 0,
+      "durationMs": 63069
+    }
+  ]
+}
+END 2026-09-23T06:58:59Z

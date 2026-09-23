@@ -1,0 +1,98 @@
+{
+  "status": "SUCCESS",
+  "scope": "real UML kernel, modules, guest syscalls and process cleanup",
+  "records": [
+    {
+      "label": "rootfs-same-size-corruption",
+      "status": "PASS",
+      "rootfsPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/cache/rootfs/acb6f8042e58b93a97f3f57db57f9890f3f081b10e9c2caecc850736589467e0/rootfs.cpio",
+      "buildId": "acb6f8042e58b93a97f3f57db57f9890f3f081b10e9c2caecc850736589467e0"
+    },
+    {
+      "label": "ready-timeout",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "pid": 138227,
+      "processGroupStopped": true,
+      "durationMs": 1229,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/lifecycle/ready-timeout/job-result.json"
+    },
+    {
+      "label": "cancel",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "pid": 138235,
+      "processGroupStopped": true,
+      "durationMs": 76,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/lifecycle/cancel/job-result.json"
+    },
+    {
+      "label": "wrong-catalog",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "pid": 138242,
+      "processGroupStopped": true,
+      "durationMs": 241,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/lifecycle/wrong-catalog/job-result.json"
+    },
+    {
+      "label": "wrong-guest-id",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "pid": 138259,
+      "processGroupStopped": true,
+      "durationMs": 825,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/lifecycle/wrong-guest-id/job-result.json"
+    },
+    {
+      "label": "guest-assertion-failure",
+      "status": "PASS",
+      "expectedStatus": "FAIL",
+      "exitCode": 1,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065307112-f1436d0c/result.json"
+    },
+    {
+      "label": "guest-startup-failure",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "exitCode": 2,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065343201-c784b264/result.json"
+    },
+    {
+      "label": "module-init-failure",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "exitCode": 2,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065419008-9b69f725/result.json"
+    },
+    {
+      "label": "stale-module-after-build-failure",
+      "status": "PASS",
+      "expectedStatus": "ERROR",
+      "exitCode": 2,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065457668-2fe6b55f/result.json"
+    },
+    {
+      "label": "kernel-case-failure",
+      "status": "PASS",
+      "expectedStatus": "FAIL",
+      "exitCode": 1,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065523882-e81a2724/result.json"
+    },
+    {
+      "label": "recovery",
+      "status": "PASS",
+      "expectedStatus": "SUCCESS",
+      "exitCode": 0,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065602595-a001ceaf/result.json"
+    },
+    {
+      "label": "busybox-corruption-recovery",
+      "status": "PASS",
+      "expectedStatus": "SUCCESS",
+      "exitCode": 0,
+      "resultPath": "/mnt/data/run-uml/candidate-real/project-XenCau/.cautest/results/20260923065700204-e0070100/result.json"
+    }
+  ],
+  "sourceFilesRestored": true
+}
