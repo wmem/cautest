@@ -1,0 +1,89 @@
+
+> cautest@0.2.1 test:xmake
+> npm run build && node --test test/xmake-poc.test.js test/xmake-adapter.test.js test/xmake-robustness.test.js
+
+
+> cautest@0.2.1 build
+> npm run versions:check && tsc -p tsconfig.json
+
+
+> cautest@0.2.1 versions:check
+> node scripts/sync-versions.mjs
+
+TAP version 13
+# Subtest: real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs
+ok 1 - real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs
+  ---
+  duration_ms: 1681.011734
+  type: 'test'
+  ...
+# Subtest: real Native multi-module/suite CTP, same-build source reuse and product library macro isolation
+ok 2 - real Native multi-module/suite CTP, same-build source reuse and product library macro isolation
+  ---
+  duration_ms: 4878.548216
+  type: 'test'
+  ...
+# Subtest: real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP
+ok 3 - real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP
+  ---
+  duration_ms: 5851.932525
+  type: 'test'
+  ...
+# Subtest: real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks
+ok 4 - real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks
+  ---
+  duration_ms: 688.831386
+  type: 'test'
+  ...
+# Subtest: real workflow module provider receives explicit artifact, reuses old engine, tracks source and rejects env sharing
+ok 5 - real workflow module provider receives explicit artifact, reuses old engine, tracks source and rejects env sharing
+  ---
+  duration_ms: 2953.649587
+  type: 'test'
+  ...
+# Subtest: real Xmake 3.1.1: exported table DSL, Node → nested build, options, failure, ordinary build
+ok 6 - real Xmake 3.1.1: exported table DSL, Node → nested build, options, failure, ordinary build
+  ---
+  duration_ms: 1364.704007
+  type: 'test'
+  ...
+# Subtest: real outer SIGINT cancels nested build and reaps a pipe-detached compiler grandchild
+ok 7 - real outer SIGINT cancels nested build and reaps a pipe-detached compiler grandchild
+  ---
+  duration_ms: 594.315816
+  type: 'test'
+  ...
+# Subtest: real generation dependency, mocks and conditional source selection take effect on first build
+ok 8 - real generation dependency, mocks and conditional source selection take effect on first build
+  ---
+  duration_ms: 5486.789752
+  type: 'test'
+  ...
+# Xmake scale measurements [{"jobs":100,"elapsedMs":209.9487909999998},{"jobs":1000,"elapsedMs":255.7613220000003}]
+# Subtest: real 100/1000 job discovery, fragment addition/removal, changed cwd and deterministic config digest
+ok 9 - real 100/1000 job discovery, fragment addition/removal, changed cwd and deterministic config digest
+  ---
+  duration_ms: 2173.263564
+  type: 'test'
+  ...
+# Subtest: real mode/output isolation, profile env and strict registry C symbols
+ok 10 - real mode/output isolation, profile env and strict registry C symbols
+  ---
+  duration_ms: 4615.489549
+  type: 'test'
+  ...
+# Subtest: real Native richer fixtures retain PASS/FAIL/ERROR/SKIP and parameterized results
+ok 11 - real Native richer fixtures retain PASS/FAIL/ERROR/SKIP and parameterized results
+  ---
+  duration_ms: 2629.552301
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 16108.638798

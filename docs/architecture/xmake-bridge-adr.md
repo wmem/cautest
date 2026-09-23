@@ -51,3 +51,27 @@ The first full run exposed a pre-existing test race: npm pack's prepare wrote
 to the shared dist while parallel tests imported it. The npm test now copies
 its package source and invokes the genuine npm prepare in the isolated copy.
 No product implementation test is weakened or replaced with a stub.
+
+## First-build generation and same-second relinking
+
+The real generated-header regression exposed two separate hazards. Xmake's
+ordinary target dependencies only fence linking, not compilation; a generated
+header producer needs `set_policy("build.fence", true)`. Native entry/Registry
+must be generated in before_build after that fence, not rewritten at target
+load/query time. The query now reads the identity actually emitted by build.
+
+Rapid updates additionally exposed Xmake 3.1.1's timestamp-only link decision:
+new objects were compiled but the old binary was retained within the same
+filesystem second. The Native rule now includes a content identity in both the
+compiler flags and GNU-compatible ELF linker build-ID option. No sleep or
+second build is used. Twenty consecutive immediate source/header changes passed;
+the committed test additionally restores a source's previous mtime after each
+change to prove content-sensitive invalidation. Native scope is Linux x86_64
+with GNU-compatible ELF linking; GCC/ld is the actual verified toolchain.
+
+Full real Xmake suite: 11/11, including outer group SIGINT, no living compiler
+grandchildren, cancellation result persistence, 100/1000 Jobs, fragment add/remove,
+foreign cwd, shell metacharacters/Chinese paths, debug/release separation and
+real C Runtime PASS/FAIL/ERROR/SKIP/parameterized results. On SIGINT, an OS parent
+may observe signal SIGINT instead of numeric 130; shells map that signal to 130.
+See xmake-native-reliability-20260923.tap for actual timings (not performance guarantees).

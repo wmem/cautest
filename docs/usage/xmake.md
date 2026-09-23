@@ -55,7 +55,7 @@ retain disabled Jobs; run excludes them. Xmake 3.1.1 repeats of a kv option are
 **last-wins**, so use comma-separated values. `--test-profile` selects a Cautest
 profile, leaving Xmake's own `--profile` untouched. Exit codes retain the old
 CLI: 0 success, 1 test failure, 2 execution/infrastructure error, 3 invalid
-configuration, 4 empty selection, 130 interruption. Diagnostics go to stderr;
+configuration, 4 empty selection, 130 interruption (POSIX parents can observe SIGINT instead; shells map it to 130). Diagnostics go to stderr;
 `--json` stdout stays parseable when the corresponding old CLI command produces
 JSON (empty selection intentionally does not create a result JSON).
 
@@ -89,7 +89,9 @@ The primary role comes from `target:targetfile()`. Select another with
 `ctest.mcu {target="firmware", output="firmware-bin", ...}`. Every declared
 output is checked, not only the selected role. A phony/custom target needs
 explicit output roles. The internal `cautest-artifact` task only loads target
-metadata; it never compiles, but target load hooks may refresh generated files.
+metadata; it never compiles. The Native rule reads the identity emitted during
+the actual build; it does not regenerate sources during this query. User target
+load hooks remain user-controlled.
 
 ## Reuse product code explicitly
 
@@ -99,6 +101,16 @@ private macros **do not** change an already compiled dependency library; shared
 source rules recompile in each consumer. Keep product `main`, mocks and test
 entry points explicit. Cautest never clones a production target or attempts to
 copy its include paths/flags/defines automatically.
+
+For generated headers, the producer target must declare Xmake
+`set_policy("build.fence", true)`, and consumers must `add_deps` on it. Ordinary
+link dependencies alone allow compilation in parallel and are not a header
+generation fence. The Native Registry and entry are generated after that fence
+in the first build, not during target loading. A content-sensitive compile
+definition and GNU-compatible linker build-ID flag invalidate both compile
+and link timestamp caches, including same-second updates. The Native rule
+therefore requires a GNU-compatible ELF linker (GCC/ld was actually tested).
+See `test/xmake-robustness.test.js` for first-build and changed-header evidence.
 
 Copy `examples/xmake/native` outside this repository, then clone Cautest at that
 copy's `tools/cautest`. Prepare the clone before running `xmake ct`. The disabled

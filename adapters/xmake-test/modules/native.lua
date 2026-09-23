@@ -49,10 +49,23 @@ function generate(target, toolroot)
     for _, key in ipairs({"defines","undefines","cxflags","cflags","ldflags","links","languages","includedirs","toolchains"}) do
         table.insert(parts, key .. "=" .. json.encode(target:get(key) or {}))
     end
+    for _, dependency in ipairs(target:orderdeps() or {}) do
+        table.insert(parts,"dependency=" .. dependency:name())
+        for _, key in ipairs({"defines","undefines","cxflags","cflags","ldflags","links","languages","includedirs","toolchains"}) do
+            table.insert(parts,key .. "=" .. json.encode(dependency:get(key) or {}))
+        end
+    end
     if os.isfile(config.filepath()) then table.insert(parts,hash.sha256(config.filepath())) end
     for _, file in ipairs(files) do table.insert(parts,file);table.insert(parts,hash.sha256(file)) end
     local id = hash.sha256(bytes(table.concat(parts,"\0"))):lower()
     target:data_set("cautest.protocolBuildId",id)
+    -- Content-sensitive command line also invalidates Xmake's timestamp cache
+    -- when two generated/source updates occur in the same filesystem second.
+    target:add("defines", 'CAUTEST_INPUT_ID="' .. id .. '"')
+    -- Force the linker dependency key as well: same-second object updates
+    -- otherwise let timestamp-based incremental linking retain an old binary.
+    target:add("ldflags", "-Wl,--build-id=0x" .. id, {force=true})
+    write_changed(path.join(dir,"identity.json"), json.encode({protocolBuildId=id}))
     local registry = {"#include <cautest/cautest.h>\n"}
     for _, suite in ipairs(suites) do table.insert(registry,"CAUTEST_SUITE_DECLARE(" .. suite .. ");\n") end
     table.insert(registry,"\nCAUTEST_REGISTRY(cautest_generated_registry,\n")
@@ -65,6 +78,8 @@ end
 function configure(target, toolroot)
     assert(target:kind()=="binary", "cautest.native requires an explicit binary target, not automatic target cloning")
     assert(os.host()=="linux" and os.arch()=="x86_64" and target:plat()=="linux" and target:arch()=="x86_64", "cautest.native currently supports Linux x86_64 host targets only; cross-config targets must use another provider")
+    local identity = path.join(directory(target),"identity.json")
+    if os.isfile(identity) then target:data_set("cautest.protocolBuildId",json.decode(io.readfile(identity)).protocolBuildId) end
     local kit = path.join(toolroot,"assets/cautest-c")
     for _, source in ipairs(runtime_sources) do target:add("files",path.join(kit,source)) end
     for _, include in ipairs({"include","platform/posix","target/posix"}) do target:add("includedirs",path.join(kit,include)) end

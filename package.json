@@ -32,7 +32,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "cli": "node cautest.js",
     "test:xmake:poc": "node --test test/xmake-poc.test.js",
-    "test:xmake": "npm run build && node --test test/xmake-poc.test.js test/xmake-adapter.test.js"
+    "test:xmake": "npm run build && node --test test/xmake-poc.test.js test/xmake-adapter.test.js test/xmake-robustness.test.js"
   },
   "devDependencies": {
     "@types/node": "24.3.0",
