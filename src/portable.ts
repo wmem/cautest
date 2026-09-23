@@ -101,6 +101,7 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   const installedReadme = installedTemplate.replace("[使用指南](index.md)", "[使用指南](docs/usage/index.md)");
   if (installedReadme === installedTemplate) throw new Error("安装说明缺少使用指南链接");
   await writeFile(path.join(root, "README.md"), installedReadme);
+  await cp(path.join(packageRoot, "LICENSE"), path.join(root, "LICENSE"));
   await cp(path.join(packageRoot, "xmake.lua"), path.join(root, "xmake.lua"));
   await cp(path.join(packageRoot, "adapters"), path.join(root, "adapters"), {recursive: true});
   await cp(path.join(packageRoot, "versions.json"), path.join(root, "versions.json"));
@@ -118,6 +119,7 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
     name: "cautest-portable",
     version: build.version,
     private: true,
+    license: "MIT",
     type: "module",
     engines: { node: ">=20.6" },
   }, null, 2)}\n`);

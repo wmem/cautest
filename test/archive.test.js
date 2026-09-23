@@ -15,7 +15,7 @@ const archiveCommand = path.join(projectRoot, "dist/archive.js");
 test("npm 发布包包含安装器运行时输入", async () => {
   const packed = JSON.parse((await exec("npm", ["pack", "--json", "--dry-run", "--ignore-scripts"], { cwd: projectRoot })).stdout);
   const files = new Set(packed[0].files.map((item) => item.path));
-  for (const required of ["dist/install.js", "dist/portable.js", "dist/build-info.json", "versions.json"]) assert.ok(files.has(required), required);
+  for (const required of ["LICENSE", "dist/install.js", "dist/portable.js", "dist/build-info.json", "versions.json"]) assert.ok(files.has(required), required);
 });
 
 test("便携包可解压、校验并直接运行", async (t) => {
@@ -32,6 +32,8 @@ test("便携包可解压、校验并直接运行", async (t) => {
   assert.equal(await readFile(`${output}.sha256`, "utf8"), `${digest}  cautest-test.tar.gz\n`);
   const entries = (await exec("tar", ["-tzf", output])).stdout.trim().split("\n");
   assert.ok(entries.includes("cautest/cautest.js"));
+  assert.ok(entries.includes("cautest/LICENSE"));
+  assert.ok(entries.includes("cautest/assets/cautest-c/LICENSE"));
   assert.ok(entries.includes("cautest/assets/cautest-c/include/cautest/cautest.h"));
   assert.ok(entries.includes("cautest/docs/usage/index.md"));
   assert.ok(entries.includes("cautest/lib/config/index.d.ts"));

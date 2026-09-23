@@ -1,4 +1,4 @@
-CAUTEST_C_VERSION := 0.3.0
+CAUTEST_C_VERSION := 0.3.1
 
 CC ?= cc
 AR ?= ar
@@ -8,6 +8,7 @@ BUILD_DIR ?= build
 PREFIX ?= /usr/local
 LIBDIR ?= $(PREFIX)/lib
 INCLUDEDIR ?= $(PREFIX)/include
+DOCDIR ?= $(PREFIX)/share/doc/cautest-c
 
 COMMON_FLAGS := -std=c99 -Wall -Wextra -I$(CURDIR)/include
 FREESTANDING_FLAGS := -ffreestanding -fno-builtin
@@ -74,6 +75,8 @@ install: all
 	install -m 0644 platform/freestanding/cautest_freestanding.h "$(DESTDIR)$(INCLUDEDIR)/cautest/platform/freestanding"
 	install -d "$(DESTDIR)$(INCLUDEDIR)/cautest/target/mcu-reference"
 	install -m 0644 target/mcu-reference/mcu_reference.h "$(DESTDIR)$(INCLUDEDIR)/cautest/target/mcu-reference"
+	install -d "$(DESTDIR)$(DOCDIR)"
+	install -m 0644 LICENSE "$(DESTDIR)$(DOCDIR)/LICENSE"
 
 clean:
 	@case "$(abspath $(BUILD_DIR))" in /|"$(CURDIR)") echo "拒绝清理 BUILD_DIR=$(BUILD_DIR)" >&2; exit 1;; esac

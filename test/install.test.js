@@ -23,6 +23,7 @@ test("安装器生成仅含运行 JS 和公开声明的自包含便携目录", a
   await exec(process.execPath, [installer, destination], { cwd: temporary });
   const rootEntries = await readdir(destination);
   assert.ok(rootEntries.includes("cautest.js"));
+  assert.ok(rootEntries.includes("LICENSE"));
   assert.ok(rootEntries.includes("lib"));
   assert.ok(rootEntries.includes("docs"));
   assert.ok(!rootEntries.includes("usage"));
@@ -51,8 +52,10 @@ test("安装器生成仅含运行 JS 和公开声明的自包含便携目录", a
   const cBuild = path.join(temporary, "c-kit-build");
   const cPrefix = path.join(temporary, "c-kit-prefix");
   const cKit = path.join(destination, "assets/cautest-c");
+  assert.equal(await readFile(path.join(destination, "LICENSE"), "utf8"), await readFile(path.join(cKit, "LICENSE"), "utf8"));
   await exec("make", ["-C", cKit, `BUILD_DIR=${cBuild}`, "-j2"]);
   await exec("make", ["-C", cKit, `BUILD_DIR=${cBuild}`, `PREFIX=${cPrefix}`, "install"]);
+  assert.equal(await readFile(path.join(cPrefix, "share/doc/cautest-c/LICENSE"), "utf8"), await readFile(path.join(cKit, "LICENSE"), "utf8"));
   const consumer = path.join(temporary, "c-kit-consumer");
   await mkdir(consumer);
   await writeFile(path.join(consumer, "Makefile"), `CAUTEST_C_PREFIX := ${cPrefix}\ninclude ${cPrefix}/lib/cautest-c/cautest-c.mk\nCC ?= cc\nconsumer: main.c\n\t$(CC) -std=c99 -Wall -Wextra $(CAUTEST_C_CPPFLAGS) $< $(CAUTEST_C_LDFLAGS) $(CAUTEST_C_LIBS) -o $@\n`);

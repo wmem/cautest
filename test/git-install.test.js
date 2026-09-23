@@ -13,7 +13,7 @@ async function createGitSnapshot() {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-git-"));
   const repository = path.join(temporary, "repository");
   await mkdir(repository);
-  for (const entry of ["cautest.js", "xmake.lua", "adapters", "assets", "docs", "examples", "scripts", "src", "package.json", "package-lock.json", "README.md", "tsconfig.json", "versions.json"]) {
+  for (const entry of ["cautest.js", "xmake.lua", "adapters", "assets", "docs", "examples", "scripts", "src", "LICENSE", "package.json", "package-lock.json", "README.md", "tsconfig.json", "versions.json"]) {
     await cp(path.join(projectRoot, entry), path.join(repository, entry), { recursive: true });
   }
   await exec("git", ["init", "-b", "main"], { cwd: repository });
@@ -28,6 +28,7 @@ async function createGitSnapshot() {
 async function verifyPortable(destination) {
   const names = await readdir(destination);
   assert.ok(names.includes("cautest.js"));
+  assert.ok(names.includes("LICENSE"));
   assert.ok(names.includes("docs"));
   assert.ok(names.includes("xmake.lua"));
   assert.ok(names.includes("adapters"));

@@ -1,9 +1,11 @@
 {
   "name": "cautest-c",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Cautest C99 core, CTP3 protocol, freestanding runtime and MCU reference target",
   "private": false,
+  "license": "MIT",
   "files": [
+    "LICENSE",
     "Makefile",
     "cautest-c.mk",
     "include",

@@ -14,6 +14,8 @@ test("npm scripts and lockfile no longer require a pnpm installation", async () 
   const manifest = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
   const lock = JSON.parse(await readFile(path.join(root, "package-lock.json"), "utf8"));
   assert.match(manifest.packageManager, /^npm@/u);
+  assert.equal(manifest.license, "MIT");
+  assert.equal(lock.packages[""].license, "MIT");
   for (const [name, script] of Object.entries(manifest.scripts)) assert.doesNotMatch(script, /\bpnpm\b/u, name);
   assert.deepEqual(lock.packages[""].devDependencies, manifest.devDependencies);
   for (const [name, version] of Object.entries(manifest.devDependencies)) {

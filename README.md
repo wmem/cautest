@@ -82,6 +82,10 @@ tar -xzf cautest-<版本>-<commit>.tar.gz -C ./tools
 
 安装目录会携带 `docs/usage/`、可运行的 `examples/`、配置 `.d.ts` 和 C 公共头文件；架构、协议与测试策略等开发者资料只保留在源码仓库中。
 
+## 许可
+
+本项目使用 [MIT 许可证](LICENSE)。从 Git 安装或解压便携包后，许可文本位于工具目录的 `LICENSE`。
+
 ## Xmake 工程内使用
 
 准备源码依赖后，在工程中加入 `includes("tools/cautest/xmake.lua")`，
