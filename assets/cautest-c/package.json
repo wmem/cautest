@@ -1,6 +1,6 @@
 {
   "name": "cautest-c",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Cautest C99 core, CTP3 protocol, freestanding runtime and MCU reference target",
   "private": false,
   "files": [

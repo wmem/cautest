@@ -5,8 +5,8 @@ import("core.project.config")
 import("lib.detect.find_tool")
 import("context")
 
-function atomic(file, data)
-    os.mkdir(path.directory(file))
+function atomic(file, data, directoryReady)
+    if not directoryReady then os.mkdir(path.directory(file)) end
     local temporary = file .. "." .. hash.uuid() .. ".tmp"
     io.writefile(temporary, json.encode(data))
     os.mv(temporary, file)
@@ -55,7 +55,11 @@ function run(state, toolroot)
         xmake = os.programfile(), buildContext = context.get(), project = state.project,
         jobs = state.jobs, boards = state.boards, environments = state.environments, sources = sources}
     local file = path.join(os.projectdir(), ".cautest/xmake/manifests", hash.uuid() .. ".json")
-    atomic(file, manifest)
+    -- Xmake 3.1.1 os.mkdir may race when several ct processes create this path at once.
+    local directory = path.directory(file)
+    local directoryCode = os.execv(node, {"-e", "require('node:fs').mkdirSync(process.argv[1], {recursive: true})", directory}, {try = true})
+    assert(directoryCode == 0, "Cannot create Xmake manifest directory: " .. directory)
+    atomic(file, manifest, true)
     local args = {bridge, "--manifest", file, command}
     for _, key in ipairs({"level", "tag", "suite", "case", "parameter", "include", "exclude"}) do
         local value = option.get(key)
