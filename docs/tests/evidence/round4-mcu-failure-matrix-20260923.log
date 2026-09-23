@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: MCU owned/borrowed flash/reset/open failures and timeouts preserve cleanup and close late transports
+ok 1 - MCU owned/borrowed flash/reset/open failures and timeouts preserve cleanup and close late transports
+  ---
+  duration_ms: 9837.028641
+  type: 'test'
+  ...
+# Subtest: Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+ok 2 - Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run
+  ---
+  duration_ms: 293.648696
+  type: 'test'
+  ...
+# Subtest: External MCU Adapter 通过统一 CTP3 Transport 执行
+ok 3 - External MCU Adapter 通过统一 CTP3 Transport 执行
+  ---
+  duration_ms: 13.894232
+  type: 'test'
+  ...
+# Subtest: Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+ok 4 - Host MCU 保留 PASS/FAIL/SKIP/ERROR，并在 Hang 超时后可重新运行
+  ---
+  duration_ms: 1655.66683
+  type: 'test'
+  ...
+# Subtest: External MCU 校验 Reset 返回的 Boot ID
+ok 5 - External MCU 校验 Reset 返回的 Boot ID
+  ---
+  duration_ms: 4.244939
+  type: 'test'
+  ...
+# Subtest: Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+ok 6 - Profile Env 覆盖 MCU Job Env，并进入 Firmware 指纹和模拟 Target
+  ---
+  duration_ms: 469.846487
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+ok 7 - 模拟 MCU 分片 I/O 与一次断线后重连会重新 HELLO/LIST
+  ---
+  duration_ms: 242.296063
+  type: 'test'
+  ...
+# Subtest: 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+ok 8 - 模拟 MCU 一次性命令损坏可复现 Protocol/Target 错误
+  ---
+  duration_ms: 225.676891
+  type: 'test'
+  ...
+# Subtest: External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+ok 9 - External MCU 可选择恢复一次 Timeout 并重新发现 Catalog
+  ---
+  duration_ms: 2.510971
+  type: 'test'
+  ...
+# Subtest: late owned Board factory cannot flash after timeout and closes exactly once; borrowed remains borrowed
+ok 10 - late owned Board factory cannot flash after timeout and closes exactly once; borrowed remains borrowed
+  ---
+  duration_ms: 833.26823
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9968.775904

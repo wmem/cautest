@@ -294,3 +294,11 @@ This does not lock arbitrary external `xmake f` calls. A configuration or source
 change during a run is an error, not permission to silently switch configurations.
 Different Guest output names have different cache identities. Cross-process build
 locking on non-Linux hosts is not part of the verified support matrix.
+
+### MCU SPI 行为模拟与失败清理
+
+`examples/xmake/mcu-spi-simulated` 将实际 C SPI 协议测试与一个确定性的设备行为模型一起编译为模拟固件。两个 Job 共用一个固件产物，但分别拥有烧写、复位、串口和清理生命周期。测试覆盖片选、模式、设备 ID、写使能、读写、非法参数和复位；`spi-fault` 构建选项注入错误的设备 ID，必须产生 CTP FAIL，而非仅检查进程退出码。参见示例 README 的正常、故障与恢复命令。
+
+这属于软件协议行为模拟，不模拟引脚时序、信号完整性或真实 SPI 控制器。它满足“MCU 先模拟”的当前交付范围，不能替代原方案的实板 SPI 门禁。
+
+共享 MCU Runtime 还覆盖 owned/borrowed Adapter 的 flash、reset、openTransport 抛错及超时，以及错误 Adapter 返回值和清理异常。超时后才返回的 Transport 会立即关闭，不会启动 CTP；borrowed Board 不由本 Job 关闭，但本 Job 创建的 Transport 和持有的物理锁仍会释放。

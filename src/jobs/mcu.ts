@@ -32,7 +32,14 @@ async function boardSession(options: {
   let lastError: unknown;
   for (let attempt = 0; attempt <= options.reconnects; attempt += 1) {
     try {
-      return await runCtpSession({ transport: await options.state.adapter.openTransport(options.serial), expectedBuildId: options.artifact.buildId, expectedBootId: options.state.bootId, run: options.run, signal: options.context.signal, ...options.callbacks });
+      const transport = await options.state.adapter.openTransport(options.serial);
+      // A provider may resolve after the Step timed out and Board cleanup ran.
+      // Never start a session with that late handle, and do not leak it.
+      if (options.context.signal.aborted) {
+        await transport.close();
+        options.context.signal.throwIfAborted();
+      }
+      return await runCtpSession({ transport, expectedBuildId: options.artifact.buildId, expectedBootId: options.state.bootId, run: options.run, signal: options.context.signal, ...options.callbacks });
     } catch (error) {
       lastError = error;
       const recoverable = error instanceof CautestError && (error.code === "transport_error" || (options.recoverTimeouts && error.code === "timeout_error"));

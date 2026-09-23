@@ -38,7 +38,10 @@ function lazyBoard(resource:ManifestResource,manifest:XmakeManifest,signal:()=>A
   async flash(artifact){
    await validateSources();
    const created=await factory(resource.provider,{projectRoot:manifest.projectRoot,options:resource.options??{},origin:resource.origin,signal:signal()},resource.origin.file);
-   if(typeof created!=="object"||created===null||!["flash","reset","openTransport"].every(k=>typeof (created as Record<string,unknown>)[k]==="function"))throw new CautestError(`${resource.origin.file}: Board provider must implement flash/reset/openTransport`,{code:"config_error"});
+   if(typeof created!=="object"||created===null||!["flash","reset","openTransport"].every(k=>typeof (created as Record<string,unknown>)[k]==="function")){
+    if(resource.ownership!=="borrowed"&&typeof created==="object"&&created!==null&&"close" in created&&typeof created.close==="function")await created.close();
+    throw new CautestError(`${resource.origin.file}: Board provider must implement flash/reset/openTransport`,{code:"config_error"});
+   }
    adapter=created as McuBoardAdapter;
    if(signal()?.aborted){if(resource.ownership!=="borrowed")await close();signal()?.throwIfAborted();}
    await validateSources();
