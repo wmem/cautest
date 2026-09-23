@@ -7,7 +7,7 @@ import { buildIsolatedKernelModule, type KernelModuleArtifact } from "../kernel/
 import { CautestError } from "../model/error.js";
 import { effectiveWorkflowCTestRun, workflowSessionResult } from "../protocol/workflow-session.js";
 import { defineStep } from "../workflow/step.js";
-import { buildKernel, environmentValue } from "./kernel.js";
+import { umlEnvironmentBuildSteps, environmentValue } from "./kernel.js";
 import { buildBusyBox, buildDriverGuestCTest, buildRootfs, collectUml, runUmlEndpoint, startUml, type BusyBoxArtifact, type GuestProgramArtifact, type UmlImageArtifact } from "../uml/runtime.js";
 
 function safe(value: string): string { return value.replace(/[^A-Za-z0-9_-]/gu, "-"); }
@@ -25,25 +25,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
   const driverNames = new Set<string>();
   for (const driver of input.drivers) { if (driverNames.has(driver.name)) throw new CautestError(`Driver Module 名称重复: ${driver.name}`, { code: "config_error" }); driverNames.add(driver.name); }
   const name = safe(input.id);
-  const kernelBuild = defineStep({
-    kind: "kernelBuild", name, phase: "build", details: { ...environment.kernel }, ...(environment.kernel.timeoutMs === undefined ? {} : { timeoutMs: environment.kernel.timeoutMs }),
-    async execute(context) {
-      const kernel = await buildKernel(environment, context, name);
-      context.state.set("kernelOutput", kernel.path);
-      const kernelBuildId = path.basename(kernel.path);
-      context.artifacts.publish({ kind: "uml-kernel", name, path: path.join(kernel.path, environment.kernel.target ?? "linux"), fingerprint: kernelBuildId, buildId: kernelBuildId, metadata: { outputDir: kernel.path, cacheHit: kernel.cacheHit, arch: environment.kernel.arch ?? "um" } });
-      return { diagnostics: [{ code: kernel.cacheHit ? "cache_hit" : "cache_miss", message: kernel.path }] };
-    },
-  });
-  const busyboxBuild = defineStep({
-    kind: "busyboxBuild", name, phase: "build", details: { ...environment.busybox }, ...(environment.busybox.timeoutMs === undefined ? {} : { timeoutMs: environment.busybox.timeoutMs }),
-    async execute(context) {
-      const busybox = await buildBusyBox(environment.busybox, context);
-      context.state.set("busybox", busybox);
-      context.artifacts.publish({ kind: "busybox", name, path: busybox.path, fingerprint: busybox.buildId, buildId: busybox.buildId, metadata: { cacheHit: busybox.cacheHit } });
-      return { diagnostics: [{ code: busybox.cacheHit ? "cache_hit" : "cache_miss", message: busybox.path }] };
-    },
-  });
+  const { kernel: kernelBuild, busybox: busyboxBuild } = umlEnvironmentBuildSteps(environment, name);
   const probe = input.probe === undefined ? [] : [defineStep({
     kind: "kernelModuleBuild", name: "cautest_probe", phase: "build", details: { builtIn: true, sourceDir: "assets/cautest-c/kernel/cautest-probe", output: "cautest_probe.ko" },
     async execute(context) {

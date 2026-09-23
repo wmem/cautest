@@ -18,3 +18,13 @@ rule("cautest.mcu-simulated")
         import("native", {rootdir = moduledir}).generate(target, toolroot)
     end)
 rule_end()
+
+-- A distinct static CTP userspace artifact. It is never confused with the Driver .ko.
+rule("cautest.driver-guest")
+    on_load(function (target)
+        import("native", {rootdir = moduledir}).configure(target, toolroot, false, true)
+    end)
+    before_build(function (target)
+        import("native", {rootdir = moduledir}).generate(target, toolroot)
+    end)
+rule_end()

@@ -89,3 +89,11 @@ selectJobs([], { tags: "native" });
 // npm self-reference resolves the same public declarations as the standalone API.
 import { selectJobs as npmSelectJobs } from "cautest";
 npmSelectJobs([], { tags: ["native"] });
+
+import {kernelArtifactJob, driverArtifactJob, type BuildProvider} from "cautest";
+const artifactProvider: BuildProvider = {async build() { throw new Error("type-only fixture"); }};
+const artifactEnvironment = umlKernelEnvironment({kernel:{sourceDir:"linux"},busybox:{sourceDir:"busybox"}});
+kernelArtifactJob({id:"unit.kernel.artifact",environment:artifactEnvironment,provider:artifactProvider,artifact:{target:"kernel.test",output:"ko"}});
+driverArtifactJob({id:"integration.driver.artifact",environment:artifactEnvironment,provider:artifactProvider,drivers:[{target:"driver",output:"ko"}],guest:{target:"guest"}});
+// @ts-expect-error Driver artifacts always need a separate Guest reference.
+driverArtifactJob({id:"integration.missing.guest",environment:artifactEnvironment,provider:artifactProvider,drivers:[{target:"driver"}]});

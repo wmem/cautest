@@ -1,0 +1,10 @@
+local root = path.absolute("../..",os.scriptdir())
+target("test.kernel")
+    set_kind("phony")
+    set_default(false)
+    add_values("cautest.outputs", "ko=../../build/modules/cautest_math/cautest_math.ko", "symbols=../../build/modules/cautest_math/Module.symvers", "order=../../build/modules/cautest_math/modules.order", "kernel-context=../../build/modules/cautest_math/kernel-context.json")
+    on_build(function (target)
+        import("product_build", {rootdir = root}).main(target, root, "kernel", "cautest_math")
+    end)
+target_end()
+ctest.kernel {id="unit.kernel.math", target="test.kernel", output="ko", environment="uml", tags={"kernel","uml"}, buildTimeoutMs=300000}

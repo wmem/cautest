@@ -46,7 +46,7 @@ function generate(target, toolroot)
     assert(type(workspace)=="number" and workspace>0 and workspace==math.floor(workspace), "cautest.workspaceSize must be a positive integer")
     assert(type(timeout)=="number" and timeout>0 and timeout==math.floor(timeout), "cautest.caseTimeoutMs must be a positive integer")
     -- Stable input identity is distinct from the SHA-256 of the final linked output.
-    local parts = {simulated and "cautest-mcu-simulation-v1" or "cautest-native-v1", target:name(), config.get("plat") or os.host(), config.get("arch") or os.arch(), config.get("mode") or "release", table.concat(suites,","), tostring(workspace), tostring(timeout)}
+    local parts = {simulated and "cautest-mcu-simulation-v1" or (target:data("cautest.driver_guest") and "cautest-driver-guest-v1" or "cautest-native-v1"), target:name(), config.get("plat") or os.host(), config.get("arch") or os.arch(), config.get("mode") or "release", table.concat(suites,","), tostring(workspace), tostring(timeout)}
     for _, key in ipairs({"defines","undefines","cxflags","cflags","ldflags","links","languages","includedirs","toolchains"}) do
         table.insert(parts, key .. "=" .. json.encode(target:get(key) or {}))
     end
@@ -79,14 +79,20 @@ function generate(target, toolroot)
     write_changed(path.join(dir,"registry.c"),table.concat(registry))
     if not simulated then write_changed(path.join(dir,"entry.c"),string.format('#include "posix_target.h"\nextern const struct cautest_registry cautest_generated_registry;\nint main(void) {\n  const struct cautest_posix_target_config config = {"%s", %dUL, %dUL};\n  return cautest_posix_target_main(&cautest_generated_registry, &config);\n}\n',id,workspace,timeout)) end
 end
-function configure(target, toolroot, simulated)
+function configure(target, toolroot, simulated, guest)
     target:data_set("cautest.simulated", simulated == true)
+    target:data_set("cautest.driver_guest", guest == true)
     assert(target:kind()=="binary", "cautest.native requires an explicit binary target, not automatic target cloning")
     assert(os.host()=="linux" and os.arch()=="x86_64" and target:plat()=="linux" and target:arch()=="x86_64", "cautest.native currently supports Linux x86_64 host targets only; cross-config targets must use another provider")
     local identity = path.join(directory(target),"identity.json")
     if os.isfile(identity) then target:data_set("cautest.protocolBuildId",json.decode(io.readfile(identity)).protocolBuildId) end
     local kit = path.join(toolroot,"assets/cautest-c")
     local sources = simulated and {"core/cautest.c", "protocol/ctp3.c", "platform/freestanding/cautest_freestanding.c", "target/mcu-reference/mcu_reference.c", "target/mcu-reference/mcu_sim_target.c"} or runtime_sources
+    if guest then
+        sources = table.join(sources, {"agent/uml-guest-agent/probe_client.c"})
+        target:add("includedirs",path.join(kit,"agent/uml-guest-agent"),path.join(kit,"platform/linux-kernel/include"))
+        target:add("ldflags","-static",{force=true})
+    end
     for _, source in ipairs(sources) do target:add("files",path.join(kit,source)) end
     local includes = simulated and {"include","platform/freestanding","target/mcu-reference"} or {"include","platform/posix","target/posix"}
     for _, include in ipairs(includes) do target:add("includedirs",path.join(kit,include)) end

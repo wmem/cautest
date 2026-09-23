@@ -138,10 +138,10 @@ never executes Steps or invokes the build provider.
 Board factories use `ctest.board {id, provider={module,export}, options,
 resourceId, ownership}` and `ctest.mcu {id,target,board}`. Board modules are
 loaded lazily on flash, not on list/plan. Real hardware has not been validated.
-The current kernel/driver manifest declarations are recognized for mixed-project
-listing, but their artifact-backed runtime is not yet implemented; doctor/run
-fails explicitly rather than treating a `.ko` as an executable. Existing
-standalone JS kernel/driver helpers remain available.
+Kernel/Driver now have artifact-backed workflows and a shared declarative UML
+Environment factory; see [Kernel/Driver integration](xmake-kernel-driver.md).
+Their component contracts are tested, but real UML acceptance is still blocked
+by missing Kernel build tools. Standalone JS helpers remain available.
 
 ## Scope and validation
 
@@ -194,7 +194,8 @@ Tests cover real Xmake → firmware → MCU CTP, two aliases/one build, one-time
 serial disconnect recovery, owned/borrowed failure cleanup, stale board firmware,
 wrong Boot ID, busy-lock timeout, canceled wait and forced owner process death.
 No physical board was supplied; real flash/reset/power/serial/SPI acceptance
-remains outstanding. Kernel/Driver artifact runtimes remain explicitly unsupported.
+remains outstanding. Kernel/Driver artifact workflows are implemented, but their
+real UML acceptance remains separate and has not passed.
 
 ## Product Kbuild multi-output example (not Driver runtime acceptance)
 
@@ -220,11 +221,11 @@ symbol versions, architecture and the future explicit UML Environment.
 
 This continuation actually compiled against preinstalled
 `linux-headers-6.12.96+deb13-amd64`, not the supplied Linux 6.6.157 archive. The
-6.6.157 source build still requires unavailable flex/bison/bc/libelf development
-inputs; BusyBox source and a real board are also absent. No substituted Kernel
-version is presented as the requested real 6.6.157 UML acceptance. The old
-standalone JS kernel/driver paths remain intact. Their artifact-backed split
-and the single-source UML Environment are the next platform work.
+6.6.157 configuration build was attempted and stopped at missing flex. BusyBox
+1.36.1 source has since been supplied and really built statically; a real board
+is still absent. No substituted Kernel version is presented as real 6.6.157 UML
+acceptance. The artifact-backed split and single-source Environment are now
+implemented; see the separate Kernel/Driver guide for validation boundaries.
 
 ## Explicit acceptance commands and provider dependencies
 

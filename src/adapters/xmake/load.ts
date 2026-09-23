@@ -8,12 +8,13 @@ import {testConfig,testJob} from "../../config/define.js";
 import {setJobOrigin} from "../../config/provenance.js";
 import {nativeArtifactJob,mcuArtifactJob} from "../../jobs/artifact.js";
 import {artifactBuildStep,getArtifact,type BuildProvider} from "../../artifacts/index.js";
-import {defineStep} from "../../workflow/step.js";
+import {kernelArtifactJob,driverArtifactJob} from "../../jobs/kernel-artifact.js";
+import {environmentValue} from "../../jobs/kernel.js";
 import {flattenWorkflow} from "../../workflow/fragment.js";
 import {CautestError} from "../../model/error.js";
 import {hashFile,hashBytes,stableSerialize} from "../../cache/fingerprint.js";
 import type {LoadedConfig} from "../../config/load.js";
-import type {McuBoardAdapter,TestJobCommonInput,WorkflowFragment,WorkflowStep,StepExecutionContext,TestJob} from "../../config/schema/index.js";
+import type {McuBoardAdapter,TestJobCommonInput,WorkflowFragment,WorkflowStep,StepExecutionContext,TestJob,UmlKernelEnvironment} from "../../config/schema/index.js";
 import {enableConfigSourceTracking,collectConfigSources} from "../../config/source-tracker.js";
 
 function common(job:ManifestJob):TestJobCommonInput{
@@ -55,6 +56,19 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
  for(const source of [...sourceSet].sort())sourceHashes.set(source,await hashFile(source));
  const provider=options.provider??new XmakeBuildProvider(manifest.xmake,manifest.buildContext,sourceHashes);
  const jobs:TestJob[]=[];enableConfigSourceTracking();
+ const environmentCache=new Map<string,Promise<UmlKernelEnvironment>>();
+ const environment=async(id:string):Promise<UmlKernelEnvironment>=>{
+  const resource=manifest.environments.find(r=>r.id===id);if(!resource)throw new Error(`Unknown environment ${id}`);
+  let value=environmentCache.get(id);
+  if(!value){value=(async()=>{
+   const created=await factory(resource.provider,{projectRoot:manifest.projectRoot,options:resource.options??{},origin:resource.origin},resource.origin.file);
+   // Environment providers are declarative factories, never booted resources.
+   environmentValue(created as UmlKernelEnvironment);
+   for(const source of await collectConfigSources(pathToFileURL(resource.provider.module).href,resource.provider.module))sourceSet.add(source);
+   return created as UmlKernelEnvironment;
+  })();environmentCache.set(id,value);}
+  return await value;
+ };
  for(const declaration of manifest.jobs){
   try{
    const base=common(declaration);
@@ -76,11 +90,10 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
     const first=elements.findIndex(step=>step.phase!=="prepare");const boundary=first<0?elements.length:first;
     job=testJob({...base,level:declaration.level??"integration",tags:declaration.tags??[declaration.level??"integration"],workflow:[...elements.slice(0,boundary),...builds,...elements.slice(boundary)]});
     for(const source of await collectConfigSources(pathToFileURL(declaration.provider!.module).href,declaration.provider!.module))sourceSet.add(source);
+   }else if(declaration.kind==="kernel"){
+    job=kernelArtifactJob({...shared,environment:await environment(declaration.environment!),artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})}});
    }else{
-    // An explicit unsupported Step keeps list/selection useful in mixed projects.
-    // It never claims a platform is implemented and never launches a .ko as a process.
-    if(!manifest.environments.some(r=>r.id===declaration.environment))throw new Error(`Unknown environment ${declaration.environment}`);
-    job=testJob({...base,level:declaration.level??(declaration.kind==="kernel"?"unit":"integration"),tags:declaration.tags??[declaration.kind],workflow:[defineStep({kind:"xmakeUnsupported",name:declaration.id,phase:"build",details:{platform:declaration.kind,supported:false},execute(){throw new CautestError(`Xmake ${declaration.kind} artifact runtime is not implemented; use the existing standalone JS helper`,{code:"tooling_error"});}})]});
+    job=driverArtifactJob({...shared,environment:await environment(declaration.environment!),drivers:declaration.drivers!,guest:declaration.guest!});
    }
    setJobOrigin(job,{source:declaration.origin.file,configPath:`jobs.${declaration.id} [declaration ${declaration.origin.declaration}; includes: ${declaration.origin.includeChain.join(" -> ")}]`});jobs.push(job);
   }catch(cause){throw new CautestError(`${declaration.origin.file}: jobs.${declaration.id}: ${cause instanceof Error?cause.message:String(cause)}`,{code:"config_error",cause});}

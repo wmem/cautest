@@ -38,3 +38,7 @@ export { artifactBuildStep, getArtifact, resolveArtifact } from "../artifacts/in
 export type { ArtifactRef, BuildContext, ArtifactReceipt, ArtifactOutput, BuildProvider, ResolvedArtifact } from "../artifacts/index.js";
 
 export {acquirePhysicalResource, physicalResourceStep, type PhysicalResourceLock} from "../integration/resource-lock.js";
+
+export {kernelArtifactJob, driverArtifactJob} from "../jobs/kernel-artifact.js";
+export type {UmlArtifactJobInput, KernelArtifactJobInput, DriverArtifactJobInput} from "../jobs/kernel-artifact.js";
+export type {KernelArtifactContext} from "../kernel/artifact-context.js";
