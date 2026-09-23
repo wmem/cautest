@@ -1,3 +1,4 @@
+import {ownedProcessStop} from "../runtime/owned-process.js";
 import {validBuildOutput, publishBuildOutput} from "../cache/build-output.js";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
@@ -292,30 +293,42 @@ export async function buildRootfs(options: { readonly name: string; readonly env
 
 /** 启动 UML 并等待 Guest Agent 用 Catalog Build ID 报告 Ready。 */
 export async function startUml(name: string, image: UmlImageArtifact, environment: UmlKernelEnvironmentInput, context: StepExecutionContext, coverageDir?: string): Promise<UmlRuntimeResource> {
+  context.signal.throwIfAborted();
   if (coverageDir !== undefined) { if (/\s/u.test(coverageDir)) throw new CautestError("Kernel Coverage 路径不能含空白", { code: "config_error" }); await mkdir(coverageDir, { recursive: true }); }
   const args = [`mem=${environment.machine?.memory ?? "256M"}`, `initrd=${image.rootfsPath}`, "root=/dev/ram0", "rw", "init=/init", "con=null", "con0=fd:0,fd:1", "ssl=null", "ssl0=fd:3,fd:3", ...(coverageDir === undefined ? [] : [`cautest.coverage_dir=${coverageDir}`]), ...(environment.machine?.kernelArgs ?? [])];
-  const child = spawn(image.kernelPath, args, { cwd: context.project.configDir, env: effectiveEnvironment(context), stdio: ["ignore", "pipe", "pipe", "pipe"] });
+  context.signal.throwIfAborted();
+  const grouped = process.platform !== "win32";
+  const child = spawn(image.kernelPath, args, { cwd: context.project.configDir, env: effectiveEnvironment(context), stdio: ["ignore", "pipe", "pipe", "pipe"], detached: grouped });
+  const stopProcess = ownedProcessStop(child, grouped);
   const stdout: Buffer[] = []; const stderr: Buffer[] = [];
   child.stdout?.on("data", (chunk: Buffer) => { stdout.push(chunk); context.output("stdout", chunk.toString("utf8")); }); child.stderr?.on("data", (chunk: Buffer) => { stderr.push(chunk); context.output("stderr", chunk.toString("utf8")); });
   const channel = child.stdio[3];
-  if (channel === null || typeof channel === "number") throw new CautestError("UML fd3 Control Channel 创建失败", { code: "provision_error" });
+  if (channel === null || typeof channel === "number") {await stopProcess(); throw new CautestError("UML fd3 Control Channel 创建失败", { code: "provision_error" });}
   const control = new UmlControlChannel(channel as Duplex);
-  child.once("exit", (code, signal) => control.fail(new CautestError(`UML 已退出: code=${code}, signal=${signal}`, { code: "transport_error" })));
-  const resource = { child, control, stdout, stderr, buildId: image.buildId } satisfies UmlRuntimeResource;
+  child.once("error", cause => control.fail(new CautestError(`UML 启动失败: ${cause.message}`, {code: "provision_error", cause})));
+  child.once("exit", (code, signal) => control.fail(new CautestError(`UML 已退出: code=${code}, signal=${signal}\n${Buffer.concat(stderr).toString("utf8")}`, { code: "transport_error" })));
+  let stopping: Promise<void> | undefined;
+  const stop = () => stopping ??= (async () => {
+    context.signal.removeEventListener("abort", abort);
+    await stopProcess(); await control.close().catch(() => {});
+    if (context.resources.has("uml", name)) context.resources.close("uml", name);
+  })();
+  const abort = () => {control.fail(context.signal.reason instanceof Error ? context.signal.reason : new Error("UML 已取消")); void stop().catch(() => {});};
+  const resource = { child, control, stdout, stderr, buildId: image.buildId, stop } satisfies UmlRuntimeResource;
   context.state.set(`uml:${name}`, resource);
   context.resources.publish({ kind: "uml", name, state: "starting", handle: resource, metadata: { buildId: image.buildId, kernelPath: image.kernelPath, rootfsPath: image.rootfsPath, ...(coverageDir === undefined ? {} : { coverageDir }) } });
-  context.defer(async () => {
-    if (child.exitCode === null) child.kill("SIGTERM");
-    await Promise.race([once(child, "exit"), new Promise((resolve) => setTimeout(resolve, 500))]);
-    if (child.exitCode === null) child.kill("SIGKILL");
-    await control.close().catch(() => {});
-  }, `stop-uml:${name}`);
+  context.defer(stop, `stop-uml:${name}`);
+  context.signal.addEventListener("abort", abort, {once: true});
+  if (context.signal.aborted) abort();
   try {
-    const ready = await Promise.race([control.waitReady(environment.machine?.readyTimeoutMs ?? 30_000), once(child, "exit").then(([code, signal]) => { throw new CautestError(`UML 在 Ready 前退出: code=${code}, signal=${signal}\n${Buffer.concat(stderr).toString("utf8")}`, { code: "provision_error" }); })]);
+    const ready = await control.waitReady(environment.machine?.readyTimeoutMs ?? 30_000);
+    context.signal.throwIfAborted();
     if (ready.buildId !== image.buildId) throw new CautestError(`UML Catalog Build ID 不匹配: expected=${image.buildId}, actual=${ready.buildId}`, { code: "target_error" });
     context.resources.ready("uml", name);
   } catch (error) {
-    context.resources.fail("uml", name, { message: error instanceof Error ? error.message : String(error) });
+    const lifecycle = context.resources.get("uml", name);
+    if (lifecycle.state === "starting" || lifecycle.state === "ready") context.resources.fail("uml", name, {message: error instanceof Error ? error.message : String(error)});
+    await stop().catch(() => {});
     throw error;
   }
   return resource;
@@ -351,9 +364,7 @@ export async function collectUml(name: string, context: StepExecutionContext): P
   if (resource === undefined) return [{ code: "uml_not_started", message: name }];
   try { await resource.control.command("GOODBYE", (line) => line === "BYE", 500); } catch { /* best effort */ }
   try { await resource.control.command("SHUTDOWN", () => false, 50); } catch { /* agent may exit first */ }
-  if (resource.child.exitCode === null) resource.child.kill("SIGTERM");
-  await Promise.race([once(resource.child, "exit"), new Promise((resolve) => setTimeout(resolve, 500))]);
-  if (resource.child.exitCode === null) resource.child.kill("SIGKILL");
+  await resource.stop();
   await mkdir(context.project.resultDir, { recursive: true });
   const consolePath = path.join(context.project.resultDir, `${name}-console.log`); const errorPath = path.join(context.project.resultDir, `${name}-host-stderr.log`);
   await Promise.all([writeFile(consolePath, Buffer.concat(resource.stdout)), writeFile(errorPath, Buffer.concat(resource.stderr))]);

@@ -106,3 +106,8 @@ npm run test:xmake:uml
 Linux 6.6.157 的实际配置命令首先失败在 `flex`，Doctor 同时发现缺少 `bison` 与 `bc`。
 当前环境没有 libelf 开发头文件，但尚未执行到能证明它对该 UML 配置必需的构建阶段。
 不把 Host 6.12 headers 下的模块编译、模拟控制通道或 BLOCKED 入口当成真实 UML 通过。
+
+UML 进程由启动步骤独占 POSIX 进程组。取消、Ready 超时、错误 Catalog Build ID、早退及
+spawn 错误会回收所属进程与后代；停止操作幂等，collect/defer 共同调用同一个清理动作。
+控制通道的超时或取消等待器会移除，避免吞掉下一条命令的响应。
+这些失败路径通过真实 OS 进程和明确的 Agent 模拟器验证，不等同于真实 UML 启动验收。

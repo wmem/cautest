@@ -23,7 +23,7 @@ class UmlEndpointTransport implements CtpTransport {
 
   constructor(channel: UmlControlChannel, endpoint: string) { this.#channel = channel; this.#endpoint = endpoint; }
   async open(options: { readonly timeoutMs?: number; readonly signal?: AbortSignal } = {}): Promise<void> {
-    if (!this.#opened) { await this.#channel.acquire(this, this.#endpoint, options.timeoutMs ?? 5_000); this.#opened = true; }
+    if (!this.#opened) { await this.#channel.acquire(this, this.#endpoint, options.timeoutMs ?? 5_000, options.signal); this.#opened = true; }
   }
   feed(chunk: Buffer): void {
     this.#buffer += chunk.toString("utf8");
@@ -70,6 +70,7 @@ export class UmlControlChannel {
   constructor(stream: Duplex) {
     this.#stream = stream;
     this.#ready = new Promise((resolve, reject) => this.#waiters.push({ predicate: (line) => line.startsWith("CAUTEST_AGENT_READY "), resolve, reject }));
+    void this.#ready.catch(() => {}); // Failure may precede the caller attaching waitReady().
     stream.on("data", (chunk: Buffer) => this.#onData(Buffer.from(chunk)));
     stream.once("error", (cause: Error) => this.fail(new CautestError(`UML Control Channel 错误: ${cause.message}`, { code: "transport_error", cause })));
     stream.once("end", () => this.fail(new CautestError("UML Control Channel 已关闭", { code: "transport_error" })));
@@ -94,21 +95,41 @@ export class UmlControlChannel {
     if (fields.length !== 4 || fields[1] !== "1") throw new CautestError(`无效 UML Agent Ready: ${line}`, { code: "protocol_error" });
     return { buildId: fields[2]!, bootId: fields[3]! };
   }
-  waitLine(predicate: (line: string) => boolean, timeoutMs = 5_000): Promise<string> {
+  waitLine(predicate: (line: string) => boolean, timeoutMs = 5_000, signal?: AbortSignal): Promise<string> {
     if (this.#failure !== undefined) return Promise.reject(this.#failure);
-    return timeout(new Promise((resolve, reject) => this.#waiters.push({ predicate, resolve, reject })), timeoutMs, "等待 UML Agent 响应超时");
+    return new Promise((resolve, reject) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const cleanup = () => {
+        if (timer !== undefined) clearTimeout(timer);
+        signal?.removeEventListener("abort", abort);
+        const index = this.#waiters.indexOf(waiter); if (index >= 0) this.#waiters.splice(index, 1);
+      };
+      const waiter: Waiter = {predicate, resolve: line => {cleanup(); resolve(line);}, reject: error => {cleanup(); reject(error);}};
+      const abort = () => waiter.reject(signal?.reason instanceof Error ? signal.reason : new CautestError("UML Command 已取消", {code: "transport_error"}));
+      this.#waiters.push(waiter);
+      timer = setTimeout(() => waiter.reject(new CautestError("等待 UML Agent 响应超时", {code: "timeout_error"})), timeoutMs);
+      signal?.addEventListener("abort", abort, {once: true}); if (signal?.aborted) abort();
+    });
   }
   async write(data: string): Promise<void> { if (this.#failure !== undefined) throw this.#failure; await new Promise<void>((resolve, reject) => this.#stream.write(data, (error) => error ? reject(error) : resolve())); }
-  async acquire(endpoint: UmlEndpointTransport, name: string, timeoutMs: number): Promise<void> {
+  async acquire(endpoint: UmlEndpointTransport, name: string, timeoutMs: number, signal?: AbortSignal): Promise<void> {
     if (this.#endpoint !== undefined) throw new CautestError("UML Control Channel 已有活动 Session", { code: "transport_error" });
-    const response = this.waitLine((line) => line === "OK" || line === "DENY", timeoutMs);
-    await this.write(`OPEN ${name}\n`);
-    if (await response !== "OK") throw new CautestError(`Guest Agent 拒绝 Endpoint: ${name}`, { code: "target_error" });
+    const response = await this.command(`OPEN ${name}`, (line) => line === "OK" || line === "DENY", timeoutMs, signal);
+    if (response !== "OK") throw new CautestError(`Guest Agent 拒绝 Endpoint: ${name}`, { code: "target_error" });
     this.#endpoint = endpoint;
   }
   release(endpoint: UmlEndpointTransport): void { if (this.#endpoint === endpoint) this.#endpoint = undefined; }
   openEndpoint(name: string): CtpTransport { return new UmlEndpointTransport(this, name); }
-  async command(line: string, expected: (line: string) => boolean, timeoutMs = 5_000): Promise<string> { const response = this.waitLine(expected, timeoutMs); await this.write(`${line}\n`); return await response; }
+  async command(line: string, expected: (line: string) => boolean, timeoutMs = 5_000, signal?: AbortSignal): Promise<string> {
+    signal?.throwIfAborted();
+    const controller = new AbortController();
+    const abort = () => controller.abort(signal?.reason);
+    signal?.addEventListener("abort", abort, {once: true});
+    const response = this.waitLine(expected, timeoutMs, controller.signal);
+    void response.catch(() => {});
+    try {await this.write(`${line}\n`); return await response;}
+    finally {signal?.removeEventListener("abort", abort); controller.abort();}
+  }
   async close(): Promise<void> { this.#stream.removeAllListeners("data"); this.#stream.end(); this.fail(new CautestError("UML Control Channel 已关闭", { code: "transport_error" })); }
 }
 
@@ -118,4 +139,5 @@ export interface UmlRuntimeResource {
   readonly stdout: Buffer[];
   readonly stderr: Buffer[];
   readonly buildId: string;
+  readonly stop: () => Promise<void>;
 }
