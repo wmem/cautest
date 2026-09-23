@@ -1,0 +1,16 @@
+local directory = os.scriptdir()
+-- A source-reuse component is explicit. Each consumer recompiles these sources.
+rule("example.math.sources")
+    on_load(function (target)
+        target:add("files", path.join(directory, "math_ops.c"))
+        target:add("includedirs", directory)
+    end)
+rule_end()
+-- Library reuse means library's own compile configuration remains authoritative.
+target("math.library")
+    set_kind("static")
+    add_rules("example.math.sources")
+    add_includedirs(directory, {public = true})
+    add_defines("MATH_SCALE=1")
+    set_default(false)
+target_end()

@@ -102,6 +102,7 @@ async function checkPatterns(job: TestJob, step: WorkflowStep, field: string, co
 export async function doctorJobs(jobs: readonly TestJob[], configDir: string, defaults: Readonly<ResolvedTestConfigDefaults> = { resultDir: ".cautest/results", cacheDir: ".cautest/cache", generatedDir: ".cautest/generated", workDir: ".cautest/work", stepTimeoutMs: 60_000 }): Promise<readonly DoctorIssue[]> {
   const issues: DoctorIssue[] = [];
   for (const job of jobs) {
+    for (const step of job.workflow) if (step.kind === "xmakeUnsupported") issues.push({code:"CT-DOCTOR-XMAKE-UNSUPPORTED",severity:"error",jobId:job.id,step:step.kind,message:`Xmake ${String(step.details.platform)} artifact runtime is not implemented`,hint:"Use the existing standalone JS helper; this platform gate remains blocked"});
     const builtModules = new Set<string>();
     for (const step of job.workflow) {
       for (const field of ["tests", "sources", "headers", "inputs", "extraSymbols", "configFragments"]) await checkPatterns(job, step, field, configDir, issues);

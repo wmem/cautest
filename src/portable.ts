@@ -87,11 +87,11 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   const publicDeclarations = await collectPublicDeclarations();
   const libraryFilter = portableLibraryFilter(publicDeclarations);
   await mkdir(path.join(root, "lib"), { recursive: true });
-  for (const directory of ["artifacts", "cache", "config", "doctor", "integration", "jobs", "kernel", "model", "pattern", "protocol", "reporters", "result", "steps", "system", "uml", "workflow"]) {
+  for (const directory of ["adapters", "artifacts", "cache", "config", "doctor", "integration", "jobs", "kernel", "model", "pattern", "protocol", "reporters", "result", "steps", "system", "uml", "workflow"]) {
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true, filter: libraryFilter });
   }
   await mkdir(path.join(root, "lib/runtime"));
-  for (const file of ["cli.js", "direct-session.js", "environment.js", "interrupt.js", "main.js", "process.js"]) {
+  for (const file of ["cli.js", "direct-session.js", "environment.js", "interrupt.js", "main.js", "process.js", "repository-loader.js"]) {
     await cp(path.join(packageRoot, `dist/runtime/${file}`), path.join(root, `lib/runtime/${file}`));
   }
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
@@ -101,6 +101,8 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   const installedReadme = installedTemplate.replace("[使用指南](index.md)", "[使用指南](docs/usage/index.md)");
   if (installedReadme === installedTemplate) throw new Error("安装说明缺少使用指南链接");
   await writeFile(path.join(root, "README.md"), installedReadme);
+  await cp(path.join(packageRoot, "xmake.lua"), path.join(root, "xmake.lua"));
+  await cp(path.join(packageRoot, "adapters"), path.join(root, "adapters"), {recursive: true});
   await cp(path.join(packageRoot, "versions.json"), path.join(root, "versions.json"));
   await mkdir(path.join(root, "docs"));
   await cp(path.join(packageRoot, "docs/usage"), path.join(root, "docs/usage"), {

@@ -1,0 +1,99 @@
+import path from "node:path";
+import { mkdir, readFile, writeFile, rename, stat } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { hashBytes, hashFile, stableSerialize } from "../../cache/fingerprint.js";
+import { assertCompatibleContext, object, resolveArtifact, validateBuildContext, type ArtifactReceipt, type ArtifactRef, type BuildContext, type BuildProvider } from "../../artifacts/index.js";
+import type { StepExecutionContext } from "../../config/schema/common.js";
+import { CautestError } from "../../model/error.js";
+import { effectiveEnvironment } from "../../runtime/environment.js";
+import { runCommand } from "../../runtime/process.js";
+
+async function atomic(file: string, value: unknown): Promise<void> {
+  await mkdir(path.dirname(file), {recursive:true});
+  const temporary = `${file}.${randomUUID()}.tmp`;
+  await writeFile(temporary, `${JSON.stringify(value,null,2)}\n`);
+  await rename(temporary,file);
+}
+/** A run-scoped build session, not a replacement for Xmake's incremental compiler cache. */
+export class XmakeBuildProvider implements BuildProvider {
+  readonly #builds = new Map<string, Promise<ArtifactReceipt>>();
+  readonly #environments = new Map<string,string>();
+  readonly #outputs = new Map<string,string>();
+  #context: BuildContext;
+  readonly program: string;
+  readonly sources: ReadonlyMap<string,string>;
+  constructor(program: string, context: BuildContext, sources: ReadonlyMap<string,string> = new Map()) { this.program=program; this.#context=context; this.sources=sources; }
+  async #checkSources(): Promise<void> {
+    for (const [file,digest] of this.sources) if (await hashFile(file)!==digest) throw new CautestError(`Definition changed during run: ${file}; re-run xmake ct`,{code:"build_error"});
+  }
+  #receiptFile(target: string, environment: string, context=this.#context): string {
+    return path.join(context.projectRoot,".cautest/xmake/receipts",`${hashBytes(stableSerialize({target,context,environment}))}.json`);
+  }
+  async build(ref: ArtifactRef, context: StepExecutionContext): Promise<ArtifactReceipt> {
+    context.signal.throwIfAborted();
+    const environment=hashBytes(stableSerialize(context.job.env));
+    const previous=this.#environments.get(ref.target);
+    if(previous!==undefined&&previous!==environment) throw new CautestError(`Conflicting build env for target ${ref.target}; use explicitly isolated Xmake targets/configurations`,{code:"build_error"});
+    this.#environments.set(ref.target,environment);
+    const key=ref.target; // one fixed Xmake configuration per session; output role does not rebuild a target
+    let pending=this.#builds.get(key);
+    if(pending===undefined){pending=this.#build(ref,context);this.#builds.set(key,pending);}
+    const receipt=await pending;
+    await this.#checkSources();
+    await resolveArtifact(receipt,ref,this.#context,false);
+    return receipt;
+  }
+  async #build(ref: ArtifactRef, context: StepExecutionContext): Promise<ArtifactReceipt> {
+    await this.#checkSources();
+    const directory=path.join(context.project.resultDir,context.job.id);
+    await mkdir(directory,{recursive:true});
+    const name=ref.target.replace(/[^A-Za-z0-9_.-]/gu,"-");
+    const log=path.join(directory,`xmake-${name}.log`);
+    const description=path.join(directory,`xmake-${name}-${randomUUID()}.json`);
+    const chunks:string[]=[];
+    const command=async(args:readonly string[])=>{
+      const result=await runCommand({program:this.program,args,cwd:this.#context.projectRoot,env:effectiveEnvironment(context),signal:context.signal,
+        onOutput(channel,text){chunks.push(`[${channel}] ${text}`);context.output(channel,text);}});
+      if(result.exitCode!==0) throw new CautestError(`Xmake ${args[0]} failed (exit ${result.exitCode}) for ${ref.target}\n${result.stderr || result.stdout}`,{code:"build_error"});
+    };
+    let rebuild=false;
+    try{
+      const old:unknown=JSON.parse(await readFile(this.#receiptFile(ref.target, hashBytes(stableSerialize(context.job.env))),"utf8"));
+      await resolveArtifact(old,ref,this.#context,false);
+    }catch{rebuild=true;} // never bless unknown or corrupted residual output after a previous failed build
+    try{
+      await command(["build","-y",...(rebuild?["-r"]:[]),ref.target]);
+      context.signal.throwIfAborted();
+      await command(["cautest-artifact",`--target=${ref.target}`,`--output-file=${description}`]);
+      const raw=object(JSON.parse(await readFile(description,"utf8")),["schemaVersion","kind","target","context","protocolBuildId","outputs"],"Artifact description");
+      if(raw.schemaVersion!==1||raw.kind!=="cautest.artifact-description"||raw.target!==ref.target)throw new CautestError("Invalid Xmake artifact description",{code:"build_error"});
+      validateBuildContext(raw.context);assertCompatibleContext(this.#context,raw.context);
+      this.#context=raw.context;
+      if(!Array.isArray(raw.outputs)||raw.outputs.length===0)throw new CautestError("Missing Xmake outputs",{code:"build_error"});
+      const outputs=[];
+      for(const candidate of raw.outputs){
+        const item=object(candidate,["role","path"],"Output description");
+        if(typeof item.role!=="string"||typeof item.path!=="string"||!path.isAbsolute(item.path))throw new CautestError("Invalid Xmake output path/role",{code:"build_error"});
+        const owner=this.#outputs.get(item.path);
+        if(owner!==undefined&&owner!==ref.target)throw new CautestError(`Xmake targets ${owner} and ${ref.target} collide at ${item.path}`,{code:"build_error"});
+        this.#outputs.set(item.path,ref.target);
+        const info=await stat(item.path);
+        if(!info.isFile())throw new CautestError(`Xmake output is not a file: ${item.path}`,{code:"build_error"});
+        outputs.push({role:item.role,path:item.path,size:info.size,sha256:await hashFile(item.path)});
+      }
+      const receipt:ArtifactReceipt={schemaVersion:1,kind:"cautest.artifact-receipt",target:ref.target,context:this.#context,outputs,
+        ...(raw.protocolBuildId===undefined?{}:{protocolBuildId:raw.protocolBuildId as string})};
+      await resolveArtifact(receipt,ref,this.#context,false);
+      await this.#checkSources();
+      await atomic(this.#receiptFile(ref.target, hashBytes(stableSerialize(context.job.env))),receipt);
+      await atomic(path.join(directory,`receipt-${name}.json`),receipt);
+      return receipt;
+    }catch(cause){
+      if(cause instanceof CautestError)throw cause;
+      throw new CautestError(`Xmake artifact build failed: ${ref.target}: ${cause instanceof Error?cause.message:String(cause)}`,{code:"build_error",cause});
+    }finally{
+      await writeFile(log,chunks.join(""));
+      context.artifacts.publish({kind:"log",name:`xmake-${name}`,path:log});
+    }
+  }
+}

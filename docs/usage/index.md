@@ -75,3 +75,7 @@ Usage 负责解释模型、常用路径和字段关系；安装目录中的 `.d.
 ```
 
 这时 stdout 只输出紧凑摘要，实时进度和 `--verbose` 构建日志写入 stderr。标准文件、Reporter 和 CI 消费方式见[结果目录与 Reporter](results.md)。
+
+## Xmake 工程集成
+
+[将 Cautest clone 到 tools/cautest 并使用 xmake ct](xmake.md)。

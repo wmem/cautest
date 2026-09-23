@@ -81,3 +81,9 @@ tar -xzf cautest-<版本>-<commit>.tar.gz -C ./tools
 - 评估升级影响或准备发布时，查看[版本记录](docs/changelog.md)和[版本维护流程](docs/tests/testing.md#版本维护与发布)。
 
 安装目录会携带 `docs/usage/`、可运行的 `examples/`、配置 `.d.ts` 和 C 公共头文件；架构、协议与测试策略等开发者资料只保留在源码仓库中。
+
+## Xmake 工程内使用
+
+准备源码依赖后，在工程中加入 `includes("tools/cautest/xmake.lua")`，
+通过分散的 `ctest.*` 声明和 `xmake ct` 运行既有 Workflow。
+参见 [Xmake 使用说明](docs/usage/xmake.md)；当前真实验证平台是 Xmake 3.1.1 / Linux x86_64 Native。

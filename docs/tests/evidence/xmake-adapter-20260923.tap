@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs
+ok 1 - real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs
+  ---
+  duration_ms: 1381.868951
+  type: 'test'
+  ...
+# Subtest: real Native multi-module/suite CTP, same-build source reuse and product library macro isolation
+ok 2 - real Native multi-module/suite CTP, same-build source reuse and product library macro isolation
+  ---
+  duration_ms: 4458.678751
+  type: 'test'
+  ...
+# Subtest: real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP
+ok 3 - real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP
+  ---
+  duration_ms: 5431.055957
+  type: 'test'
+  ...
+# Subtest: real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks
+ok 4 - real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks
+  ---
+  duration_ms: 584.953615
+  type: 'test'
+  ...
+# Subtest: real workflow module provider receives explicit artifact, reuses old engine, tracks source and rejects env sharing
+ok 5 - real workflow module provider receives explicit artifact, reuses old engine, tracks source and rejects env sharing
+  ---
+  duration_ms: 2843.407671
+  type: 'test'
+  ...
+# Subtest: Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields
+ok 6 - Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields
+  ---
+  duration_ms: 1.984703
+  type: 'test'
+  ...
+# Subtest: Xmake manifest duplicates identify both origins; driver outputs are explicit references
+ok 7 - Xmake manifest duplicates identify both origins; driver outputs are explicit references
+  ---
+  duration_ms: 0.655029
+  type: 'test'
+  ...
+# Subtest: Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load
+ok 8 - Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load
+  ---
+  duration_ms: 57.375882
+  type: 'test'
+  ...
+# Subtest: MCU board factories stay lazy for list/plan and validate named resources
+ok 9 - MCU board factories stay lazy for list/plan and validate named resources
+  ---
+  duration_ms: 3.840655
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14770.378049

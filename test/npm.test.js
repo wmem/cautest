@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile, access } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile, access, cp, symlink } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -32,7 +32,11 @@ test("npm tarball installs and runs in an empty consumer offline without dev dep
   const consumer = path.join(temporary, "consumer with spaces 中文");
   await mkdir(consumer);
   const env = { ...process.env, npm_config_offline: "true", npm_config_audit: "false", npm_config_fund: "false", npm_config_cache: path.join(temporary, "cache") };
-  const packed = JSON.parse((await exec("npm", ["pack", "--json", "--pack-destination", temporary], { cwd: root, env, maxBuffer: 10 * 1024 * 1024 })).stdout)[0];
+  // npm pack executes prepare. Isolate its tsc writes from parallel tests importing dist.
+  const packageRoot = path.join(temporary, "package-source");
+  await cp(root, packageRoot, {recursive:true, filter:(source)=>!path.relative(root,source).split(path.sep).some(part=>[".git","node_modules","dist",".cautest","build"].includes(part))});
+  await symlink(path.join(root,"node_modules"),path.join(packageRoot,"node_modules"),"dir");
+  const packed = JSON.parse((await exec("npm", ["pack", "--json", "--pack-destination", temporary], { cwd: packageRoot, env, maxBuffer: 10 * 1024 * 1024 })).stdout)[0];
   await writeFile(path.join(consumer, "package.json"), JSON.stringify({ name: "consumer", private: true, type: "module" }));
   await exec("npm", ["install", "--offline", "--no-audit", "--no-fund", path.join(temporary, packed.filename)], { cwd: consumer, env });
   const api = await exec(process.execPath, ["--input-type=module", "-e", "import { selectJobs } from 'cautest'; import { testJob } from 'cautest/config.js'; console.log(typeof selectJobs, typeof testJob);"], { cwd: consumer, env });

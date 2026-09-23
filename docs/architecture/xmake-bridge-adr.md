@@ -33,3 +33,21 @@ old helpers and new Xmake provider, not a second adapter-only cancellation engin
 Linux process-tree, pre-abort, spawn-error, old interrupt/Native/MCU regressions:
 18/18 passed; see the process-tree evidence in `docs/tests/evidence/`. Windows
 uses the previous direct-child fallback and is not in the Xmake support matrix.
+
+## Native adapter verification, continuation
+
+Real vendored `includes("tools/cautest/xmake.lua")` now supports list/plan/doctor/
+describe/run, Node manifest loading, Workflow artifact builds, strict receipts,
+Native Registry/entry generation, source-component reuse, and real CTP results.
+See `docs/usage/xmake.md`, `test/xmake-adapter.test.js` and the 9-test evidence.
+Full regression: 129/129 Node tests, plus C Runtime and public TypeScript checks.
+The actual Xmake reparses configuration in a single interpreter: registries reset
+using the public scriptfiles-table identity, not a global lifetime singleton.
+Definition errors are deferred until ct execution because Xmake task discovery
+otherwise hides them behind `invalid task`. Only `_PRIVATE._CURFILE` is read
+for the original Lua filename; declaration ordinal is not a line number.
+
+The first full run exposed a pre-existing test race: npm pack's prepare wrote
+to the shared dist while parallel tests imported it. The npm test now copies
+its package source and invokes the genuine npm prepare in the isolated copy.
+No product implementation test is weakened or replaced with a stub.

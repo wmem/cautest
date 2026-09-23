@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
-import { loadConfig } from "../config/load.js";
+import { loadConfig, type LoadedConfig } from "../config/load.js";
 import { planConfig } from "../config/plan.js";
 import type { CTestRunOverrides, SuitePolicy, TestJob } from "../config/schema/common.js";
 import { CAUTEST_CLI_SCHEMA_VERSION } from "../config/versions.js";
@@ -18,6 +18,8 @@ interface CliStreams {
 }
 
 export interface CliRunOptions {
+  /** Prepared configuration supplied by a trusted frontend; retains the same CLI engine. */
+  readonly loadedConfig?: LoadedConfig;
   readonly signal?: AbortSignal;
 }
 
@@ -341,7 +343,7 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams, options:
     if (options.signal?.aborted === true) return 130;
     return run.status === "ERROR" ? 2 : run.status === "FAIL" ? 1 : 0;
   }
-  const loaded = await loadConfig(parsed.config);
+  const loaded = options.loadedConfig ?? await loadConfig(parsed.config);
   if (parsed.command === "describe" && parsed.selectors.length === 1 && !loaded.config.jobs.some((job) => job.id === parsed.selectors[0])) {
     const preset = presetDescriptions.find((item) => item.name === parsed.selectors[0]);
     if (preset === undefined) { line(streams, "stderr", `未找到 Test Job 或公开 Job Factory/Preset: ${parsed.selectors[0]}`); return 4; }
