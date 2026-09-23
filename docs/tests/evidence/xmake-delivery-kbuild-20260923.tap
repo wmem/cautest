@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: Markdown link checks ignore fenced excerpts but retain surrounding prose
+ok 1 - Markdown link checks ignore fenced excerpts but retain surrounding prose
+  ---
+  duration_ms: 0.894283
+  type: 'test'
+  ...
+# Subtest: 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+ok 2 - 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+  ---
+  duration_ms: 65.934244
+  type: 'test'
+  ...
+# Subtest: Usage 提供按需入口并绑定完整可执行示例
+ok 3 - Usage 提供按需入口并绑定完整可执行示例
+  ---
+  duration_ms: 7.548985
+  type: 'test'
+  ...
+# Subtest: 开发者索引覆盖 Project Docs 核心阅读路径
+ok 4 - 开发者索引覆盖 Project Docs 核心阅读路径
+  ---
+  duration_ms: 2.910524
+  type: 'test'
+  ...
+# Subtest: 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+ok 5 - 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+  ---
+  duration_ms: 5.118693
+  type: 'test'
+  ...
+# Subtest: real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+ok 6 - real portable Xmake Native and MCU execute after relocation with no dist or node_modules
+  ---
+  duration_ms: 4405.223367
+  type: 'test'
+  ...
+# Subtest: real product Kbuild phony target exports role-checked ELF, symbols and Kernel identity without source pollution
+ok 7 - real product Kbuild phony target exports role-checked ELF, symbols and Kernel identity without source pollution
+  ---
+  duration_ms: 5800.264987
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5859.053413

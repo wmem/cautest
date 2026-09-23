@@ -195,3 +195,57 @@ serial disconnect recovery, owned/borrowed failure cleanup, stale board firmware
 wrong Boot ID, busy-lock timeout, canceled wait and forced owner process death.
 No physical board was supplied; real flash/reset/power/serial/SPI acceptance
 remains outstanding. Kernel/Driver artifact runtimes remain explicitly unsupported.
+
+## Product Kbuild multi-output example (not Driver runtime acceptance)
+
+The [Kbuild product example](../../examples/xmake/kbuild-product/xmake.lua) owns
+its driver sources, Makefile and macro in one product target. It executes real
+external-module Kbuild in a throwaway source copy, not `M=<product-source>`.
+Prepare a Kernel build/headers directory yourself, then configure explicitly:
+
+```sh
+xmake f -y --kernel_build=/absolute/prepared/kernel-build --demo_value=7
+xmake ct --json integration.kbuild-contract
+```
+
+This example deliberately supports prepared **x86_64** Kernel trees, not UML.
+It exports `ko`, `symbols`, `order` and `kernel-identity` roles from the same
+phony target. All roles are validated by the receipt and a single invocation is
+shared between the workflow's references. Kernel configuration, release and
+Module.symvers are hashed before/after building. The contract test checks ELF,
+vermagic release and the expected exported symbol; **it never loads the module,
+executes a .ko, boots a Kernel or tests a Driver ABI**. This is not full ABI
+compatibility validation; final module loading also needs matching Kernel config,
+symbol versions, architecture and the future explicit UML Environment.
+
+This continuation actually compiled against preinstalled
+`linux-headers-6.12.96+deb13-amd64`, not the supplied Linux 6.6.157 archive. The
+6.6.157 source build still requires unavailable flex/bison/bc/libelf development
+inputs; BusyBox source and a real board are also absent. No substituted Kernel
+version is presented as the requested real 6.6.157 UML acceptance. The old
+standalone JS kernel/driver paths remain intact. Their artifact-backed split
+and the single-source UML Environment are the next platform work.
+
+## Explicit acceptance commands and provider dependencies
+
+```sh
+npm test
+CAUTEST_XMAKE=/absolute/xmake npm run test:xmake
+CAUTEST_XMAKE=/absolute/xmake KERNEL_BUILD=/absolute/prepared/kernel-build npm run test:xmake:kbuild
+```
+
+The explicit Xmake acceptance commands fail with a prerequisite diagnostic when
+required environment inputs are absent; an entirely skipped suite is not PASS.
+The Kbuild command is separate from the Native/MCU simulation gate and from real
+UML/Driver ABI acceptance. A relocated portable tree has independently passed
+both Native and MCU simulation with no `dist` or `node_modules`; its manifest
+also remains valid after application tests finish.
+
+Provider-relative imports resolve from the provider's declaring module. Install
+third-party dependencies in that application's normal Node resolution tree;
+Cautest does not bundle arbitrary packages or native addons. Native addons must
+match the host Node ABI/platform. Supply secrets through the inherited process
+environment, not Lua Job/profile `env`: declared configuration values intentionally
+appear in saved execution manifests and may appear in CLI descriptions. Cautest
+does not dump the complete inherited environment; user build/provider commands
+remain responsible for not printing their own secrets.
