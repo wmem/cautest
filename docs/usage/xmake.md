@@ -302,3 +302,18 @@ locking on non-Linux hosts is not part of the verified support matrix.
 这属于软件协议行为模拟，不模拟引脚时序、信号完整性或真实 SPI 控制器。它满足“MCU 先模拟”的当前交付范围，不能替代原方案的实板 SPI 门禁。
 
 共享 MCU Runtime 还覆盖 owned/borrowed Adapter 的 flash、reset、openTransport 抛错及超时，以及错误 Adapter 返回值和清理异常。超时后才返回的 Transport 会立即关闭，不会启动 CTP；borrowed Board 不由本 Job 关闭，但本 Job 创建的 Transport 和持有的物理锁仍会释放。
+
+### 当前验证的宿主与第三方模块边界
+
+当前实测组合是 Linux x86_64、Xmake 3.1.1、Node 22.16.0、GCC 和 Clang。声明的 Node 最低版本沿用旧项目要求；没有把未安装的 Node 版本、Windows/macOS 或交叉架构算作验证通过。Native 规则明确拒绝不支持的宿主/目标组合。
+
+Board 可以从消费工程的 `node_modules` 导入 npm 包。真实编译的 N-API v1 扩展已在源码 checkout 和中文/空格路径下的便携包中验证：list/plan/doctor 不执行工厂，run 才调用扩展并连接模拟 Board。该测试使用本地 fixture，不经过 npm Registry；不等于任意串口/USB 扩展或某个第三方版本均兼容。便携 Cautest 自身不需要 node_modules，但 Board 依赖仍由消费工程提供。扩展的 `require()`、动态载入 `.node` 或配置文件需要写入 `provider.inputs`，例如：
+
+```lua
+provider = {
+    module = "board.mjs", export = "create",
+    inputs = {"node_modules/my-board/*.cjs", "node_modules/my-board/*.node"}
+}
+```
+
+原生扩展必须匹配实际运行它的 Node/N-API、宿主架构及动态库；不应盲目复制另一架构或另一发行版的 node_modules。
