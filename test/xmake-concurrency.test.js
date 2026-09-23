@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {tmpdir} from 'node:os';
 import {fileURLToPath} from 'node:url';
-import {mkdtemp,mkdir,symlink,writeFile,readFile,rm,stat} from 'node:fs/promises';
+import {mkdtemp,mkdir,symlink,writeFile,readFile,rm,stat,readdir} from 'node:fs/promises';
 import {spawn,spawnSync} from 'node:child_process';
 const kit=fileURLToPath(new URL('..',import.meta.url)),xmake=process.env.CAUTEST_XMAKE;
 const env={...process.env,XMAKE_ROOT:'y',XMAKE_COLORTERM:'nocolor'};
@@ -29,4 +29,38 @@ test('four same-project Xmake sessions and a different project retain complete i
   const job=r.result.jobs[0];assert.equal(job.groups.flatMap(g=>g.cases).length,1);assert.equal(job.groups[0].cases[0].status,'PASS');
   assert.ok(artifacts[index].metadata.receipt.context.projectRoot===(index===4?b:a));assert.ok((await stat(artifacts[index].path)).size>0);
  }
+});
+
+
+test('real separate projects build GCC/debug and Clang/release concurrently without context or output sharing',{skip:!xmake},async t=>{
+ const a=await fixture(t,11),b=await fixture(t,31);
+ for(const [root,toolchain,mode] of [[a,'gcc','debug'],[b,'clang','release']]){
+  const configured=spawnSync(xmake,['f','-y','--toolchain='+toolchain,'-m',mode],{cwd:root,env,encoding:'utf8',timeout:30000});assert.equal(configured.status,0,configured.stdout+configured.stderr);
+ }
+ const values=await Promise.all([run(a),run(b)]);
+ const artifacts=values.map(v=>v.result.jobs[0].artifacts.find(a=>a.kind==='build-artifact'));
+ assert.equal(artifacts[0].metadata.receipt.context.mode,'debug');assert.equal(artifacts[1].metadata.receipt.context.mode,'release');
+ assert.notEqual(artifacts[0].path,artifacts[1].path);assert.notEqual(artifacts[0].buildId,artifacts[1].buildId);
+ assert.ok(values.every(v=>v.result.jobs[0].groups.flatMap(g=>g.cases).every(c=>c.status==='PASS')));
+});
+
+test('real same-project reconfiguration between build and receipt fails closed before CTP and a fresh session recovers',{skip:!xmake},async t=>{
+ const root=await fixture(t,17);
+ const listing=spawnSync(xmake,['ct','--list','--json'],{cwd:root,env,encoding:'utf8',timeout:20000});assert.equal(listing.status,0,listing.stdout+listing.stderr);
+ const directory=path.join(root,'.cautest/xmake/manifests'),files=await readdir(directory);assert.equal(files.length,1);
+ const manifest=JSON.parse(await readFile(path.join(directory,files[0]),'utf8'));
+ const wrapper=path.join(root,'race-xmake.mjs');
+ await writeFile(wrapper,`#!${process.execPath}
+import {spawnSync} from 'node:child_process';
+const args=process.argv.slice(2),real=${JSON.stringify(xmake)};
+const r=spawnSync(real,args,{stdio:'inherit'});if(r.status!==0)process.exit(r.status??2);
+if(args[0]==='build'){const changed=spawnSync(real,['f','-y','-m','debug'],{stdio:'inherit'});if(changed.status!==0)process.exit(changed.status??2);}
+`,{mode:0o755});
+ manifest.xmake=wrapper;const file=path.join(root,'race-manifest.json');await writeFile(file,JSON.stringify(manifest));
+ const attempted=spawnSync(process.execPath,[path.join(kit,'adapters/xmake-test/entry.mjs'),'--manifest',file,'run','--json'],{cwd:root,env,encoding:'utf8',timeout:40000,maxBuffer:16*1024*1024});
+ assert.equal(attempted.status,2,attempted.stdout+attempted.stderr);
+ const summary=JSON.parse(attempted.stdout),result=JSON.parse(await readFile(summary.resultPath,'utf8'));
+ assert.equal(result.status,'ERROR');assert.match(JSON.stringify(result),/context mismatch|configuration changed|mode/);
+ assert.equal(result.jobs[0].steps.find(s=>s.kind==='cTestRun').status,'SKIPPED');assert.equal(result.jobs[0].groups.length,0);
+ const recovered=await run(root);assert.equal(recovered.result.status,'SUCCESS');assert.equal(recovered.result.jobs[0].artifacts.find(a=>a.kind==='build-artifact').metadata.receipt.context.mode,'debug');
 });

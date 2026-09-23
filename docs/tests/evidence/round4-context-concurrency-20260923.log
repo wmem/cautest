@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: four same-project Xmake sessions and a different project retain complete isolated receipts
+ok 1 - four same-project Xmake sessions and a different project retain complete isolated receipts
+  ---
+  duration_ms: 3307.222932
+  type: 'test'
+  ...
+# Subtest: real separate projects build GCC/debug and Clang/release concurrently without context or output sharing
+ok 2 - real separate projects build GCC/debug and Clang/release concurrently without context or output sharing
+  ---
+  duration_ms: 2352.080537
+  type: 'test'
+  ...
+# Subtest: real same-project reconfiguration between build and receipt fails closed before CTP and a fresh session recovers
+ok 3 - real same-project reconfiguration between build and receipt fails closed before CTP and a fresh session recovers
+  ---
+  duration_ms: 3206.157631
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8918.119748
