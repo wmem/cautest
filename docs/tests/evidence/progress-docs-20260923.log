@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: Markdown link checks ignore fenced excerpts but retain surrounding prose
+ok 1 - Markdown link checks ignore fenced excerpts but retain surrounding prose
+  ---
+  duration_ms: 1.100405
+  type: 'test'
+  ...
+# Subtest: 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+ok 2 - 除根 README 外所有 Markdown 都在 docs 下且本地链接有效
+  ---
+  duration_ms: 25.442681
+  type: 'test'
+  ...
+# Subtest: Usage 提供按需入口并绑定完整可执行示例
+ok 3 - Usage 提供按需入口并绑定完整可执行示例
+  ---
+  duration_ms: 6.358447
+  type: 'test'
+  ...
+# Subtest: 开发者索引覆盖 Project Docs 核心阅读路径
+ok 4 - 开发者索引覆盖 Project Docs 核心阅读路径
+  ---
+  duration_ms: 1.164389
+  type: 'test'
+  ...
+# Subtest: 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+ok 5 - 安装 Usage 覆盖典型项目、测试模型、公开配置、CLI 和结果契约
+  ---
+  duration_ms: 2.886806
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 86.687459

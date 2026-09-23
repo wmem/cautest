@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "status": "partial-blocked",
+  "baselineCommit": "062044d66d582781033393422a555b0c30195cc9",
+  "execution": {
+    "startedAt": "2026-09-23T07:46:49+08:00",
+    "deadlineAt": "2026-09-23T08:46:49+08:00",
+    "implementationStoppedAt": "2026-09-23T08:06:58+08:00",
+    "reason": "XT-002 requires a real Xmake executable; referenced binary has no authorized materialization path and no system xmake is installed.",
+    "timeLimitExceeded": false
+  },
+  "requirements": {
+    "firstPriority": "npm migration",
+    "integrationDirection": "clone into tools/cautest and includes(\"tools/cautest/xmake.lua\")",
+    "delivery": "cautest.git.bundle",
+    "commitAfterIndependentVerification": true,
+    "networkUsed": false
+  },
+  "inputArchives": {
+    "cautest.tar.gz": "bb03d5b417aca9b887ff1b21067640ba81af8d57fc5bc27fe84d3b50b254d35e",
+    "cautest-xmake-test-plan-v0.1.0.zip": "4daeb65cf0bbb10798e798f65f9ee083a980bf9a3ca92934662931d9a551e554",
+    "linux-6.6.157.tar.xz": "b74a43d0630809b7871cc906ac155e956cbc0b2e78a7451f5e6c8bfcb1208c30"
+  },
+  "additionalCompletedWork": [
+    {
+      "id": "NPM-001",
+      "title": "npm scripts, v3 lockfile, installer and portable regression",
+      "commit": "55ff886",
+      "evidence": "../tests/evidence/npm-migration-20260923.log"
+    },
+    {
+      "id": "CLONE-001",
+      "title": "source checkout Node entry, npm ESM exports, relocation, CTP, JSON/JUnit, SIGINT",
+      "commit": "b8d7e27",
+      "evidence": "../tests/evidence/repository-full-20260923.log"
+    }
+  ],
+  "gates": {
+    "G0": "not-passed",
+    "G1": "not-passed",
+    "G2": "not-passed",
+    "G3": "not-passed",
+    "G4": "not-passed",
+    "G5": "not-passed",
+    "G6": "not-passed",
+    "G7": "not-passed"
+  },
+  "notImplemented": [
+    "root xmake.lua",
+    "ctest.* Lua DSL",
+    "xmake ct commands",
+    "execution manifest / artifact receipt",
+    "Xmake build provider / native rule",
+    "Xmake MCU adapter",
+    "Xmake kernel/driver adapter"
+  ],
+  "verification": {
+    "node": "22.16.0",
+    "npm": "10.9.2",
+    "host": "Linux x86_64",
+    "typescriptBuild": "passed",
+    "publicTypes": "passed",
+    "cRuntime": "passed",
+    "defaultNodeTests": {
+      "passed": 118,
+      "failed": 0,
+      "skipped": 0
+    },
+    "selectionTruthTableCombinations": 8192,
+    "cleanRegistryNpmCi": "not-run; offline dependency cache incomplete",
+    "gitSourceNpxE2e": "not-run; may require registry cache",
+    "realXmake": "blocked",
+    "realMcuSpi": "not-run; hardware not supplied",
+    "realUml": "not-run; G0 blocked and BusyBox source not supplied",
+    "finalFullEvidence": "../tests/evidence/pre-bundle-full-20260923.log",
+    "archivedPlanLinkChecks": "passed; fenced source excerpts are literal text, original plan files preserved unchanged"
+  },
+  "tasks": [
+    {
+      "id": "XT-001",
+      "title": "固化兼容基线与测试管理契约",
+      "phase": "P0",
+      "dependsOn": [],
+      "status": "completed",
+      "commit": "b9aceb1",
+      "evidence": "../architecture/xmake-compatibility.md"
+    },
+    {
+      "id": "XT-002",
+      "title": "验证 Xmake DSL、task 生命周期与锁",
+      "phase": "P0",
+      "dependsOn": [
+        "XT-001"
+      ],
+      "status": "blocked",
+      "blocker": "xmake-executable-unavailable"
+    },
+    {
+      "id": "XT-003",
+      "title": "验证产品构建复用与测试变体边界",
+      "phase": "P0",
+      "dependsOn": [
+        "XT-001",
+        "XT-002"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-004",
+      "title": "冻结 Lua 声明、Manifest 与 Artifact Receipt v1",
+      "phase": "P0",
+      "dependsOn": [
+        "XT-002",
+        "XT-003"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-005",
+      "title": "抽出统一 Job 选择器",
+      "phase": "P1",
+      "dependsOn": [
+        "XT-001"
+      ],
+      "status": "completed",
+      "commit": "b9aceb1",
+      "evidence": "../architecture/xmake-compatibility.md"
+    },
+    {
+      "id": "XT-006",
+      "title": "抽出可复用的 Artifact 与 Build Provider 契约",
+      "phase": "P1",
+      "dependsOn": [
+        "XT-004"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-007",
+      "title": "拆出 Native/MCU 的构建与运行部分",
+      "phase": "P1",
+      "dependsOn": [
+        "XT-006"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-008",
+      "title": "实现 Manifest Loader 与 JS 扩展工厂",
+      "phase": "P1",
+      "dependsOn": [
+        "XT-004",
+        "XT-005",
+        "XT-007"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-009",
+      "title": "加入可 vendoring 的 Xmake 入口与 DSL 注册",
+      "phase": "P2",
+      "dependsOn": [
+        "XT-002",
+        "XT-004"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-010",
+      "title": "实现分散定义收集与 provenance",
+      "phase": "P2",
+      "dependsOn": [
+        "XT-009"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-011",
+      "title": "实现 xmake ct 命令与 Manifest 导出",
+      "phase": "P2",
+      "dependsOn": [
+        "XT-008",
+        "XT-010"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-012",
+      "title": "实现 Xmake Build Provider 与 Receipt 导出",
+      "phase": "P3",
+      "dependsOn": [
+        "XT-003",
+        "XT-006",
+        "XT-011"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-013",
+      "title": "实现 Native C Runtime、Registry 与入口规则",
+      "phase": "P3",
+      "dependsOn": [
+        "XT-007",
+        "XT-009",
+        "XT-012"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-014",
+      "title": "打通第一个 Native 完整示例",
+      "phase": "P3",
+      "dependsOn": [
+        "XT-005",
+        "XT-008",
+        "XT-011",
+        "XT-012",
+        "XT-013"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-015",
+      "title": "补齐共享构建定义的便捷接入",
+      "phase": "P3",
+      "dependsOn": [
+        "XT-003",
+        "XT-013",
+        "XT-014"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-016",
+      "title": "实现构建去重、陈旧检测与上下文隔离",
+      "phase": "P4",
+      "dependsOn": [
+        "XT-012",
+        "XT-014"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-017",
+      "title": "验证结果、失败与旧入口兼容",
+      "phase": "P4",
+      "dependsOn": [
+        "XT-014"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-018",
+      "title": "验证大量分散测试与工程隔离",
+      "phase": "P4",
+      "dependsOn": [
+        "XT-010",
+        "XT-015",
+        "XT-016",
+        "XT-017"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-019",
+      "title": "接入 MCU Firmware Artifact 与协议身份",
+      "phase": "P5",
+      "dependsOn": [
+        "XT-007",
+        "XT-012",
+        "XT-016"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-020",
+      "title": "接入外部 Board、独占资源与失败清理",
+      "phase": "P5",
+      "dependsOn": [
+        "XT-008",
+        "XT-019"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-021",
+      "title": "完成 MCU 模拟与真实 SPI 验收",
+      "phase": "P5",
+      "dependsOn": [
+        "XT-019",
+        "XT-020"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-022",
+      "title": "接入 Kbuild 产品 target 与多产物契约",
+      "phase": "P6",
+      "dependsOn": [
+        "XT-012",
+        "XT-016"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-023",
+      "title": "分别接入 Kernel Test 与 Driver ABI 工作流",
+      "phase": "P6",
+      "dependsOn": [
+        "XT-008",
+        "XT-022"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-024",
+      "title": "完成真实 UML 与 Driver ABI 验收",
+      "phase": "P6",
+      "dependsOn": [
+        "XT-023"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-025",
+      "title": "完善发布包、vendoring 与离线消费",
+      "phase": "P7",
+      "dependsOn": [
+        "XT-018",
+        "XT-021",
+        "XT-024"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-026",
+      "title": "同步文档、版本与 CI 验收入口",
+      "phase": "P7",
+      "dependsOn": [
+        "XT-018",
+        "XT-021",
+        "XT-024",
+        "XT-025"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-027",
+      "title": "执行发布候选总验收与兼容复核",
+      "phase": "P7",
+      "dependsOn": [
+        "XT-026"
+      ],
+      "status": "not-started"
+    },
+    {
+      "id": "XT-028",
+      "title": "按实际重复量增加 namespace/preset 语法",
+      "phase": "Later",
+      "dependsOn": [
+        "XT-018"
+      ],
+      "status": "deferred-as-planned"
+    },
+    {
+      "id": "XT-029",
+      "title": "显式共享硬件会话与受控并发",
+      "phase": "Later",
+      "dependsOn": [
+        "XT-021",
+        "XT-024"
+      ],
+      "status": "deferred-as-planned"
+    },
+    {
+      "id": "XT-030",
+      "title": "扩展真实宿主 Driver 或 Case 级标签",
+      "phase": "Later",
+      "dependsOn": [
+        "XT-027"
+      ],
+      "status": "deferred-as-planned"
+    }
+  ]
+}

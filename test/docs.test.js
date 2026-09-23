@@ -16,8 +16,28 @@ async function markdownFiles(directory) {
   return output;
 }
 
+// Fenced source excerpts are literal text, not document navigation. In particular,
+// archived audits quote Markdown from a different directory without rebasing it.
+function markdownOutsideFences(contents) {
+  const output = [];
+  let fence;
+  for (const line of contents.split(/\r?\n/u)) {
+    const match = /^ {0,3}(`{3,}|~{3,})(.*)$/u.exec(line);
+    if (fence) {
+      if (match && match[1][0] === fence.character && match[1].length >= fence.length && match[2].trim() === "") fence = undefined;
+      continue;
+    }
+    if (match && (match[1][0] === "~" || !match[2].includes("`"))) {
+      fence = { character: match[1][0], length: match[1].length };
+      continue;
+    }
+    output.push(line);
+  }
+  return output.join("\n");
+}
+
 async function assertLocalLinks(file) {
-  const contents = await readFile(file, "utf8");
+  const contents = markdownOutsideFences(await readFile(file, "utf8"));
   for (const match of contents.matchAll(/\[[^\]]+\]\(([^)]+)\)/gu)) {
     const target = match[1];
     if (target.startsWith("#") || /^[a-z]+:/u.test(target)) continue;
@@ -27,6 +47,18 @@ async function assertLocalLinks(file) {
     );
   }
 }
+
+test("Markdown link checks ignore fenced excerpts but retain surrounding prose", () => {
+  const content = [
+    "[before](README.md)",
+    "````markdown", "[excerpt](missing-1.md)", "```", "[still excerpt](missing-2.md)", "````",
+    "~~~text", "[tilde excerpt](missing-3.md)", "~~~",
+    "[after](docs/index.md)",
+  ].join("\n");
+  assert.equal(markdownOutsideFences(content), "[before](README.md)\n[after](docs/index.md)");
+  assert.equal(markdownOutsideFences("```js\n[unclosed](missing.md)"), "");
+  assert.equal(markdownOutsideFences("[real missing link](missing.md)"), "[real missing link](missing.md)");
+});
 
 test("除根 README 外所有 Markdown 都在 docs 下且本地链接有效", async () => {
   const files = await markdownFiles(root);

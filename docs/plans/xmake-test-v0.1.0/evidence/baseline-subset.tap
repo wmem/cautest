@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: testConfig 只接受 TestJob 数组并生成稳定线性计划
+ok 1 - testConfig 只接受 TestJob 数组并生成稳定线性计划
+  ---
+  duration_ms: 2.586591
+  type: 'test'
+  ...
+# Subtest: testConfig 拒绝普通对象、重复 ID 和未知字段
+ok 2 - testConfig 拒绝普通对象、重复 ID 和未知字段
+  ---
+  duration_ms: 0.672202
+  type: 'test'
+  ...
+# Subtest: Workflow 拒绝 Phase 逆序和非 collect 失败路径
+ok 3 - Workflow 拒绝 Phase 逆序和非 collect 失败路径
+  ---
+  duration_ms: 0.450509
+  type: 'test'
+  ...
+# Subtest: plan 按 ID 选择并拒绝不存在的 Job
+ok 4 - plan 按 ID 选择并拒绝不存在的 Job
+  ---
+  duration_ms: 0.262417
+  type: 'test'
+  ...
+# Subtest: 公共默认项与命名空间只展开为普通 Test Job
+ok 5 - 公共默认项与命名空间只展开为普通 Test Job
+  ---
+  duration_ms: 5.953553
+  type: 'test'
+  ...
+# Subtest: Fragment 可嵌套，并能按 Phase 合并标准 Job Workflow
+ok 6 - Fragment 可嵌套，并能按 Phase 合并标准 Job Workflow
+  ---
+  duration_ms: 5.782913
+  type: 'test'
+  ...
+# Subtest: 标准 Job Fragment 暴露 Native/Kernel/BusyBox/Module/Guest/Rootfs/UML/MCU 能力
+ok 7 - 标准 Job Fragment 暴露 Native/Kernel/BusyBox/Module/Guest/Rootfs/UML/MCU 能力
+  ---
+  duration_ms: 3.649435
+  type: 'test'
+  ...
+# Subtest: 文件 Pattern 支持 Glob、排除、排序和逐项空匹配检查
+ok 8 - 文件 Pattern 支持 Glob、排除、排序和逐项空匹配检查
+  ---
+  duration_ms: 104.060692
+  type: 'test'
+  ...
+# Subtest: configHash 覆盖配置片段内容和最终解析结果且不依赖检出位置
+ok 9 - configHash 覆盖配置片段内容和最终解析结果且不依赖检出位置
+  ---
+  duration_ms: 1001.473343
+  type: 'test'
+  ...
+# Subtest: 内置 Glob 覆盖路径、Globstar、字符组、花括号和正则特殊字符
+ok 10 - 内置 Glob 覆盖路径、Globstar、字符组、花括号和正则特殊字符
+  ---
+  duration_ms: 7.0551
+  type: 'test'
+  ...
+# Subtest: Glob 静态遍历根不会越过第一个元字符
+ok 11 - Glob 静态遍历根不会越过第一个元字符
+  ---
+  duration_ms: 0.559265
+  type: 'test'
+  ...
+# Subtest: TypeScript 声明保留公共 Schema 和 JSDoc
+ok 12 - TypeScript 声明保留公共 Schema 和 JSDoc
+  ---
+  duration_ms: 11.370561
+  type: 'test'
+  ...
+# Subtest: Workflow 严格顺序执行并在错误后只运行失败路径 Collect
+ok 13 - Workflow 严格顺序执行并在错误后只运行失败路径 Collect
+  ---
+  duration_ms: 6.940792
+  type: 'test'
+  ...
+# Subtest: Step timeout 产生 ERROR 并向 Executor 发送 Abort
+ok 14 - Step timeout 产生 ERROR 并向 Executor 发送 Abort
+  ---
+  duration_ms: 11.243559
+  type: 'test'
+  ...
+# Subtest: 结构化测试失败保持 FAIL，并执行失败路径 Collect
+ok 15 - 结构化测试失败保持 FAIL，并执行失败路径 Collect
+  ---
+  duration_ms: 1.534522
+  type: 'test'
+  ...
+# Subtest: Step 返回 ERROR 时保留已取得测试结果和诊断
+ok 16 - Step 返回 ERROR 时保留已取得测试结果和诊断
+  ---
+  duration_ms: 1.37732
+  type: 'test'
+  ...
+# Subtest: Case FAIL 默认不阻断后续 Step，stopOnTestFailure 可显式停止
+ok 17 - Case FAIL 默认不阻断后续 Step，stopOnTestFailure 可显式停止
+  ---
+  duration_ms: 1.786458
+  type: 'test'
+  ...
+# Subtest: Workflow Context 统一管理 Artifact、Resource、Result、Event 和 LIFO Cleanup
+ok 18 - Workflow Context 统一管理 Artifact、Resource、Result、Event 和 LIFO Cleanup
+  ---
+  duration_ms: 1.579191
+  type: 'test'
+  ...
+# Subtest: 空结果由统一 allowEmpty 策略聚合
+ok 19 - 空结果由统一 allowEmpty 策略聚合
+  ---
+  duration_ms: 1.981662
+  type: 'test'
+  ...
+# Subtest: executeRun 和结果目录保留事件、Job 快照及失败索引
+ok 20 - executeRun 和结果目录保留事件、Job 快照及失败索引
+  ---
+  duration_ms: 25.823128
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2119.920593
