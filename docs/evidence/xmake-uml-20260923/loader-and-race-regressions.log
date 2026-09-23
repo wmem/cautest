@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: UML-owned process lifecycle abort: TERM-resistant descendants are reaped and logs retained
+ok 1 - UML-owned process lifecycle abort: TERM-resistant descendants are reaped and logs retained
+  ---
+  duration_ms: 526.92355
+  type: 'test'
+  ...
+# Subtest: UML-owned process lifecycle timeout: TERM-resistant descendants are reaped and logs retained
+ok 2 - UML-owned process lifecycle timeout: TERM-resistant descendants are reaped and logs retained
+  ---
+  duration_ms: 1515.335932
+  type: 'test'
+  ...
+# Subtest: UML-owned process lifecycle wrong-id: TERM-resistant descendants are reaped and logs retained
+ok 3 - UML-owned process lifecycle wrong-id: TERM-resistant descendants are reaped and logs retained
+  ---
+  duration_ms: 524.537647
+  type: 'test'
+  ...
+# Subtest: UML-owned process lifecycle early-exit: TERM-resistant descendants are reaped and logs retained
+ok 4 - UML-owned process lifecycle early-exit: TERM-resistant descendants are reaped and logs retained
+  ---
+  duration_ms: 523.667663
+  type: 'test'
+  ...
+# Subtest: UML spawn errors are collected without unhandled errors; pre-aborted start spawns nothing
+ok 5 - UML spawn errors are collected without unhandled errors; pre-aborted start spawns nothing
+  ---
+  duration_ms: 8.440096
+  type: 'test'
+  ...
+# Subtest: expired or cancelled control waiters cannot consume a later command response
+ok 6 - expired or cancelled control waiters cannot consume a later command response
+  ---
+  duration_ms: 12.106851
+  type: 'test'
+  ...
+# Subtest: UML early loader failure retains host stderr even if the control pipe closes first
+ok 7 - UML early loader failure retains host stderr even if the control pipe closes first
+  ---
+  duration_ms: 7.04806
+  type: 'test'
+  ...
+# Subtest: late owned Board factory cannot flash after timeout and closes exactly once; borrowed remains borrowed
+ok 8 - late owned Board factory cannot flash after timeout and closes exactly once; borrowed remains borrowed
+  ---
+  duration_ms: 2501.297411
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3239.810451

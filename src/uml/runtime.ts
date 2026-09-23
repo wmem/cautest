@@ -342,6 +342,16 @@ export async function startUml(name: string, image: UmlImageArtifact, environmen
     const lifecycle = context.resources.get("uml", name);
     if (lifecycle.state === "starting" || lifecycle.state === "ready") context.resources.fail("uml", name, {message: error instanceof Error ? error.message : String(error)});
     await stop().catch(() => {});
+    // The control pipe can reach EOF before the child exit event. Preserve the
+    // actual loader/boot failure rather than reporting only "channel closed".
+    const hostError = Buffer.concat(stderr).toString("utf8").trim();
+    const consoleError = Buffer.concat(stdout).toString("utf8").trim();
+    if (hostError || consoleError) {
+      const message = error instanceof Error ? error.message : String(error);
+      const details = [hostError ? `UML host stderr:\n${hostError.slice(-8192)}` : "",
+        consoleError ? `UML console (tail):\n${consoleError.slice(-8192)}` : ""].filter(Boolean).join("\n");
+      throw new CautestError(`${message}\n${details}`, {code: error instanceof CautestError ? error.code : "provision_error", cause: error});
+    }
     throw error;
   }
   return resource;
