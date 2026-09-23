@@ -6,10 +6,12 @@
 
 ## 未发布
 
-- 新增可直接 vendoring 的根 `xmake.lua`、分散 `ctest.*` 声明、Manifest/Receipt 与 `xmake ct`，继续复用既有 Workflow、CTP 和 Result。Native 与 MCU Host 模拟已实测；真实 MCU/SPI 尚未验收。
-- 新增 Kernel Test / Driver ABI 的显式 Artifact 路线、共享声明式 Environment、静态 Driver Guest rule 和产品 Kbuild 示例。模块、Guest、Context 和便携包组件已实测；真实 Linux 6.6.157 UML 受缺失构建工具阻断，不能标为平台支持完成。
+- 修复 UML 控制管道先关闭时丢失实际加载/启动诊断的问题；保留 host stderr 和 console 尾部。示例关闭可能误用旧 libc 的 UML RUNPATH，不注入私有 glibc。取消相关回归改用明确同步，避免负载下 Ready/stdout 或 Board 工厂迟到的计时竞态。
+
+- 新增可直接 vendoring 的根 `xmake.lua`、分散 `ctest.*` 声明、Manifest/Receipt 与 `xmake ct`，继续复用既有 Workflow、CTP 和 Result。Native 与 MCU SPI 行为模拟已实测；实板 MCU/SPI 按用户范围延期，未标通过。
+- 新增 Kernel Test / Driver ABI 的显式 Artifact 路线、共享声明式 Environment、静态 Driver Guest rule 和产品 Kbuild 示例。Linux 6.6.157 / BusyBox 1.36.1 已实际冷构建、启动并通过两条真实测试路线、12 个负向/恢复/缓存场景及旧入口等价检查。
 - 修复 UML 所属进程组取消/超时/启动失败清理及过期控制等待器；Kernel/BusyBox/Agent/Guest/rootfs 缓存改为完整标记和字节校验。引入 Kernel Context v1 与 UML 构建 Manifest v1，提升对应 Cache 版本；保持 CTP 3.1、Kernel ABI 3.0 与 Probe ABI 1.0。
-- 增加真实 Xmake 可见性/链接/GCC-Clang/输出隔离及 100/1000/2000 Job 测量入口；全平台发行门禁仍未通过。当前变化保留为未发布，不新增发布 tag。
+- 增加真实 Xmake 可见性/链接/GCC-Clang/输出隔离及 100/1000/2000 Job 测量入口；补充真实 Cortex-M ELF/BIN、启动/链接与宏隔离检查（不执行 ARM 固件）。仅声明已验证的平台；当前变化保留为未发布，不新增发布 tag。
 
 - 增加源码仓库根 `cautest.js`、`npm run cli` 和 npm ESM 公共导出；直接 clone 到 `tools/cautest` 后可以使用原有 JS CLI。源码和便携入口共用中断与退出码处理。
 
