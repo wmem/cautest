@@ -78,6 +78,11 @@ async function hostChecks(jobs: readonly TestJob[], configDir: string, defaults:
     if (step.kind === "umlStart") ptrace ??= { job, step };
     if (step.kind === "kernelBuild" && typeof details.sourceDir === "string") {
       const source = path.resolve(configDir, details.sourceDir);
+      // Only a real Linux source layout needs Kconfig generators. This also keeps
+      // arbitrary custom build Steps and pure declaration fixtures meaningful.
+      if (requireExists(source, "scripts/kconfig/Makefile")) {
+        for (const program of ["flex", "bison", "bc"]) tools.set(`linux:${program}:${job.id}`, {program, job, step, label: `Linux ${program}`});
+      }
       const dirty = [".config", "include/config/auto.conf", "include/generated/autoconf.h"].filter((file) => requireExists(source, file));
       if (dirty.length > 0) issues.push(issue("CT-DOCTOR-KERNEL-DIRTY-001", job.id, step.kind, `Kernel 源码树包含 in-tree 构建状态: ${dirty.join(", ")}`, "使用干净源码树；Cautest 不会自动执行 mrproper"));
     }

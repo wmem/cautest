@@ -51,6 +51,8 @@ const source = args[args.indexOf("-C") + 1];
 const output = args.find((item) => item.startsWith("O=")).slice(2);
 const target = args.at(-1);
 mkdirSync(output, { recursive: true });
+mkdirSync(path.join(output, "include/config"), {recursive: true});
+writeFileSync(path.join(output, "include/config/kernel.release"), "fixture-only");
 appendFileSync(process.env.CAUTEST_FAKE_MAKE_LOG, JSON.stringify({ source, output, target, profile: process.env.CAUTEST_PROFILE_ENV ?? null }) + "\\n");
 if (target.endsWith("defconfig") && target !== "olddefconfig") writeFileSync(path.join(output, ".config"), "CONFIG_FAKE=y\\n");
 if (target === "linux") writeFileSync(path.join(output, "linux"), readFileSync(path.join(source, "source.c")));
@@ -67,7 +69,7 @@ if (target === "busybox") writeFileSync(path.join(output, "busybox"), readFileSy
     const ctx = context(project, profile === undefined ? {} : { CAUTEST_PROFILE_ENV: profile });
     const environment = { kernel: { sourceDir: linux, make, env: { CAUTEST_FAKE_MAKE_LOG: log } }, busybox: { sourceDir: busybox, make, env: { CAUTEST_FAKE_MAKE_LOG: log } } };
     const [kernelArtifact, busyboxArtifact] = await Promise.all([buildKernel(environment, ctx, "fixture"), buildBusyBox(environment.busybox, ctx)]);
-    return { kernelArtifact, busyboxArtifact, calls: (await readFile(log, "utf8")).trim().split("\n").map(JSON.parse) };
+    return { kernelArtifact, busyboxArtifact, calls: (await readFile(log, "utf8")).trim().split("\n").filter(Boolean).map(JSON.parse) };
   }
 
   const [first, second] = await Promise.all([build(projectA), build(projectB)]);
@@ -79,6 +81,18 @@ if (target === "busybox") writeFileSync(path.join(output, "busybox"), readFileSy
   assert.notEqual(first.kernelArtifact.path, second.kernelArtifact.path);
   assert.deepEqual(await tree(linux), linuxBefore);
   assert.deepEqual(await tree(busybox), busyboxBefore);
+
+  const hit = await build(projectA);
+  assert.equal(hit.kernelArtifact.cacheHit, true);
+  assert.equal(hit.busyboxArtifact.cacheHit, true);
+  for (const relative of ["linux", ".config", "Module.symvers", "include/config/kernel.release"]) {
+    await writeFile(path.join(first.kernelArtifact.path, relative), "corrupt-but-present");
+    assert.equal((await build(projectA)).kernelArtifact.cacheHit, false, relative);
+  }
+  await writeFile(first.busyboxArtifact.path, "corrupt-but-present");
+  assert.equal((await build(projectA)).busyboxArtifact.cacheHit, false);
+  await writeFile(path.join(path.dirname(first.busyboxArtifact.path), ".config"), "corrupt");
+  assert.equal((await build(projectA)).busyboxArtifact.cacheHit, false);
 
   await writeFile(path.join(linux, "source.c"), "int changed_kernel_source;\n");
   const changed = await build(projectA);

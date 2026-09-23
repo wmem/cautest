@@ -16,7 +16,7 @@ test("真实 UML 入口缺少源码时以 BLOCKED/77 结束且不回退到私有
   const environment = { ...process.env };
   delete environment.KERNEL_SRC;
   delete environment.BUSYBOX_SRC;
-  for (const script of ["uml-smoke.mjs", "uml-driver-smoke.mjs"]) {
+  for (const script of ["uml-smoke.mjs", "uml-driver-smoke.mjs", "xmake-uml-smoke.mjs"]) {
     await assert.rejects(
       exec(process.execPath, [path.join("test/integration", script)], { cwd: root, env: environment }),
       (error) => {

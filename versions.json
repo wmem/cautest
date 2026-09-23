@@ -34,13 +34,14 @@
   "caches": {
     "nativeFingerprint": 1,
     "nativeManifest": 2,
-    "kernelFingerprint": 3,
-    "busyboxFingerprint": 2,
+    "kernelFingerprint": 4,
+    "busyboxFingerprint": 3,
     "mcuFingerprint": 1,
     "moduleFingerprint": 2,
     "moduleManifest": 4,
-    "agentFingerprint": 1,
-    "guestFingerprint": 2,
-    "rootfsFingerprint": 3
+    "agentFingerprint": 2,
+    "guestFingerprint": 3,
+    "rootfsFingerprint": 4,
+    "umlManifest": 1
   }
 }

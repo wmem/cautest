@@ -78,3 +78,31 @@ xmake ct --reporter=json,junit --tag=uml
 源码目录不存在不会使纯 `list`/`plan` 编译或部署；`doctor`/真实运行会报告输入和工具问题。首次 Kernel/BusyBox 构建须配置专用 timeout，示例已提供。最终真实验收应同时保存两个 Job 的结果、UML console/host-stderr、模块与 Guest Receipt 和 Kernel Context，并记录源码、工具版本和宿主环境。
 
 本接口当前限制为 Linux x86_64 宿主、原生编译的 64-bit `ARCH=um`。真实 host/SSH Driver、跨架构 UML、Artifact Kernel Coverage 及 Xmake Driver Probe DSL 不在本接口当前范围；旧 standalone JS helper 的既有功能保留。不得把本接口的组件验证标成真实 UML 或 MCU/SPI 通过。
+
+## 缓存与真实验收入口
+
+Kernel、BusyBox、Agent、Guest 和 rootfs 缓存均以完整构建结束时原子发布的
+`.cautest-build-manifest.json` 为准；命中时校验文件大小、权限和 SHA-256，不能仅凭路径存在
+认定产物有效。Kernel 同时校验镜像、`.config`、`Module.symvers` 和 `kernel.release`。
+rootfs 指纹纳入实际 BusyBox/Agent/模块/Guest 字节、Overlay 顺序，以及 Guest Endpoint 和安装路径，
+避免相同声明 ID 下的不同输入复用镜像。更改这些契约只提升对应 Cache 版本，不改 CTP/Kernel ABI。
+这是缓存完整性检查，不是对任意工具链、隐藏依赖或跨进程并发构建的完整证明。
+
+真实 Xmake UML 验收不属于默认单元测试。提供明确的源码与工具路径后执行：
+
+```sh
+CAUTEST_XMAKE=/absolute/path/xmake \
+KERNEL_SRC=/absolute/path/linux-6.6.157 \
+BUSYBOX_SRC=/absolute/path/busybox-1.36.1 \
+npm run test:xmake:uml
+```
+
+入口先验证真实 `list/plan/doctor`，随后才执行 Kernel Test 与 Driver ABI 的冷构建和缓存复跑。
+缺源码、缺工具或 Host 不支持时为 **BLOCKED，退出码 77**；真实运行失败为 ERROR，退出码 2；
+只有真实 CTP Case、日志、资源关闭及第二次缓存验证通过才返回 SUCCESS。
+可用 `CAUTEST_UML_ACCEPTANCE_DIR` 指定保存验收工程、日志和结果的位置。
+
+本轮离线实测 BusyBox 1.36.1 静态编译、运行、缓存命中及同大小损坏后重建均成功；
+Linux 6.6.157 的实际配置命令首先失败在 `flex`，Doctor 同时发现缺少 `bison` 与 `bc`。
+当前环境没有 libelf 开发头文件，但尚未执行到能证明它对该 UML 配置必需的构建阶段。
+不把 Host 6.12 headers 下的模块编译、模拟控制通道或 BLOCKED 入口当成真实 UML 通过。

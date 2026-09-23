@@ -1,3 +1,4 @@
+import {validBuildOutput, publishBuildOutput} from "../cache/build-output.js";
 import { umlRuntimeSteps } from "./uml-runtime.js";
 import { createHash } from "node:crypto";
 import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
@@ -104,10 +105,8 @@ export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInpu
   const identity = createHash("sha256").update(JSON.stringify({ schema: CAUTEST_CACHE_VERSIONS.kernelFingerprint, sourceIdentity, makeIdentity: makeIdentity.stdout, compilerIdentity: compilerIdentity.stdout, compilerTarget: compilerTarget.stdout, arch: input.arch ?? "um", crossCompile: input.crossCompile ?? "", configTarget: input.configTarget ?? "x86_64_defconfig", target: input.target ?? "linux", prepareModules: input.prepareModules !== false, makeArgs: input.makeArgs ?? [], environment: declaredEnvironment(context, input.env), fingerprintEnvironment })).update(Buffer.concat(fragmentContents)).digest("hex");
   const kernelRoot = path.resolve(context.project.configDir, input.cache?.enabled === false ? context.project.workDir : (input.cache?.directory ?? context.project.cacheDir));
   const output = path.join(kernelRoot, "kernel", identity);
-  const marker = path.join(output, input.target ?? "linux");
-  if (input.cache?.enabled !== false) {
-    try { await readFile(marker); if (input.prepareModules !== false) await readFile(path.join(output, "Module.symvers")); return { path: output, cacheHit: true }; } catch { /* build */ }
-  }
+  const requiredOutputs = [input.target ?? "linux", ".config", "include/config/kernel.release", ...(input.prepareModules === false ? [] : ["Module.symvers"])];
+  if (input.cache?.enabled !== false && await validBuildOutput(output, identity, requiredOutputs)) return {path: output, cacheHit: true};
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
   const base = ["-C", source, `O=${output}`, `ARCH=${input.arch ?? "um"}`, ...(input.crossCompile === undefined ? [] : [`CROSS_COMPILE=${input.crossCompile}`])];
@@ -120,6 +119,7 @@ export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInpu
     if (result.exitCode !== 0) throw new CautestError(`Kernel 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
     if (index === 0 && fragmentContents.length > 0) await writeFile(path.join(output, ".config"), mergeConfigText(await readFile(path.join(output, ".config"), "utf8"), Buffer.concat(fragmentContents).toString("utf8")));
   }
+  await publishBuildOutput(output, identity, requiredOutputs);
   return { path: output, cacheHit: false };
 }
 

@@ -294,3 +294,16 @@ export default testConfig({ jobs: [
   assert.equal(await runCli(["--config", config, "doctor", "--tag", "missing"], streams().streams), 4);
   assert.equal(await runCli(["--config", config, "describe", "missing", "--json"], streams().streams), 4);
 });
+
+test("doctor reports missing Linux Kconfig tools before attempting an actual source build", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "cautest-doctor-kconfig-"));
+  await mkdir(path.join(root, "linux/scripts/kconfig"), { recursive: true });
+  await writeFile(path.join(root, "linux/scripts/kconfig/Makefile"), "# Linux source-layout fixture\n");
+  const config = path.join(root, "cautest.config.mjs");
+  await writeFile(config, `import {testConfig,testJob,defineStep} from ${JSON.stringify(configModule)};
+export default testConfig({jobs:[testJob({id:'unit.kconfig',level:'unit',env:{PATH:'/definitely-missing'},workflow:[defineStep({kind:'kernelBuild',phase:'build',details:{sourceDir:'linux',make:'/usr/bin/make'},execute(){throw new Error('must never build in doctor')}})]})]});`);
+  const io = streams();
+  assert.equal(await runCli(["--config", config, "doctor", "--json"], io.streams), 2);
+  const report = JSON.parse(io.value.stdout);
+  for (const tool of ["flex", "bison", "bc"]) assert.ok(report.issues.some(item => item.code === "CT-DOCTOR-TOOL-001" && item.message.includes(`Linux ${tool}`)));
+});
