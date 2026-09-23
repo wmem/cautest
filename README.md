@@ -19,6 +19,24 @@ npm test
 
 `npm ci` 的 `prepare` 会检查版本、编译 TypeScript 并生成 Build Info；如果显式使用 `--ignore-scripts`，随后执行 `npm run prepare`。只有开发依赖需要安装，便携包运行时没有 npm 依赖；离线开发需要预先缓存锁文件中的依赖，不会自动改用其他包管理器。
 
+## 直接 clone 到 tools/cautest
+
+消费工程无需成为 npm 工程。将本仓库克隆到 `tools/cautest`，只在工具自身目录准备开发依赖和 `dist`：
+
+```bash
+git clone <Cautest仓库或git.bundle路径> tools/cautest
+npm --prefix tools/cautest ci
+node tools/cautest/cautest.js --version
+node tools/cautest/cautest.js --config ./cautest.config.mjs list
+node tools/cautest/cautest.js --config ./cautest.config.mjs run --level unit
+```
+
+这里使用的是已有 JS 配置入口；项目仍可 `import { testConfig } from "@cautest/config.js"`。运行时只需 Node，不依赖工具目录中的 `node_modules`。缺少 `dist` 时给出 npm 准备命令，不自动安装。
+
+Xmake 方案的 `includes("tools/cautest/xmake.lua")` 和 `xmake ct` 尚未实现/验收，不能把上述源码入口等同于 Xmake 适配完成。直接 clone 的 npm/Node 基础已就绪，Xmake PoC 仍需可执行工具。
+
+如果项目选择把 Cautest 作为 npm 依赖安装，ESM 可从 `"cautest"` 或 `"cautest/config.js"` 导入公共 API；这不代表已向公共 Registry 发布该私有包。`npx <Git URL>` 仍选择原来的 `cautest-install` 安装器，不改成测试执行命令。
+
 ## 从 Git 安装到项目
 
 安装器会创建一个自包含目录。Git URL 应固定到完整 Commit，使开发环境和 CI 使用同一版本：

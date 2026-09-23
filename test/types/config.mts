@@ -85,3 +85,7 @@ const selected = selectJobs([configured({ id: "unit.selection", source: "selecti
 selected.push(configured({ id: "unit.invalid.push", source: "selection.c" }));
 // @ts-expect-error Scalar tags are not silently converted into a list.
 selectJobs([], { tags: "native" });
+
+// npm self-reference resolves the same public declarations as the standalone API.
+import { selectJobs as npmSelectJobs } from "cautest";
+npmSelectJobs([], { tags: ["native"] });

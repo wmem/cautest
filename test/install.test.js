@@ -28,7 +28,7 @@ test("安装器生成仅含运行 JS 和公开声明的自包含便携目录", a
   assert.ok(!rootEntries.includes("usage"));
   assert.ok(rootEntries.includes("examples"));
   assert.ok(!rootEntries.includes("node_modules"));
-  assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.js", "direct-session.js", "environment.js", "interrupt.js", "process.js"]);
+  assert.deepEqual(await readdir(path.join(destination, "lib/runtime")), ["cli.js", "direct-session.js", "environment.js", "interrupt.js", "main.js", "process.js"]);
   await assert.rejects(lstat(path.join(destination, "lib/vendor")));
   assert.equal((await readFile(path.join(destination, "lib/pattern/glob.js"), "utf8")).includes("globMatcher"), true);
   assert.match(await readFile(path.join(destination, "README.md"), "utf8"), /\[使用指南\]\(docs\/usage\/index\.md\)/u);

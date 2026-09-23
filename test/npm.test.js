@@ -35,6 +35,8 @@ test("npm tarball installs and runs in an empty consumer offline without dev dep
   const packed = JSON.parse((await exec("npm", ["pack", "--json", "--pack-destination", temporary], { cwd: root, env, maxBuffer: 10 * 1024 * 1024 })).stdout)[0];
   await writeFile(path.join(consumer, "package.json"), JSON.stringify({ name: "consumer", private: true, type: "module" }));
   await exec("npm", ["install", "--offline", "--no-audit", "--no-fund", path.join(temporary, packed.filename)], { cwd: consumer, env });
+  const api = await exec(process.execPath, ["--input-type=module", "-e", "import { selectJobs } from 'cautest'; import { testJob } from 'cautest/config.js'; console.log(typeof selectJobs, typeof testJob);"], { cwd: consumer, env });
+  assert.equal(api.stdout.trim(), "function function");
   await assert.rejects(access(path.join(consumer, "node_modules/typescript")), { code: "ENOENT" });
   const destination = path.join(consumer, "tools/cautest");
   await exec(process.execPath, [path.join(consumer, "node_modules/cautest/dist/install.js"), destination], { cwd: consumer, env });

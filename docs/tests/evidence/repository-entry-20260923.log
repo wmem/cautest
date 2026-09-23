@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: SIGINT 首次触发 Abort，第二次强制退出 130，并可移除监听
+ok 1 - SIGINT 首次触发 Abort，第二次强制退出 130，并可移除监听
+  ---
+  duration_ms: 1.236655
+  type: 'test'
+  ...
+# Subtest: npm scripts and lockfile no longer require a pnpm installation
+ok 2 - npm scripts and lockfile no longer require a pnpm installation
+  ---
+  duration_ms: 8.806865
+  type: 'test'
+  ...
+# Subtest: npm tarball installs and runs in an empty consumer offline without dev dependencies
+ok 3 - npm tarball installs and runs in an empty consumer offline without dev dependencies
+  ---
+  duration_ms: 5213.809974
+  type: 'test'
+  ...
+# Subtest: source checkout CLI provides version/help from another working directory
+ok 4 - source checkout CLI provides version/help from another working directory
+  ---
+  duration_ms: 209.580476
+  type: 'test'
+  ...
+# Subtest: tools/cautest checkout works after relocation without node_modules and runs Native CTP
+ok 5 - tools/cautest checkout works after relocation without node_modules and runs Native CTP
+  ---
+  duration_ms: 1272.495287
+  type: 'test'
+  ...
+# Subtest: unbuilt source checkout fails with an actionable npm diagnostic and performs no install
+ok 6 - unbuilt source checkout fails with an actionable npm diagnostic and performs no install
+  ---
+  duration_ms: 69.120285
+  type: 'test'
+  ...
+# Subtest: source entry SIGINT returns 130 after executing registered cleanup
+ok 7 - source entry SIGINT returns 130 after executing registered cleanup
+  ---
+  duration_ms: 212.241972
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5275.177315

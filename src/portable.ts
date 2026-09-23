@@ -91,7 +91,7 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
     await cp(path.join(packageRoot, `dist/${directory}`), path.join(root, `lib/${directory}`), { recursive: true, filter: libraryFilter });
   }
   await mkdir(path.join(root, "lib/runtime"));
-  for (const file of ["cli.js", "direct-session.js", "environment.js", "interrupt.js", "process.js"]) {
+  for (const file of ["cli.js", "direct-session.js", "environment.js", "interrupt.js", "main.js", "process.js"]) {
     await cp(path.join(packageRoot, `dist/runtime/${file}`), path.join(root, `lib/runtime/${file}`));
   }
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
