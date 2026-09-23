@@ -1,0 +1,1 @@
+ctest.native {id="hello"}

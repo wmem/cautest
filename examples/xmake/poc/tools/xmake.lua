@@ -1,0 +1,18 @@
+local state = {jobs = {}}
+interp_add_scopeapis({values = {{"cautest_init", function (interp)
+    interp:api_register_builtin("ctest", {native = function(t)
+        table.insert(state.jobs, t)
+    end})
+end}}})
+cautest_init()
+task("ct")
+    on_run(function ()
+        import("core.base.option")
+        import("core.project.project")
+        import("core.base.json")
+        print(json.encode(state.jobs))
+        print(json.encode(option.options()))
+        os.exit(os.execv(os.getenv("CAUTEST_NODE") or "node", {"bridge.mjs"}))
+    end)
+    set_menu{usage="xmake ct [options]",description="PoC",options={{nil,"tag","kv",nil,"tag"},{nil,"test-profile","kv",nil,"test profile"},{nil,"jobs","vs",nil,"jobs"}}}
+task_end()

@@ -1,0 +1,7 @@
+set_project("poc")
+includes("tools/xmake.lua")
+target("app")
+    set_kind("binary")
+    add_files("main.c")
+target_end()
+includes("part/test.lua")
