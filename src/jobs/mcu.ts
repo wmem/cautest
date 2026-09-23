@@ -36,7 +36,7 @@ async function boardSession(options: {
       // A provider may resolve after the Step timed out and Board cleanup ran.
       // Never start a session with that late handle, and do not leak it.
       if (options.context.signal.aborted) {
-        await transport.close();
+        await transport.close?.();
         options.context.signal.throwIfAborted();
       }
       return await runCtpSession({ transport, expectedBuildId: options.artifact.buildId, expectedBootId: options.state.bootId, run: options.run, signal: options.context.signal, ...options.callbacks });

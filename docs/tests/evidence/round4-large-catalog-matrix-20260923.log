@@ -1,0 +1,36 @@
+TAP version 13
+# Subtest: real Xmake public/interface/private compile configuration and public link dependencies preserve product boundaries
+ok 1 - real Xmake public/interface/private compile configuration and public link dependencies preserve product boundaries
+  ---
+  duration_ms: 3325.459931
+  type: 'test'
+  ...
+# Subtest: real native compiler/config transitions cannot reuse the prior compiler receipt
+ok 2 - real native compiler/config transitions cannot reuse the prior compiler receipt
+  ---
+  duration_ms: 5314.269599
+  type: 'test'
+  ...
+# Xmake discovery measurements (GNU time max RSS, not sum of simultaneous processes) [{"jobs":100,"selected":50,"elapsedMs":206,"peakRssKiB":54092},{"jobs":1000,"selected":500,"elapsedMs":250,"peakRssKiB":64396},{"jobs":2000,"selected":1000,"elapsedMs":321,"peakRssKiB":72564}]
+# Subtest: real 100/1000/2000-job list/filter measures command-tree peak RSS and emits no build artifacts
+ok 3 - real 100/1000/2000-job list/filter measures command-tree peak RSS and emits no build artifacts
+  ---
+  duration_ms: 804.776264
+  type: 'test'
+  ...
+# Large runtime catalog measurement {"suites":16,"cases":1024,"elapsedMs":3575,"peakRssKiB":70056}
+# Subtest: real 1024 C cases across 16 suites reuse one product artifact and preserve selected runtime counts
+ok 4 - real 1024 C cases across 16 suites reuse one product artifact and preserve selected runtime counts
+  ---
+  duration_ms: 3601.356986
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13097.922801

@@ -39,3 +39,40 @@ test('real 100/1000/2000-job list/filter measures command-tree peak RSS and emit
  // A deliberately loose smoke bound avoids pretending these host measurements are a benchmark.
  assert.ok(measurements[2].elapsedMs<20000);assert.ok(measurements[2].peakRssKiB<768*1024);console.log('Xmake discovery measurements (GNU time max RSS, not sum of simultaneous processes)',JSON.stringify(measurements));
 });
+
+test('real 1024 C cases across 16 suites reuse one product artifact and preserve selected runtime counts', {skip: !xmake}, async t => {
+ const root=await fixture(t), suites=[];
+ await mkdir(path.join(root,'cases'));
+ for(let suite=0;suite<16;suite++){
+  const name='scale_'+String(suite).padStart(2,'0');suites.push(name);
+  const lines=['#include <cautest/cautest.h>'];
+  for(let i=0;i<64;i++)lines.push(`CAUTEST_CASE(check_${String(i).padStart(2,'0')}){CAUTEST_EXPECT_EQ_INT(${suite+i},${suite}+${i});}`);
+  lines.push(`CAUTEST_SUITE(${name},${Array.from({length:64},(_,i)=>`CAUTEST_CASE_ENTRY(check_${String(i).padStart(2,'0')})`).join(',')});`);
+  await writeFile(path.join(root,'cases',name+'.c'),lines.join('\n'));
+ }
+ await writeFile(path.join(root,'xmake.lua'),`includes("tools/cautest/xmake.lua")
+target("test.large-catalog")
+set_kind("binary")
+set_default(false)
+add_rules("cautest.native")
+add_files("cases/*.c")
+add_values("cautest.registry.suites",${suites.map(s=>JSON.stringify(s)).join(',')})
+add_values("cautest.workspaceSize",4*1024*1024)
+target_end()
+ctest.native {id="unit.catalog.a",target="test.large-catalog",run={suite={${suites.slice(0,8).map(JSON.stringify).join(',')}}}}
+ctest.native {id="unit.catalog.b",target="test.large-catalog",run={suite={${suites.slice(8).map(JSON.stringify).join(',')}}}}
+`);
+ const usage=path.join(root,'case-rss.txt'),started=performance.now();
+ const measured=spawnSync('/usr/bin/time',['-f','%M','-o',usage,xmake,'ct','--json','--reporter=json,junit'],{cwd:root,env,encoding:'utf8',timeout:90000,maxBuffer:32*1024*1024});
+ assert.equal(measured.status,0,measured.stdout+measured.stderr+String(measured.error??''));
+ const summary=JSON.parse(measured.stdout), result=JSON.parse(await readFile(summary.resultPath,'utf8'));
+ assert.equal(result.status,'SUCCESS');assert.equal(result.jobs.length,2);
+ const cases=result.jobs.flatMap(j=>j.groups.flatMap(g=>g.cases));assert.equal(cases.length,1024);assert.ok(cases.every(c=>c.status==='PASS'));
+ assert.equal(result.jobs.flatMap(j=>j.artifacts.filter(a=>a.kind==='log'&&a.name==='xmake-test.large-catalog')).length,1);
+ const artifact=result.jobs[0].artifacts.find(a=>a.kind==='build-artifact'), before=await stat(artifact.path);
+ const filtered=JSON.parse(command(root,['ct','--json','--case=check_00','unit.catalog.a']).stdout);
+ const selected=JSON.parse(await readFile(filtered.resultPath,'utf8'));assert.equal(selected.jobs.flatMap(j=>j.groups.flatMap(g=>g.cases)).length,8);
+ assert.equal(selected.jobs[0].artifacts.find(a=>a.kind==='build-artifact').buildId,artifact.buildId);assert.equal((await stat(artifact.path)).mtimeMs,before.mtimeMs);
+ const junit=await readFile(path.join(path.dirname(summary.resultPath),'junit.xml'),'utf8');assert.equal((junit.match(/<testcase\b/gu)??[]).length,1024);
+ console.log('Large runtime catalog measurement',JSON.stringify({suites:16,cases:1024,elapsedMs:Math.round(performance.now()-started),peakRssKiB:Number((await readFile(usage,'utf8')).trim())}));
+});
