@@ -13,6 +13,18 @@ function json(root,args,code=0){return JSON.parse(run(root,['ct','--json',...arg
 async function result(root,args=[],code=0){return JSON.parse(await readFile(json(root,['--reporter=json,junit',...args],code).resultPath,'utf8'));}
 const artifact=j=>j.artifacts.find(a=>a.kind==='build-artifact');
 const when={skip:!xmake};
+test('nested project builds and artifact queries retain explicit project selection',when,()=>fixture(async root=>{
+ const nested=path.join(root,'nested');await mkdir(nested);
+ await cp(path.join(kit,'examples/xmake/native'),nested,{recursive:true});
+ await mkdir(path.join(nested,'tools'));await symlink(kit,path.join(nested,'tools/cautest'),'dir');
+ await writeFile(path.join(root,'xmake.lua'),'set_project("parent")\ntarget("parent.only")\n set_kind("phony")\ntarget_end()\n');
+ const response=JSON.parse(run(nested,['ct','-P',nested,'--json','--reporter=json,junit','unit.math']).stdout);
+ const report=JSON.parse(await readFile(response.resultPath,'utf8'));
+ assert.equal(report.status,'SUCCESS');
+ assert.equal(artifact(report.jobs[0]).metadata.receipt.context.projectRoot,nested);
+ assert.ok(artifact(report.jobs[0]).path.startsWith(nested+path.sep));
+ await assert.rejects(stat(path.join(root,'build')));
+}));
 test('configured DSL uses saved options before collection without loading target hooks',when,()=>fixture(async root=>{
  run(root,['f','-y','--coverage=y']);
  await appendFile(path.join(root,'xmake.lua'),'\ntarget("demo")\n on_load(function () io.writefile("target-loaded.txt","must not load on list/plan") end)\ntarget_end()\n');

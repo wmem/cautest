@@ -59,7 +59,8 @@ export class XmakeBuildProvider implements BuildProvider {
     const description=path.join(directory,`xmake-${name}-${randomUUID()}.json`);
     const chunks:string[]=[];
     const command=async(args:readonly string[])=>{
-      const result=await runCommand({program:this.program,args,cwd:this.#context.projectRoot,env:effectiveEnvironment(context),signal:context.signal,
+      // Xmake 从子目录启动时可能选择父工程，cwd 不能替代显式 -P。
+      const result=await runCommand({program:this.program,args:[args[0]!,"-P",this.#context.projectRoot,...args.slice(1)],cwd:this.#context.projectRoot,env:effectiveEnvironment(context),signal:context.signal,
         onOutput(channel,text){chunks.push(`[${channel}] ${text}`);context.output(channel,text);}});
       if(result.exitCode!==0) throw new CautestError(`Xmake ${args[0]} failed (exit ${result.exitCode}) for ${ref.target}\n${result.stderr || result.stdout}`,{code:"build_error"});
     };
