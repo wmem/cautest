@@ -2,6 +2,36 @@ import("core.base.bytes")
 import("core.base.json")
 import("core.project.config")
 local runtime_sources = {"core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c"}
+function configure_coverage(target)
+    assert(target:plat() == "linux", "cautest.gcov currently requires Linux GCC and matching gcov")
+    target:values_set("cautest.gcov", true)
+    -- Xmake 的编译缓存只恢复 .o，既不恢复 gcno，也不重写对象内的 gcda 路径。
+    target:set("policy", "build.ccache", false)
+    target:add("cxflags", "--coverage", "-fprofile-abs-path", {force = true})
+    target:add("ldflags", "--coverage", {force = true})
+    target:add("defines", "CAUTEST_GCOV=1")
+end
+
+-- 只声明本次目标及已显式插桩依赖的真实输出，不扫描整个 build 目录。
+function coverage_notes(target)
+    if not target:values("cautest.gcov") then return {} end
+    local files, seen = {}, {}
+    local components = table.join({target}, target:orderdeps() or {})
+    for _, component in ipairs(components) do
+        if component:values("cautest.gcov") then
+            for _, batch in pairs(component:sourcebatches()) do
+                if batch.sourcekind == "cc" or batch.sourcekind == "cxx" then
+                    for _, object in ipairs(batch.objectfiles or {}) do
+                        local note = path.absolute(object:gsub("%.[^%.]+$", ".gcno"), os.projectdir())
+                        if not seen[note] then table.insert(files, note); seen[note] = true end
+                    end
+                end
+            end
+        end
+    end
+    table.sort(files)
+    return files
+end
 function write_changed(file, contents)
     if os.isfile(file) and io.readfile(file) == contents then return end
     os.mkdir(path.directory(file))

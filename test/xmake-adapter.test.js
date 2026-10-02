@@ -13,6 +13,13 @@ function json(root,args,code=0){return JSON.parse(run(root,['ct','--json',...arg
 async function result(root,args=[],code=0){return JSON.parse(await readFile(json(root,['--reporter=json,junit',...args],code).resultPath,'utf8'));}
 const artifact=j=>j.artifacts.find(a=>a.kind==='build-artifact');
 const when={skip:!xmake};
+test('configured DSL uses saved options before collection without loading target hooks',when,()=>fixture(async root=>{
+ run(root,['f','-y','--coverage=y']);
+ await appendFile(path.join(root,'xmake.lua'),'\ntarget("demo")\n on_load(function () io.writefile("target-loaded.txt","must not load on list/plan") end)\ntarget_end()\n');
+ assert.equal(json(root,['--list']).length,3);
+ const plan=json(root,['--plan','unit.math']);assert.match(JSON.stringify(plan),/nativeCoverage/);
+ json(root,['--doctor','unit.math']);await assert.rejects(stat(path.join(root,'target-loaded.txt')));await assert.rejects(stat(path.join(root,'build')));
+}));
 test('real vendored entry: side-effect-free list/plan, deterministic fragments, old selectors and disabled jobs',when,()=>fixture(async root=>{
  await appendFile(path.join(root,'xmake.lua'),'\nincludes("tools/cautest/xmake.lua")\n');
  let jobs=json(root,['--list']);assert.deepEqual(jobs.map(j=>j.id),['unit.checksum','unit.math','unit.math.expected-failure']);

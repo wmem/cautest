@@ -11,7 +11,15 @@ test('real portable Xmake Native and MCU execute after relocation with no dist o
    const root=path.join(base,kind);await cp(path.join(kit,'examples/xmake',kind),root,{recursive:true});const portable=path.join(root,'tools/cautest');await mkdir(portable,{recursive:true});await createPortableTree(portable,await readBuildInfo());await verifyPortableTree(portable);
    await assert.rejects(stat(path.join(portable,'dist')));await assert.rejects(stat(path.join(portable,'node_modules')));
    const r=spawnSync(xmake,['ct','--json','--reporter=json,junit'],{cwd:root,env:{...process.env,XMAKE_ROOT:'y',XMAKE_COLORTERM:'nocolor'},encoding:'utf8',timeout:30000,maxBuffer:16*1024*1024});assert.equal(r.status,0,r.stdout+r.stderr);
-   const result=JSON.parse(await readFile(JSON.parse(r.stdout).resultPath,'utf8'));assert.equal(result.status,'SUCCESS');assert.equal(result.jobs.length,kind==='mcu-simulated'?1:2);await verifyPortableTree(portable);
+   const result=JSON.parse(await readFile(JSON.parse(r.stdout).resultPath,'utf8'));assert.equal(result.status,'SUCCESS');assert.equal(result.jobs.length,kind==='mcu-simulated'?1:2);
+   if(kind==='native'){
+    const env={...process.env,XMAKE_ROOT:'y',XMAKE_COLORTERM:'nocolor'};
+    const configured=spawnSync(xmake,['f','-y','--coverage=y'],{cwd:root,env,encoding:'utf8',timeout:30000});assert.equal(configured.status,0,configured.stdout+configured.stderr);
+    const covered=spawnSync(xmake,['ct','--json','--reporter=json,junit'],{cwd:root,env,encoding:'utf8',timeout:30000,maxBuffer:16*1024*1024});assert.equal(covered.status,0,covered.stdout+covered.stderr);
+    const data=JSON.parse(await readFile(JSON.parse(covered.stdout).resultPath,'utf8'));assert.equal(data.status,'SUCCESS');
+    for(const job of data.jobs){const artifact=job.artifacts.find(a=>a.kind==='coverage');assert.ok(artifact.metadata.reports.length);for(const file of artifact.metadata.reports)await stat(file);}
+   }
+   await verifyPortableTree(portable);
   }
  }finally{await rm(base,{recursive:true,force:true});}
 });

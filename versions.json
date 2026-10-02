@@ -27,7 +27,7 @@
     "portableManifest": 1,
     "cacheManifest": 1,
     "fingerprint": 1,
-    "xmakeManifest": 1,
+    "xmakeManifest": 2,
     "artifactReceipt": 1,
     "kernelContext": 1
   },

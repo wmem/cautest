@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { chmod, copyFile, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CDefineValue, NativeCTestJobFactoryInput, NativeCTestJobInput, TestJob, StepExecutionContext, WorkflowStep, CTestRunInput } from "../config/schema/index.js";
@@ -12,6 +12,7 @@ import { effectiveWorkflowCTestRun, workflowSessionEventSink, workflowSessionRes
 import { declaredEnvironment, effectiveEnvironment } from "../runtime/environment.js";
 import { runCommand } from "../runtime/process.js";
 import { defineStep } from "../workflow/step.js";
+import { coverageFiles, nativeCoverageStep, validateNativeCoverage } from "./native-coverage.js";
 
 const kitRoot = fileURLToPath(new URL("../../assets/cautest-c", import.meta.url));
 const nativeCaseTimeoutGraceMs = 250;
@@ -90,19 +91,6 @@ async function outputManifest(directory: string): Promise<readonly { path: strin
   return outputs;
 }
 
-async function collectByExtension(root: string, extension: string, output: string[] = []): Promise<string[]> {
-  try {
-    for (const entry of await readdir(root, { withFileTypes: true })) {
-      const location = path.join(root, entry.name);
-      if (entry.isDirectory()) await collectByExtension(location, extension, output);
-      else if (entry.isFile() && entry.name.endsWith(extension)) output.push(location);
-    }
-  } catch (error) {
-    if (!(typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT")) throw error;
-  }
-  return output.sort();
-}
-
 function registrySource(suites: readonly string[]): string {
   return `#include <cautest/cautest.h>\n\n${suites.map((suite) => `CAUTEST_SUITE_DECLARE(${suite});`).join("\n")}\n\nCAUTEST_REGISTRY(cautest_generated_registry,\n${suites.map((suite) => `    CAUTEST_SUITE_REF(${suite})`).join(",\n")});\n`;
 }
@@ -127,6 +115,7 @@ export function nativeRuntimeStep(options: {
   readonly name: string;
   readonly run?: CTestRunInput;
   readonly allowEmpty?: boolean;
+  readonly coveragePrefixStrip?: number;
   readonly artifact: (context: StepExecutionContext) => NativeRuntimeArtifact | undefined;
 }): WorkflowStep {
   const artifactName = options.name;
@@ -154,7 +143,7 @@ export function nativeRuntimeStep(options: {
       const session = await runNativeSession({
         program: artifact.path,
         cwd: context.project.configDir,
-        env: { ...effectiveEnvironment(context), ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: "100" } : {}) },
+        env: { ...effectiveEnvironment(context), ...(artifact.coverage ? { GCOV_PREFIX: coverageRaw, GCOV_PREFIX_STRIP: String(options.coveragePrefixStrip ?? 0) } : {}) },
         expectedBuildId: artifact.buildId,
         run: hostRun,
         signal: context.signal,
@@ -178,6 +167,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
   rejectNested(input.build, buildFields, "Native build");
   rejectNested(input.run, runFields, "Native run");
   rejectNested(input.coverage, coverageFields, "Native coverage");
+  if (input.coverage !== undefined) validateNativeCoverage(input.coverage);
   const tests = strings(input.tests, "tests", true);
   const sources = strings(input.sources, "sources");
   const headers = strings(input.headers, "headers");
@@ -250,29 +240,14 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       return { diagnostics: [{ code: hit ? "cache_hit" : (cacheEnabled ? "cache_miss" : "cache_disabled"), message: targetPath }] };
     },
   });
-  const execute = nativeRuntimeStep({ name: artifactName, run, allowEmpty: input.policy?.allowEmpty === true,
+  const execute = nativeRuntimeStep({ name: artifactName, run, allowEmpty: input.policy?.allowEmpty === true, coveragePrefixStrip: 100,
     artifact: (context) => context.state.get(`native:${artifactName}`) as NativeArtifact | undefined });
-  const coverage = input.coverage === undefined ? [] : [defineStep({
-    kind: "nativeCoverage", name: artifactName, phase: "collect", runWhen: "always", ...(input.coverage.timeoutMs === undefined ? {} : { timeoutMs: input.coverage.timeoutMs }),
-    details: { tool: input.coverage.tool ?? "gcov", artifactName },
-    async execute(context) {
+  const coverage = input.coverage === undefined ? [] : [nativeCoverageStep({
+    name: artifactName, coverage: input.coverage, rawLayout: "flat",
+    async notes(context) {
       const artifact = context.state.get(`native:${artifactName}`) as NativeArtifact | undefined;
-      if (artifact === undefined) return { diagnostics: [{ code: "coverage_skipped", message: "Native Artifact 不存在" }] };
-      const output = path.join(context.project.resultDir, "coverage", artifactName);
-      const objects = path.join(output, "objects");
-      await rm(objects, { recursive: true, force: true });
-      await mkdir(objects, { recursive: true });
-      const notes = await collectByExtension(artifact.objectDir, ".gcno");
-      const data = await collectByExtension(path.join(output, "raw"), ".gcda");
-      for (const file of [...notes, ...data]) await copyFile(file, path.join(objects, path.basename(file)));
-      if (notes.length === 0) throw new CautestError("GCOV Cache 缺少 .gcno Artifact", { code: "cache_error" });
-      for (const note of notes) {
-        const result = await runCommand({ program: input.coverage?.tool ?? "gcov", args: ["-o", objects, path.join(objects, path.basename(note))], cwd: output, env: effectiveEnvironment(context), signal: context.signal, onOutput: context.output });
-        if (result.exitCode !== 0) throw new CautestError(`GCOV 收集失败 (exit ${result.exitCode})`, { code: "build_error" });
-      }
-      const reports = await collectByExtension(output, ".gcov");
-      context.artifacts.publish({ kind: "coverage", name: artifactName, path: output, metadata: { adapter: "gcov", reports } });
-      return { diagnostics: [{ code: "coverage_collected", message: output, reports }] };
+      if (artifact === undefined) return undefined;
+      return (await coverageFiles(artifact.objectDir, ".gcno")).map(file => ({ path: file }));
     },
   })];
   return testJob({

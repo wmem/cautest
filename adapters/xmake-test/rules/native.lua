@@ -9,6 +9,17 @@ rule("cautest.native")
     end)
 rule_end()
 
+-- GCC 覆盖率是构建选项；Job 的 coverage 声明负责本轮运行后的收集。
+rule("cautest.gcov")
+    on_load(function (target)
+        import("native", {rootdir = moduledir}).configure_coverage(target)
+    end)
+    on_config(function (target)
+        local _, compiler = target:tool("cc")
+        assert(compiler == "gcc", "cautest.gcov currently requires Linux GCC and matching gcov")
+    end)
+rule_end()
+
 -- Host simulation only: real MCU firmware targets remain owned by the application.
 rule("cautest.mcu-simulated")
     on_load(function (target)

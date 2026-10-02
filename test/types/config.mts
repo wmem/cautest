@@ -90,8 +90,12 @@ selectJobs([], { tags: "native" });
 import { selectJobs as npmSelectJobs } from "cautest";
 npmSelectJobs([], { tags: ["native"] });
 
-import {kernelArtifactJob, driverArtifactJob, type BuildProvider} from "cautest";
+import {kernelArtifactJob, driverArtifactJob, nativeArtifactJob, type BuildProvider, type NativeArtifactJobInput} from "cautest";
 const artifactProvider: BuildProvider = {async build() { throw new Error("type-only fixture"); }};
+const coveredArtifact: NativeArtifactJobInput = {id:"unit.native.covered",provider:artifactProvider,artifact:{target:"test.covered"},coverage:{tool:"gcov",timeoutMs:30000}};
+nativeArtifactJob(coveredArtifact);
+// @ts-expect-error 覆盖率只接受明确的收集参数。
+nativeArtifactJob({...coveredArtifact,coverage:{unknown:true}});
 const artifactEnvironment = umlKernelEnvironment({kernel:{sourceDir:"linux"},busybox:{sourceDir:"busybox"}});
 kernelArtifactJob({id:"unit.kernel.artifact",environment:artifactEnvironment,provider:artifactProvider,artifact:{target:"kernel.test",output:"ko"}});
 driverArtifactJob({id:"integration.driver.artifact",environment:artifactEnvironment,provider:artifactProvider,drivers:[{target:"driver",output:"ko"}],guest:{target:"guest"}});

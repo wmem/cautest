@@ -29,6 +29,8 @@ function arrays(state)
 end
 
 function run(state, toolroot)
+    config.load()
+    state.reload(project.rootfile(), project.rcfiles())
     if #state.errors > 0 then
         io.stderr:write(table.concat(state.errors, "\n") .. "\n")
         os.exit(3)
@@ -51,7 +53,8 @@ function run(state, toolroot)
     for _, script in ipairs(os.files(path.join(toolroot, "adapters/xmake-test/**"))) do table.insert(sources, script) end
     table.insert(sources, path.join(toolroot, "versions.json"))
     sources = table.unique(sources); table.sort(sources); json.mark_as_array(sources)
-    local manifest = {schemaVersion = 1, kind = "cautest.xmake-manifest", projectRoot = path.absolute(os.projectdir()),
+    local versions = json.decode(io.readfile(path.join(toolroot, "versions.json")))
+    local manifest = {schemaVersion = versions.schemas.xmakeManifest, kind = "cautest.xmake-manifest", projectRoot = path.absolute(os.projectdir()),
         xmake = os.programfile(), buildContext = context.get(), project = state.project,
         jobs = state.jobs, boards = state.boards, environments = state.environments, sources = sources}
     local file = path.join(os.projectdir(), ".cautest/xmake/manifests", hash.uuid() .. ".json")
@@ -89,6 +92,9 @@ function artifact(_state, _toolroot)
     local outputs = {}
     local primary = target:targetfile()
     if primary and target:kind() ~= "phony" then table.insert(outputs, {role = "primary", path = path.absolute(primary, os.projectdir())}) end
+    for index, note in ipairs(import("native").coverage_notes(target)) do
+        table.insert(outputs, {role = "gcov-note-" .. tostring(index), path = note})
+    end
     for _, spec in ipairs(table.wrap(target:values("cautest.outputs"))) do
         assert(type(spec) == "string", "cautest.outputs entries must be role=path strings")
         local role, file = spec:match("^([^=]+)=(.+)$")

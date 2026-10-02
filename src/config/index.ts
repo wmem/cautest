@@ -33,7 +33,7 @@ export type * from "./schema/index.js";
 export { selectJobs } from "./select.js";
 export type { JobSelectionInput } from "./select.js";
 export { nativeArtifactJob, mcuArtifactJob } from "../jobs/artifact.js";
-export type { ArtifactJobInput } from "../jobs/artifact.js";
+export type { ArtifactJobInput, NativeArtifactJobInput } from "../jobs/artifact.js";
 export { artifactBuildStep, getArtifact, resolveArtifact } from "../artifacts/index.js";
 export type { ArtifactRef, BuildContext, ArtifactReceipt, ArtifactOutput, BuildProvider, ResolvedArtifact } from "../artifacts/index.js";
 

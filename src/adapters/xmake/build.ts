@@ -19,7 +19,7 @@ async function atomic(file: string, value: unknown): Promise<void> {
 export class XmakeBuildProvider implements BuildProvider {
   readonly #builds = new Map<string, Promise<ArtifactReceipt>>();
   readonly #environments = new Map<string,string>();
-  readonly #outputs = new Map<string,string>();
+  readonly #outputs = new Map<string,{target:string;gcovNote:boolean}>();
   #context: BuildContext;
   readonly program: string;
   readonly sources: ReadonlyMap<string,string>;
@@ -82,8 +82,10 @@ export class XmakeBuildProvider implements BuildProvider {
         const item=object(candidate,["role","path"],"Output description");
         if(typeof item.role!=="string"||typeof item.path!=="string"||!path.isAbsolute(item.path))throw new CautestError("Invalid Xmake output path/role",{code:"build_error"});
         const owner=this.#outputs.get(item.path);
-        if(owner!==undefined&&owner!==ref.target)throw new CautestError(`Xmake targets ${owner} and ${ref.target} collide at ${item.path}`,{code:"build_error"});
-        this.#outputs.set(item.path,ref.target);
+        const gcovNote=/^gcov-note-[0-9]+$/u.test(item.role)&&item.path.endsWith(".gcno");
+        // 已插桩的共享库 gcno 可被多个消费者只读引用；可执行文件等其他输出仍禁止冲突。
+        if(owner!==undefined&&owner.target!==ref.target&&!(owner.gcovNote&&gcovNote))throw new CautestError(`Xmake targets ${owner.target} and ${ref.target} collide at ${item.path}`,{code:"build_error"});
+        this.#outputs.set(item.path,{target:ref.target,gcovNote});
         const info=await stat(item.path);
         if(!info.isFile())throw new CautestError(`Xmake output is not a file: ${item.path}`,{code:"build_error"});
         outputs.push({role:item.role,path:item.path,size:info.size,sha256:await hashFile(item.path)});

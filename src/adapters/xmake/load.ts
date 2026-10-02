@@ -93,7 +93,7 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
    const base=common(declaration);
    const shared={...base,provider,context:manifest.buildContext,...(declaration.buildTimeoutMs===undefined?{}:{buildTimeoutMs:declaration.buildTimeoutMs}),...(declaration.run===undefined?{}:{run:declaration.run})};
    let job:TestJob;
-   if(declaration.kind==="native")job=nativeArtifactJob({...shared,artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})}});
+   if(declaration.kind==="native")job=nativeArtifactJob({...shared,...(declaration.coverage===undefined?{}:{coverage:declaration.coverage}),artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})}});
    else if(declaration.kind==="mcu"){
     const board=manifest.boards.find(r=>r.id===declaration.board);if(!board)throw new Error(`Unknown board ${declaration.board}`);
     await snapshot(board.provider);

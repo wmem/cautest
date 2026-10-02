@@ -10,7 +10,11 @@ if ctest then
     if not check(ctest._cautest_root == toolroot, "ctest API already belongs to another tool/checkout") then return end
     if ctest._samePass() then return end
 end
-local state = {jobs = {}, boards = {}, environments = {}, sources = {}, visited = {}, active = {}, chain = {}, ids = {}, project = {}, errors = {}}
+-- 任务菜单和加载保存配置后会分别解释工程；运行中的任务保留同一 Registry 引用。
+local state = ctest and ctest._registry or {}
+for _, name in ipairs({"jobs", "boards", "environments", "sources", "visited", "active", "chain", "ids", "project", "errors"}) do state[name] = {} end
+state.projectSource = nil
+state.sealed = nil
 local moduledir = path.join(os.scriptdir(), "modules")
 interp_add_scopeapis({values = {{"cautest_initialize", function (interp)
     -- Description errors must not abort task discovery (Xmake hides them as "invalid task").
@@ -56,7 +60,17 @@ interp_add_scopeapis({values = {{"cautest_initialize", function (interp)
         end
         table.insert(state[category], copy)
     end
-    local api = {_cautest_root = toolroot, _fail = fail, _samePass = function () return interp:scriptfiles() == generation end}
+    local api = {_cautest_root = toolroot, _fail = fail, _registry = state, _samePass = function () return interp:scriptfiles() == generation end}
+    -- 只重新解释工程声明：不加载 target、不执行构建钩子、不安装 addon/package。
+    state.reload = function (rootfile, rcfiles)
+        local ok, errors = interp:load(rootfile, {on_load_data = function (data)
+            for _, file in ipairs(rcfiles or {}) do
+                if os.isfile(file) then data = io.readfile(file) .. "\n" .. data end
+            end
+            return data
+        end})
+        if not ok then table.insert(state.errors, errors or "Cannot reload configured Cautest declarations") end
+    end
     api.project = function (input)
         local file = source()
         if not fields(input, {"defaults", "profiles"}, file .. ": ctest.project") then return end

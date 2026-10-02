@@ -4,6 +4,12 @@
 
 尚未发布的变化应先记在文档顶部的“未发布”章节；正式发布时再将其改为带日期的版本章节。以下 `0.2.0` 是开始维护记录时对现有仓库状态建立的开发基线，不代表仓库已经存在对应的正式发布或 Git tag。
 
+## 未发布
+
+- 补齐 Xmake Native 的 gcov 链路：`cautest.gcov` 配置 GCC 插桩，`ctest.native.coverage` 在本轮测试后收集报告；旧 Native 编译入口共用收集实现。gcno 纳入 Artifact Receipt 的字节校验，gcda 按运行隔离，同名源码和显式插桩的共享库保留独立数据。覆盖率目标关闭只恢复 `.o` 的 Xmake 编译缓存，普通增量构建保留。
+- Xmake Manifest 升至 v2，并兼容读取未声明 coverage 的 v1；Artifact Receipt、C API、CTP、Result 和 Cache 版本保持不变。尚未执行版本发布。
+- 修复 `xmake ct` 在加载保存配置之前收集声明的问题；执行时重新解释配置相关声明，使 `has_config()` 和 `get_config()` 反映 `xmake f` 的选项。list/plan 的重解释不加载目标、不执行构建钩子，也不安装 addon/package。
+
 ## 0.3.1 — 2026-09-23
 
 - 增加 MIT 许可证，并在源码、npm 包、便携包及 C Kit 安装结果中附带许可文本。C API、CTP、Kernel/Probe ABI、Schema 和 Cache 版本保持不变。

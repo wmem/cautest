@@ -117,6 +117,53 @@ copy's `tools/cautest`. Prepare the clone before running `xmake ct`. The disable
 negative Job is documentation: `--case=deliberate_failure unit.math` provides an
 explicit failing-case demonstration.
 
+## Native GCOV 覆盖率
+
+覆盖率分为构建插桩和运行后收集。在 Native 测试目标上添加
+`cautest.gcov`，在对应 Job 上声明 `coverage = {}`：
+
+```lua
+target("test.math")
+    set_kind("binary")
+    set_default(false)
+    add_rules("cautest.native", "cautest.gcov")
+    add_files("math_test.c", "math.c")
+    add_values("cautest.registry.suites", "math_test")
+target_end()
+ctest.native {
+    id = "unit.math", target = "test.math",
+    coverage = {tool = "gcov", timeoutMs = 30000}
+}
+```
+
+当前支持 Linux GCC 和与之匹配的 gcov。`cautest.gcov` 添加覆盖率编译、链接
+参数及 `CAUTEST_GCOV`，使隔离子进程在退出前保存计数。该 rule 关闭 Xmake
+只恢复对象文件的编译缓存，因为它不同时恢复 gcno，且缓存对象中可能保留
+另一目标的 gcda 路径；普通时间戳增量构建继续有效。需要统计的独立静态库
+也应显式添加 `cautest.gcov`；源码复用 rule 的源码随测试目标一起插桩。
+
+每轮 Job 使用专用 GCOV_PREFIX 目录，按原始对象路径匹配 gcno/gcda，不读取
+build 目录的历史计数。同名源码分别处理；共享库 notes 可被多个消费者只读
+引用。gcno 作为 `gcov-note-*` 输出进入 Receipt 的 SHA-256 校验，缺失或损坏
+时重新构建。收集使用 `runWhen = "always"`，测试 FAIL 后仍尝试生成报告，
+保留失败状态；工具错误或缺少插桩 notes 返回 ERROR，构建失败不会伪造覆盖率。
+
+Coverage Artifact 的 `metadata.reports` 列出实际 `.gcov` 路径；Xmake 报告位于
+本轮结果目录的 `coverage/<Job ID>/reports/`，收集不会将 gcno/gcda 写回构建
+目录。配置加载、list 和 plan 不执行构建或收集，doctor 检查 gcov 是否可用。
+新声明使用 Xmake Manifest v2，读取方继续接受无 coverage 的 v1。
+
+随包 Native 示例可在准备工具后执行：
+
+```sh
+xmake f -y --coverage=y
+xmake ct --reporter=json,junit
+```
+
+真实回归入口为 [test/xmake-coverage.test.js](../../test/xmake-coverage.test.js)，
+由 `npm run test:xmake` 一并执行；其范围包含同名源码、共享库、重复运行、
+失败后收集和 notes 损坏恢复。
+
 ## Module workflow providers
 
 ```lua
@@ -152,6 +199,10 @@ and include chain; the ordinal is **not a Lua source line number**. Explicit
 includes are required: there is no repository-wide auto-discovery. Reserved
 task names `ct` and `cautest-artifact` are diagnosed rather than silently replaced.
 Xmake reparses on configuration; the registry resets between interpreter passes.
+Before exporting declarations, `ct` loads the saved configuration and reparses
+the description files, so `has_config()` and `get_config()` reflect `xmake f`
+options. This pass does not load targets, execute build hooks or install addons
+or packages; list/plan remain read-only.
 
 The implementation is verified on supplied Xmake 3.1.1 Linux x86_64. One pinned
 private accessor supplies the current Lua filename. Other versions/platforms,
