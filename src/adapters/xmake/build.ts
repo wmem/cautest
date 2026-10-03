@@ -23,7 +23,13 @@ export class XmakeBuildProvider implements BuildProvider {
   #context: BuildContext;
   readonly program: string;
   readonly sources: ReadonlyMap<string,string>;
-  constructor(program: string, context: BuildContext, sources: ReadonlyMap<string,string> = new Map()) { this.program=program; this.#context=context; this.sources=sources; }
+  readonly #testConfig: string | undefined;
+  readonly #workingDirectory: string;
+  constructor(program: string, context: BuildContext, sources: ReadonlyMap<string,string> = new Map()) {
+    this.program=program; this.#context=context; this.sources=sources;
+    this.#testConfig=process.env.CAUTEST_XMAKE_CONFIG;
+    this.#workingDirectory=process.env.CAUTEST_XMAKE_WORKINGDIR??context.projectRoot;
+  }
   async #checkSources(): Promise<void> {
     for (const [file,digest] of this.sources) if (await hashFile(file)!==digest) throw new CautestError(`Definition changed during run: ${file}; re-run xmake ct`,{code:"build_error"});
   }
@@ -60,7 +66,13 @@ export class XmakeBuildProvider implements BuildProvider {
     const chunks:string[]=[];
     const command=async(args:readonly string[])=>{
       // Xmake 从子目录启动时可能选择父工程，cwd 不能替代显式 -P。
-      const result=await runCommand({program:this.program,args:[args[0]!,"-P",this.#context.projectRoot,...args.slice(1)],cwd:this.#context.projectRoot,env:effectiveEnvironment(context),signal:context.signal,
+      // 构建和查询必须读取同一配置，Job/Profile 的环境不能改变配置选择。
+      const environment=effectiveEnvironment(context);
+      if(this.#testConfig!==undefined)environment.CAUTEST_XMAKE_CONFIG=this.#testConfig;
+      else delete environment.CAUTEST_XMAKE_CONFIG;
+      // -P 支持独立工作目录；子进程保留父 Xmake 的配置目录和构建目录语义。
+      environment.CAUTEST_XMAKE_WORKINGDIR=this.#workingDirectory;
+      const result=await runCommand({program:this.program,args:[args[0]!,"-P",this.#context.projectRoot,...args.slice(1)],cwd:this.#workingDirectory,env:environment,signal:context.signal,
         onOutput(channel,text){chunks.push(`[${channel}] ${text}`);context.output(channel,text);}});
       if(result.exitCode!==0) throw new CautestError(`Xmake ${args[0]} failed (exit ${result.exitCode}) for ${ref.target}\n${result.stderr || result.stdout}`,{code:"build_error"});
     };

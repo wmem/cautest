@@ -1,6 +1,8 @@
 -- Tested with Xmake 3.1.1. One registry per project interpreter, never per target.
 local fail = ctest and ctest._fail
 local previous_task = ctest and ctest._originalTask
+local previous_includes = ctest and ctest._originalIncludes
+local previous_make = ctest and ctest._originalMake
 local function check(condition, message)
     if not condition then fail(message) end
     return condition
@@ -15,6 +17,10 @@ local state = ctest and ctest._registry or {}
 for _, name in ipairs({"jobs", "boards", "environments", "sources", "visited", "active", "chain", "ids", "project", "errors"}) do state[name] = {} end
 state.projectSource = nil
 state.sealed = nil
+state.configPath = nil
+state.configLoaded = nil
+state.configReady = nil
+state.configChecked = nil
 local moduledir = path.join(os.scriptdir(), "modules")
 interp_add_scopeapis({values = {{"cautest_initialize", function (interp)
     -- Description errors must not abort task discovery (Xmake hides them as "invalid task").
@@ -61,6 +67,78 @@ interp_add_scopeapis({values = {{"cautest_initialize", function (interp)
         table.insert(state[category], copy)
     end
     local api = {_cautest_root = toolroot, _fail = fail, _registry = state, _samePass = function () return interp:scriptfiles() == generation end}
+    local original_includes = previous_includes or interp:api_func("includes")
+    local original_make = previous_make or interp.make
+    api._originalIncludes = original_includes
+    api._originalMake = original_make
+    local default_config = path.join(os.projectdir(), "ctest.lua")
+    local override = os.getenv("CAUTEST_XMAKE_CONFIG")
+    -- 任务发现阶段尚未初始化 option.get；用同一个公共解析器提前选择配置。
+    local select_config = interp:_script(function ()
+        import("core.base.option")
+        local argv = xmake.argv()
+        if argv[1] == "ct" then
+            local options = {{'c', "config", "kv"}, {nil, "jobs", "vs"}}
+            -- 保持 Xmake 3.1.1 公共短标志语义，避免 -vD 等组合吞掉后面的 -c。
+            for _, flag in ipairs({"q", "y", "v", "D", "h"}) do table.insert(options, {flag, nil, "k"}) end
+            local parsed = option.raw_parse(table.slice(argv, 2), options, {allow_unknown = true, populate_defaults = false})
+            if parsed and type(parsed.config) == "string" and #parsed.config > 0 then override = parsed.config end
+        end
+    end)
+    select_config()
+    state.configPath = path.absolute(override or default_config, os.projectdir())
+    -- 兼容旧工程显式 includes("ctest.lua")；指定其他配置时也不能再混入默认配置。
+    interp:api_register(nil, "includes", function (_, ...)
+        for _, item in ipairs(table.join(...)) do
+            local absolute = path.absolute(item, interp:scriptdir())
+            if absolute == state.configPath then
+                api._loadConfig()
+            elseif absolute ~= default_config or not override then
+                original_includes(item)
+            end
+        end
+    end)
+    api._loadConfig = function ()
+        if state.configChecked then return end
+        state.configChecked = true
+        local file = state.configPath
+        if not os.isfile(file) then
+            if override then fail("Cautest configuration not found: " .. file) end
+            return
+        end
+        state.configLoaded = true
+        state.sources[file] = true
+        state.active[file] = true
+        table.insert(state.chain, file)
+        -- 配置错误留给 ct 报告，不能使 Xmake 在发现任务时只返回 invalid task。
+        local current_file, directory = interp._PRIVATE._CURFILE, os.curdir()
+        local scopes = interp._PRIVATE._SCOPES
+        local root, current, kind = scopes._ROOT, scopes._CURRENT, scopes._CURRENT_KIND
+        local ok, errors = true
+        local load = interp:_script(function ()
+            try {
+                function () original_includes(file) end,
+                catch {function (message)
+                    ok, errors = false, message
+                    os.cd(directory)
+                end}
+            }
+        end)
+        load()
+        if not ok then
+            scopes._ROOT, scopes._CURRENT, scopes._CURRENT_KIND = root, current, kind
+            interp._PRIVATE._CURFILE = current_file
+            fail(errors)
+        end
+        table.remove(state.chain)
+        state.active[file] = nil
+        state.visited[file] = true
+    end
+    -- make 在根描述完整解析后执行；只收集声明，不触发 target 加载或构建。
+    interp.make = function (self, ...)
+        if state.configReady then api._loadConfig() end
+        return original_make(self, ...)
+    end
     -- 只重新解释工程声明：不加载 target、不执行构建钩子、不安装 addon/package。
     state.reload = function (rootfile, rcfiles)
         local ok, errors = interp:load(rootfile, {on_load_data = function (data)
@@ -69,7 +147,11 @@ interp_add_scopeapis({values = {{"cautest_initialize", function (interp)
             end
             return data
         end})
-        if not ok then table.insert(state.errors, errors or "Cannot reload configured Cautest declarations") end
+        if not ok then
+            table.insert(state.errors, errors or "Cannot reload configured Cautest declarations")
+        else
+            interp:api_func("ctest")._loadConfig()
+        end
     end
     api.project = function (input)
         local file = source()
@@ -143,6 +225,7 @@ task("ct")
         usage = "xmake ct [options] [Job IDs ...]",
         description = "Run Cautest workflows declared with ctest.* (default: all enabled jobs).",
         options = {
+            {'c', "config", "kv", nil, "Test configuration file, relative to the project root (default: ctest.lua)."},
             {nil, "list", "k", nil, "List jobs without building or deploying."},
             {nil, "plan", "k", nil, "Show workflows without executing steps."},
             {nil, "doctor", "k", nil, "Check static requirements."},
@@ -179,3 +262,4 @@ task("cautest-artifact")
     }}
 task_end()
 state.sealed = true
+state.configReady = true

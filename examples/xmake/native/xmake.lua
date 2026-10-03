@@ -1,7 +1,7 @@
 set_project("cautest-native-example")
 set_version("1.0.0")
 set_languages("c11")
-includes("tools/cautest/xmake.lua")
+includes(os.files("tools/cautest/xmake.lua"))
 option("coverage")
     set_default(false)
     set_description("Enable GCC/gcov for Native test targets")
@@ -14,4 +14,3 @@ target("demo")
     add_defines("MATH_SCALE=2") -- cannot retroactively alter a separately compiled library
     set_default(true)
 target_end()
-includes("ctest.lua")

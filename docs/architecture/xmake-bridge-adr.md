@@ -44,8 +44,13 @@ Full regression: 129/129 Node tests, plus C Runtime and public TypeScript checks
 The actual Xmake reparses configuration in a single interpreter: registries reset
 using the public scriptfiles-table identity, not a global lifetime singleton.
 Definition errors are deferred until ct execution because Xmake task discovery
-otherwise hides them behind `invalid task`. Only `_PRIVATE._CURFILE` is read
-for the original Lua filename; declaration ordinal is not a line number.
+otherwise hides them behind `invalid task`. `_PRIVATE._CURFILE` supplies the
+original Lua filename; declaration ordinal is not a line number. The automatic
+configuration loader also restores the interpreter's file/scope state after a
+Lua load error. These Xmake 3.1.1 dependencies remain confined to the adapter
+entry. Current configuration selection and compatibility rules are described
+in [Xmake usage](../usage/xmake.md), with real regression coverage in
+[`test/xmake-config.test.js`](../../test/xmake-config.test.js).
 
 The first full run exposed a pre-existing test race: npm pack's prepare wrote
 to the shared dist while parallel tests imported it. The npm test now copies

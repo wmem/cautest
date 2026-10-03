@@ -1,6 +1,6 @@
 set_project("cautest-spi-behavioral-simulation")
 set_languages("c11")
-includes("tools/cautest/xmake.lua")
+includes(os.files("tools/cautest/xmake.lua"))
 option("spi-fault")
     set_default(false)
     set_showmenu(true)
@@ -15,4 +15,3 @@ target("firmware.spi")
     add_values("cautest.registry.suites", "spi_protocol", "spi_transfer")
     if has_config("spi-fault") then add_defines("SPI_SIM_INJECT_RX_FAULT=1") end
 target_end()
-includes("ctest.lua")

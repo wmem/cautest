@@ -30,7 +30,19 @@ end
 
 function run(state, toolroot)
     config.load()
+    local selected = option.get("config")
+    if selected then
+        selected = path.absolute(selected, os.projectdir())
+        if not os.isfile(selected) then
+            io.stderr:write("Cautest configuration not found: " .. selected .. "\n")
+            os.exit(3)
+        end
+        os.setenv("CAUTEST_XMAKE_CONFIG", selected)
+    end
     state.reload(project.rootfile(), project.rcfiles())
+    if not state.configLoaded and #state.jobs == 0 and #state.errors == 0 then
+        table.insert(state.errors, "Cautest configuration not found: " .. state.configPath .. "; create ctest.lua or use --config=FILE")
+    end
     if #state.errors > 0 then
         io.stderr:write(table.concat(state.errors, "\n") .. "\n")
         os.exit(3)
@@ -79,7 +91,9 @@ function run(state, toolroot)
     if option.get("test-profile") then table.insert(args, "--profile"); table.insert(args, option.get("test-profile")) end
     for _, key in ipairs({"json", "fail-fast", "verbose"}) do if option.get(key) then table.insert(args, "--" .. key) end end
     table.join2(args, option.get("jobs") or {})
-    local code = os.execv(node, args, {curdir = os.projectdir(), try = true})
+    local envs = {CAUTEST_XMAKE_WORKINGDIR = os.workingdir()}
+    if state.configLoaded then envs.CAUTEST_XMAKE_CONFIG = state.configPath end
+    local code = os.execv(node, args, {curdir = os.projectdir(), envs = envs, try = true})
     os.exit(code or 2)
 end
 

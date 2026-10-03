@@ -7,8 +7,7 @@ execution after preparing needs Node >=20.6, not node_modules.
 
 ```lua
 -- application's xmake.lua; Cautest does not set project/version/toolchains
-includes("tools/cautest/xmake.lua")
-includes("ctest.lua")
+includes(os.files("tools/cautest/xmake.lua"))
 ```
 
 ```lua
@@ -16,6 +15,48 @@ includes("ctest.lua")
 ctest.project {defaults = {resultDir = ".cautest/results"}}
 ctest.include {patterns = {"modules/**/test.lua"}}
 ```
+
+The entry automatically loads `ctest.lua` from the Xmake project root after
+registering the `ctest` API and Native rules and parsing the root `xmake.lua`.
+Product build rules and variables declared after the tool entry are therefore
+available to the test configuration. If the tool has not been installed,
+`os.files()` returns no entry and the test configuration is not loaded, so a
+project's `init` task can run first. No dependency installation happens while
+loading Cautest.
+
+Choose another Lua configuration with either spelling:
+
+```sh
+xmake ct --config=tests/host.lua
+xmake ct -c "tests/host.lua" --list --json
+```
+
+Relative configuration paths are anchored to the selected project root,
+including when using `-P` from another working directory. The selected file
+replaces the default configuration. Its declarations, fragment paths and
+Native source paths are relative to their declaring files as before. The same
+selection reaches child Xmake builds and artifact queries; it is scoped to this
+invocation, not saved in the project's Xmake configuration.
+
+Xmake 3.1.1 requires `=` for long options that take a value; use
+`--config=FILE` or the short option `-c FILE`, rather than `--config FILE`.
+
+The old literal `includes("ctest.lua")` remains compatible and does not load the
+file twice. With `--config`, that line also skips the default file. New projects
+should let Cautest load the configuration; remove manual includes of other test
+root files before using configuration selection. Existing inline `ctest.*`
+declarations remain supported when no default file exists. Missing files and
+Lua configuration errors make `ct` return exit code `3` before building or
+creating execution manifests. Ordinary project loading tolerates an absent
+default file so initialization remains possible.
+
+`CAUTEST_XMAKE_CONFIG` and `CAUTEST_XMAKE_WORKINGDIR` are reserved for internal
+propagation to build/query processes. Child processes preserve Xmake's independent
+working/configuration/build directory behavior with `-P`. Job/Profile environments
+cannot override that selection. Real
+default/custom configuration and initialization regressions are in
+[`test/xmake-config.test.js`](../../test/xmake-config.test.js); run them through
+`CAUTEST_XMAKE=/absolute/path/xmake npm run test:xmake`.
 
 ```lua
 -- modules/math/test.lua
