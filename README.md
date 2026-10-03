@@ -35,6 +35,13 @@ node tools/cautest/cautest.js --config ./cautest.config.mjs run --level unit
 
 Xmake 工程可以在自己的 `xmake.lua` 中加入 `includes(os.files("tools/cautest/xmake.lua"))`。工具存在时自动读取项目根目录的 `ctest.lua`，使用分散的 `ctest.*` 声明与 `xmake ct`；也可以用 `xmake ct --config=xxx.lua` 选择其他配置。工具尚未安装时不会读取测试配置，便于项目先运行初始化任务。Native、MCU SPI 软件行为模拟，以及 Linux 6.6.157 真实 UML 的 Kernel Test / Driver ABI 已执行验证；实板 MCU/SPI 按当前范围延期，模拟不代表物理硬件验收。详见 [Xmake 使用说明](docs/usage/xmake.md)和 [Kernel/Driver 接入说明](docs/usage/xmake-kernel-driver.md)。
 
+使用 xspm 时，将 Cautest 声明在项目 `xspm.json` 的 `devDependencies` 中，固定包含
+[安装钩子](xspm.lua) 的提交。xspm 安装或升级该包时自动执行 `on_install`，在工具目录
+按 npm lock 安装开发依赖并构建 `dist`；宿主 `init` 无需包含 npm 操作。首次安装需要
+npm Registry 访问权限或锁定依赖的本机缓存。构建失败由 xspm 报告，下次同步会重试；
+相同提交重复同步不重建。手动删除 `dist` 后可执行 `xmake xspm --reinit cautest`
+重新准备。普通 `xmake ct` 不安装依赖。
+
 如果项目选择把 Cautest 作为 npm 依赖安装，ESM 可从 `"cautest"` 或 `"cautest/config.js"` 导入公共 API；这不代表已向公共 Registry 发布该私有包。`npx <Git URL>` 仍选择原来的 `cautest-install` 安装器，不改成测试执行命令。
 
 ## 从 Git 安装到项目
