@@ -70,6 +70,7 @@ export async function calculateConfigHash(
     defaults: config.defaults,
     profiles: config.profiles,
     jobs: config.jobs.map((job) => resolvedJob(job, configDir)),
+    collectors: config.collectors.map(({ id, timeoutMs, details }) => ({ id, timeoutMs, details })),
   })));
   return Object.freeze({ hash: hash.digest("hex"), sources: Object.freeze(ordered) });
 }

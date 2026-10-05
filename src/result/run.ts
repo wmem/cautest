@@ -3,6 +3,9 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { CAUTEST_RESULT_SCHEMA_VERSION } from "../config/versions.js";
 import type { TestConfig, TestJob } from "../config/schema/common.js";
+import { testJob } from "../config/define.js";
+import { defineStep } from "../workflow/step.js";
+import { runCommand } from "../runtime/process.js";
 import { EventRecorder, type WorkflowEvent } from "../workflow/events.js";
 import { executeWorkflow, type ExecutedWorkflow, type WorkflowExecutionOptions, type WorkflowStatus } from "../workflow/engine.js";
 
@@ -15,6 +18,8 @@ export interface ExecutedRun {
   readonly durationMs: number;
   readonly metadata: Readonly<Record<string, unknown>>;
   readonly jobs: readonly ExecutedWorkflow[];
+  /** 运行结束收集结果；不混入测试 Job 和 Case 计数。 */
+  readonly collectors?: readonly ExecutedWorkflow[];
   readonly events: readonly WorkflowEvent[];
 }
 
@@ -66,21 +71,46 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
     if (options.signal?.aborted === true) break;
     if (options.failFast === true && (result.status === "FAIL" || result.status === "ERROR")) break;
   }
-  const status = aggregateRun(jobs);
-  events.emit("RUN_END", { runId: id, status });
-  const endedAt = new Date();
-  const run = Object.freeze({
+  const collectors: ExecutedWorkflow[] = [];
+  const snapshot = (): ExecutedRun => Object.freeze({
     schemaVersion: CAUTEST_RESULT_SCHEMA_VERSION,
     id,
-    status,
+    status: collectors.some(item => item.status === "ERROR") ? "ERROR"
+      : aggregateRun(jobs) === "ERROR" ? "ERROR"
+      : collectors.some(item => item.status === "FAIL") ? "FAIL" : aggregateRun(jobs),
     startedAt: startedAt.toISOString(),
-    endedAt: endedAt.toISOString(),
+    endedAt: new Date().toISOString(),
     durationMs: performance.now() - started,
     metadata: Object.freeze({ ...(options.configPath === undefined ? {} : { configPath: options.configPath }), ...(options.configHash === undefined ? {} : { configHash: options.configHash }) }),
-    jobs: Object.freeze(jobs),
+    jobs: Object.freeze([...jobs]),
+    ...(config.collectors.length === 0 ? {} : { collectors: Object.freeze([...collectors]) }),
     events: events.list(),
   });
+  for (const collector of config.collectors) {
+    const current = snapshot();
+    // 先保存本轮快照，收集器可以读取实际 artifact、gcov 和 summary。
+    await writeRunDirectory(current, path.dirname(resultDir));
+    const job = testJob({ id: collector.id, level: "system", policy: { allowEmpty: true }, workflow: [
+      defineStep({ kind: "runCollect", name: collector.id, phase: "collect", runWhen: "always",
+        timeoutMs: collector.timeoutMs ?? config.defaults.stepTimeoutMs, details: collector.details ?? {},
+        async execute(context) { await collector.collect({ run: current, resultDir, signal: context.signal, output: context.output,
+          exec: request => runCommand({ program: request.program, args: request.args ?? [],
+            cwd: path.resolve(configDir, request.cwd ?? "."), env: { ...process.env, ...request.env },
+            signal: context.signal, onOutput: context.output }),
+        }); },
+      }),
+    ] });
+    const result = await executeWorkflow(job, { ...options, events,
+      project: { configDir, resultDir, cacheDir: path.resolve(configDir, config.defaults.cacheDir),
+        generatedDir: path.resolve(configDir, config.defaults.generatedDir), workDir: path.resolve(configDir, config.defaults.workDir, id, "collectors", collector.id) },
+    });
+    // 收集器没有测试 Case；所有步骤成功即为收集成功。
+    collectors.push(Object.freeze({ ...result, status: result.status === "SKIP" ? "SUCCESS" : result.status }));
+  }
+  events.emit("RUN_END", { runId: id, status: snapshot().status });
+  const run = snapshot();
   await events.close();
+  if (collectors.length) await writeRunDirectory(run, path.dirname(resultDir));
   return run;
 }
 
@@ -102,12 +132,13 @@ interface FailureRecord {
 
 function failures(run: ExecutedRun): readonly FailureRecord[] {
   const records: Omit<FailureRecord, "sequence">[] = [];
-  for (const job of run.jobs) {
+  for (const job of [...run.jobs, ...(run.collectors ?? [])]) {
+    const directory = run.jobs.includes(job) ? "jobs" : "collectors";
     for (const [index, step] of job.steps.entries()) if (step.status === "ERROR") records.push({
-      kind: "step", status: "ERROR", jobId: job.jobId, stepId: step.id, message: step.error?.message ?? "Step Error", ...(step.error?.code === undefined ? {} : { code: step.error.code }), diagnostic: step.diagnostics[0], detailRef: `jobs/${job.jobId}/job.json#/steps/${index}`,
+      kind: "step", status: "ERROR", jobId: job.jobId, stepId: step.id, message: step.error?.message ?? "Step Error", ...(step.error?.code === undefined ? {} : { code: step.error.code }), diagnostic: step.diagnostics[0], detailRef: `${directory}/${job.jobId}/job.json#/steps/${index}`,
     });
     for (const [index, cleanup] of job.cleanup.entries()) if (cleanup.status === "ERROR") records.push({
-      kind: "cleanup", status: "ERROR", jobId: job.jobId, message: cleanup.error?.message ?? "Cleanup Error", ...(cleanup.error?.code === undefined ? {} : { code: cleanup.error.code }), detailRef: `jobs/${job.jobId}/job.json#/cleanup/${index}`,
+      kind: "cleanup", status: "ERROR", jobId: job.jobId, message: cleanup.error?.message ?? "Cleanup Error", ...(cleanup.error?.code === undefined ? {} : { code: cleanup.error.code }), detailRef: `${directory}/${job.jobId}/job.json#/cleanup/${index}`,
     });
     for (const [groupIndex, group] of job.groups.entries()) for (const [caseIndex, item] of group.cases.entries()) {
       if (item.status !== "FAIL" && item.status !== "ERROR") continue;
@@ -124,7 +155,7 @@ function failures(run: ExecutedRun): readonly FailureRecord[] {
         ...(diagnostic === undefined ? {} : { diagnostic }),
         message: typeof diagnostic?.message === "string" ? diagnostic.message : assertion?.expression ?? scriptFailure?.message ?? `${group.name}/${item.name} ${item.status}`,
         ...(typeof diagnostic?.code === "string" ? { code: diagnostic.code } : {}),
-        detailRef: `jobs/${job.jobId}/job.json#/groups/${groupIndex}/cases/${caseIndex}`,
+        detailRef: `${directory}/${job.jobId}/job.json#/groups/${groupIndex}/cases/${caseIndex}`,
       });
     }
   }
@@ -152,15 +183,17 @@ export async function writeRunDirectory(run: ExecutedRun, directory: string): Pr
       jobs: { total: run.jobs.length, success: run.jobs.filter((job) => job.status === "SUCCESS").length, fail: run.jobs.filter((job) => job.status === "FAIL").length, error: run.jobs.filter((job) => job.status === "ERROR").length, skip: run.jobs.filter((job) => job.status === "SKIP").length },
       cases: { total: caseStatuses.length, pass: caseStatuses.filter((status) => status === "PASS").length, fail: caseStatuses.filter((status) => status === "FAIL").length, error: caseStatuses.filter((status) => status === "ERROR").length, skip: caseStatuses.filter((status) => status === "SKIP").length },
       failureRecords: failureRecords.length,
+      ...(run.collectors === undefined ? {} : { collectors: { total: run.collectors.length, error: run.collectors.filter(item => item.status === "ERROR").length } }),
     },
     failedJobs: run.jobs.filter((job) => job.status === "FAIL" || job.status === "ERROR").map((job) => ({ jobId: job.jobId, status: job.status, detailRef: `jobs/${job.jobId}/job.json` })),
+    ...(run.collectors === undefined ? {} : { failedCollectors: run.collectors.filter(item => item.status === "ERROR" || item.status === "FAIL").map(item => ({ id: item.jobId, status: item.status, detailRef: `collectors/${item.jobId}/job.json` })) }),
     failuresRef: "failures.jsonl",
     resultRef: "result.json",
   });
   await json(path.join(root, "result.json"), run);
   await writeFile(path.join(root, "failures.jsonl"), `${failureRecords.map((record) => JSON.stringify(record)).join("\n")}${failureRecords.length === 0 ? "" : "\n"}`);
-  for (const job of run.jobs) {
-    const jobDir = path.join(root, "jobs", job.jobId);
+  for (const job of [...run.jobs, ...(run.collectors ?? [])]) {
+    const jobDir = path.join(root, run.jobs.includes(job) ? "jobs" : "collectors", job.jobId);
     await mkdir(jobDir, { recursive: true });
     await json(path.join(jobDir, "job.json"), job);
     await json(path.join(jobDir, "workflow.json"), job.steps);

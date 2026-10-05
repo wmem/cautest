@@ -4,11 +4,17 @@
 
 尚未发布的变化应先记在文档顶部的“未发布”章节；正式发布时再将其改为带日期的版本章节。以下 `0.2.0` 是开始维护记录时对现有仓库状态建立的开发基线，不代表仓库已经存在对应的正式发布或 Git tag。
 
-## 未发布
+## 0.5.0 — 2026-10-05
+
+- 新增通用 Run Collector：所有选中 Job 完成后汇总本轮结果，FAIL、ERROR、fail-fast 和取消后仍尝试收集；超时和收集错误进入 JSON、失败索引及 JUnit，成功收集保留原测试状态。
+- `testConfig.collectors` 使用 `runCollector()`；Xmake `ctest.project.collectors` 使用模块 provider。发现和 plan 不执行回调，工具不包含任何 cmlib 专属汇总逻辑。
+- Xmake Manifest v4 增加项目收集器声明，继续读取 v1/v3。Result v1 增加可选 `collectors` 字段及独立报告目录，不改变测试 Job/Case 计数。
+
+## 0.4.0 — 2026-10-05
 
 - 0.4.0：测试运行取消源码、Header、配置原文和产物的内容摘要及 Kernel/BusyBox 整树扫描。宿主 Xmake/Make/Kbuild 判断增量，直接 C 编译 helper 使用 Make 和编译器 depfile；构建失败阻止运行、缺失产物重建、协议与资源生命周期检查继续保留。
 - 参数和路径用于稳定构建目录，Rootfs 与隔离输入同步使用文件元数据。Build ID 改为独立 Target 标识，源码重建不必改变 ID；取消内容损坏检测与 provider 源文件在运行期间的摘要监视，发行包校验保留。
-- Xmake Manifest v3、Artifact Receipt v2、Kernel Context v2 及对应 Cache Schema 升级，旧内容摘要缓存失效。外部 existing/command MCU 固件须提供与 HELLO 一致的 `buildId`，也可用 `run.expectedBuildId`；不再从固件字节推断协议身份。直接编译 helper 新增 Make/depfile 编译器依赖。当前尚未发布或更新全局 addon。
+- Xmake Manifest v3、Artifact Receipt v2、Kernel Context v2 及对应 Cache Schema 升级，旧内容摘要缓存失效。外部 existing/command MCU 固件须提供与 HELLO 一致的 `buildId`，也可用 `run.expectedBuildId`；不再从固件字节推断协议身份。直接编译 helper 新增 Make/depfile 编译器依赖。该源码已通过 Addon 0.1.2 发布。
 
 - Native Artifact 的构建和输出查询显式传递工程目录，避免子工程从自己的目录启动时被 Xmake 自动识别为父工程；新增嵌套工程真实回归。
 

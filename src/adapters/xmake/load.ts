@@ -7,6 +7,7 @@ import {validateManifest,type ManifestJob,type ManifestResource,type ProviderRef
 import {physicalResourceStep} from "../../integration/resource-lock.js";
 import {XmakeBuildProvider} from "./build.js";
 import {testConfig,testJob} from "../../config/define.js";
+import {runCollector} from "../../config/collector.js";
 import {setJobOrigin} from "../../config/provenance.js";
 import {nativeArtifactJob,mcuArtifactJob} from "../../jobs/artifact.js";
 import {artifactBuildStep,getArtifact,type BuildProvider} from "../../artifacts/index.js";
@@ -16,7 +17,7 @@ import {flattenWorkflow} from "../../workflow/fragment.js";
 import {CautestError} from "../../model/error.js";
 import {hashBytes,stableSerialize} from "../../cache/fingerprint.js";
 import type {LoadedConfig} from "../../config/load.js";
-import type {McuBoardAdapter,TestJobCommonInput,WorkflowFragment,WorkflowStep,StepExecutionContext,TestJob,UmlKernelEnvironment} from "../../config/schema/index.js";
+import type {McuBoardAdapter,TestJobCommonInput,WorkflowFragment,WorkflowStep,StepExecutionContext,TestJob,UmlKernelEnvironment,RunCollectionContext} from "../../config/schema/index.js";
 import {enableConfigSourceTracking,collectConfigSources} from "../../config/source-tracker.js";
 
 function common(job:ManifestJob):TestJobCommonInput{
@@ -111,7 +112,15 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
    setJobOrigin(job,{source:declaration.origin.file,configPath:`jobs.${declaration.id} [declaration ${declaration.origin.declaration}; includes: ${declaration.origin.includeChain.join(" -> ")}]`});jobs.push(job);
   }catch(cause){throw new CautestError(`${declaration.origin.file}: jobs.${declaration.id}: ${cause instanceof Error?cause.message:String(cause)}`,{code:"config_error",cause});}
  }
- const config=testConfig({...manifest.project,jobs});
+ const collectors=[];
+ for(const declaration of manifest.project.collectors??[]){
+  await snapshot(declaration.provider);
+  const collect=await factory(declaration.provider,{projectRoot:manifest.projectRoot,origin:declaration.origin,options:declaration.options??{}},declaration.origin.file);
+  if(typeof collect!=="function")throw new CautestError(`${declaration.origin.file}: Run Collector provider must return a collection callback`,{code:"config_error"});
+  collectors.push(runCollector({id:declaration.id,...(declaration.timeoutMs===undefined?{}:{timeoutMs:declaration.timeoutMs}),details:{provider:declaration.provider,options:declaration.options??{}},collect:collect as (context:RunCollectionContext)=>void|Promise<void>}));
+  for(const source of await collectConfigSources(pathToFileURL(declaration.provider.module).href,declaration.provider.module))sourceSet.add(source);
+ }
+ const config=testConfig({...manifest.project,collectors,jobs});
  const hash=hashBytes(stableSerialize({manifest}));
  return {config,path:resolved,dir:manifest.projectRoot,hash,sources:[...sourceSet]};
 }

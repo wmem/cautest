@@ -207,6 +207,41 @@ xmake ct --reporter=json,junit
 
 ## Module workflow providers
 
+### Run 结束收集
+
+单个 Job 的 collect 阶段适合该 Job 的 gcov 和日志；需要汇总所有 Job 时，在项目中声明
+Run Collector。所有选中 Job 完成后，工具先保存本轮报告，再依次执行收集器。用例 FAIL、
+编译 ERROR、fail-fast 和取消后仍尝试收集；不读取上一轮目录。
+
+```lua
+ctest.project {
+    defaults = {resultDir = "build/test-results"},
+    collectors = {{
+        id = "coverage.summary",
+        provider = {module = "test/coverage.mjs", export = "create"},
+        timeoutMs = 60000,
+    }},
+}
+```
+
+`create({projectRoot, origin, options})` 只返回回调，构造时不得执行汇总。回调接收
+`{run, resultDir, signal, output, exec}`；`exec` 使用 argv、独立超时信号和进程组清理。
+相对 provider 路径以声明文件为基准。直接 JavaScript 配置使用公开 `runCollector()` 工厂。
+
+```js
+export function create({projectRoot}) {
+  return async ({resultDir, exec}) => {
+    const result = await exec({program: process.execPath, args: ["test/merge.mjs", resultDir], cwd: projectRoot});
+    if (result.exitCode !== 0) throw new Error(result.stderr || "合并失败");
+  };
+}
+```
+
+收集器结果写入 `result.collectors` 和 `collectors/<ID>/`，不增加测试 Job/Case 计数。
+收集失败使 Run 返回 ERROR，JSON、失败索引和 JUnit 保留诊断；成功收集不会将原 FAIL、ERROR
+或 SKIP 改成成功。没有实际产物时是否跳过由项目回调判断。list/plan/doctor 不执行回调。
+Xmake Manifest v4 增加项目收集声明，读取方继续接受 v1 和无收集器的 v3。
+
 ```lua
 ctest.workflow {
     id = "integration.application",

@@ -7,6 +7,7 @@ import type { NativeCoverageInput } from "../../config/schema/native.js";
 import { validateNativeCoverage } from "../../jobs/native-coverage.js";
 export const XMAKE_MANIFEST_VERSION=CAUTEST_VERSIONS.schemas.xmakeManifest;
 export interface ProviderReference {readonly module:string;readonly export:string;readonly inputs?:readonly string[]}
+export interface ManifestCollector {readonly id:string;readonly provider:ProviderReference;readonly options?:Readonly<Record<string,unknown>>;readonly timeoutMs?:number;readonly origin:Origin}
 export interface Origin {readonly file:string;readonly declaration:number;readonly includeChain:readonly string[]}
 export interface ManifestJob extends TestJobCommonInput {
  readonly kind:"native"|"mcu"|"kernel"|"driver"|"workflow";
@@ -21,8 +22,8 @@ export interface ManifestJob extends TestJobCommonInput {
 }
 export interface ManifestResource {readonly kind:"board"|"environment";readonly id:string;readonly provider:ProviderReference;readonly options?:Readonly<Record<string,unknown>>;readonly origin:Origin;readonly ownership?:"owned"|"borrowed";readonly resourceId?:string;readonly lockTimeoutMs?:number}
 export interface XmakeManifest {
- readonly schemaVersion:1|3;readonly kind:"cautest.xmake-manifest";readonly projectRoot:string;readonly xmake:string;readonly buildContext:BuildContext;
- readonly project:{readonly defaults?:TestConfigDefaultsInput;readonly profiles?:readonly TestProfileInput[]};
+ readonly schemaVersion:1|3|4;readonly kind:"cautest.xmake-manifest";readonly projectRoot:string;readonly xmake:string;readonly buildContext:BuildContext;
+ readonly project:{readonly defaults?:TestConfigDefaultsInput;readonly profiles?:readonly TestProfileInput[];readonly collectors?:readonly ManifestCollector[]};
  readonly jobs:readonly ManifestJob[];readonly boards:readonly ManifestResource[];readonly environments:readonly ManifestResource[];readonly sources:readonly string[];
 }
 export function record(value:unknown,fields:readonly string[]|undefined,label:string):Record<string,unknown>{
@@ -45,11 +46,25 @@ export function validateRun(value:unknown,label:string):asserts value is CTestRu
 }
 export function validateManifest(value:unknown):asserts value is XmakeManifest{
  const v=record(value,["schemaVersion","kind","projectRoot","xmake","buildContext","project","jobs","boards","environments","sources"],"Xmake manifest");
- if((v.schemaVersion!==XMAKE_MANIFEST_VERSION&&v.schemaVersion!==1)||v.kind!=="cautest.xmake-manifest")fail("Unsupported Xmake execution manifest; CLI plan JSON is not executable input");
+ if((v.schemaVersion!==XMAKE_MANIFEST_VERSION&&v.schemaVersion!==3&&v.schemaVersion!==1)||v.kind!=="cautest.xmake-manifest")fail("Unsupported Xmake execution manifest; CLI plan JSON is not executable input");
  absolute(v.projectRoot,"projectRoot");absolute(v.xmake,"xmake");
  try{validateBuildContext(v.buildContext);}catch(e){fail(`Invalid buildContext: ${e instanceof Error?e.message:String(e)}`);}
  if(v.buildContext.projectRoot!==v.projectRoot)fail("buildContext projectRoot mismatch");
- record(v.project,["defaults","profiles"],"project");strings(v.sources,"sources");for(const file of v.sources)absolute(file,"source");
+ const project=record(v.project,["defaults","profiles","collectors"],"project");
+ if(project.collectors!==undefined){
+  if(v.schemaVersion!==4)fail("Run collectors require Xmake Manifest v4");
+  if(!Array.isArray(project.collectors))fail("project.collectors must be an array");
+  const ids=new Set<string>();
+  for(const raw of project.collectors){
+   const collector=record(raw,["id","provider","options","timeoutMs","origin"],"collector");
+   if(typeof collector.id!=="string"||!collector.id.length)fail("collector.id is required");
+   if(ids.has(collector.id))fail(`Duplicate Run Collector ID ${collector.id}`);ids.add(collector.id);
+   provider(collector.provider,"collector.provider");origin(collector.origin);
+   if(collector.options!==undefined)record(collector.options,undefined,"collector.options");
+   if(collector.timeoutMs!==undefined&&(typeof collector.timeoutMs!=="number"||!Number.isFinite(collector.timeoutMs)||collector.timeoutMs<=0))fail("collector.timeoutMs must be positive");
+  }
+ }
+ strings(v.sources,"sources");for(const file of v.sources)absolute(file,"source");
  if(!Array.isArray(v.jobs))fail("jobs must be an array");
  const common=["kind","origin","id","level","description","tags","enabled","timeoutMs","env","policy","run","buildTimeoutMs"];
  const kinds:Record<string,readonly string[]>={native:["target","output","coverage"],mcu:["target","output","board","reconnects","recoverTimeouts"],kernel:["target","output","environment"],driver:["drivers","guest","environment"],workflow:["provider","options","artifacts"]};

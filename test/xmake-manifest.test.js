@@ -28,6 +28,13 @@ test('Xmake manifest duplicates identify both origins; driver outputs are explic
  assert.doesNotThrow(()=>validateManifest({...good,jobs:[driver]}));
  assert.throws(()=>validateManifest({...good,jobs:[{...driver,guest:undefined}]}));
 });
+test('Xmake Manifest v4 严格校验 Run Collector 并保留旧版本读取',()=>{
+ const good={...manifest(),schemaVersion:4,project:{collectors:[{id:'merge',provider:{module:'/project/merge.mjs',export:'create'},origin}]}};
+ assert.doesNotThrow(()=>validateManifest(good));
+ assert.throws(()=>validateManifest({...good,schemaVersion:3}),/Manifest v4/);
+ for(const collector of [{...good.project.collectors[0],timeoutMs:0},{...good.project.collectors[0],provider:{module:'relative.mjs',export:'create'}},{...good.project.collectors[0],extra:true}])assert.throws(()=>validateManifest({...good,project:{collectors:[collector]}}));
+ assert.throws(()=>validateManifest({...good,project:{collectors:[good.project.collectors[0],good.project.collectors[0]]}}),/Duplicate/);
+});
 test('Xmake loader constructs existing workflows, preserves Lua provenance and does not build during load',async()=>{
  const dir=await mkdtemp(path.join(tmpdir(),'ct-manifest-'));
  try{const file=path.join(dir,'manifest.json');await writeFile(file,JSON.stringify(manifest()));let builds=0;

@@ -26,6 +26,13 @@ function arrays(state)
         end
     end
     if state.project.profiles then json.mark_as_array(state.project.profiles) end
+    if state.project.collectors then
+        json.mark_as_array(state.project.collectors)
+        for _, collector in ipairs(state.project.collectors) do
+            json.mark_as_array(collector.origin.includeChain)
+            if collector.provider.inputs then json.mark_as_array(collector.provider.inputs) end
+        end
+    end
 end
 
 function run(state, toolroot)

@@ -74,6 +74,26 @@ async function execute(root, config, cwd = root) {
   return artifact;
 }
 
+test('Xmake Run Collector 路径按声明文件解析，发现不收集，FAIL 后收集并保留状态', when, async t => {
+  const root = await fixture(t);
+  const directory = path.join(root, '收集 配置'); await mkdir(directory);
+  const math = path.join(root, 'modules/math/test.lua');
+  await writeFile(math, (await readFile(math, 'utf8')).replace('enabled = false', 'enabled = true'));
+  const provider = path.join(directory, 'collect.mjs');
+  await writeFile(provider, `import {writeFile} from 'node:fs/promises'; import path from 'node:path';
+export function create() { return async ({run,resultDir}) => { await writeFile(path.join(resultDir,'merged.json'),JSON.stringify({id:run.id,status:run.status,jobs:run.jobs.length})); }; }\n`);
+  const config = path.join(directory, 'tests.lua');
+  await writeFile(config, `ctest.project {defaults={resultDir='results'},collectors={{id='merge',provider={module='collect.mjs',export='create'}}}}\nctest.include {patterns={'../modules/**/test.lua'}}\n`);
+  assert.equal(query(root, ['--config=' + config, '--list']).length, 3);
+  query(root, ['--config=' + config, '--plan']); query(root, ['--config=' + config, '--doctor']);
+  await assert.rejects(stat(path.join(directory, 'results')));
+  const output = JSON.parse(run(root, ['ct', '--config=' + config, '--json', '--reporter=json,junit', 'unit.math.expected-failure'], 1).stdout);
+  const result = JSON.parse(await readFile(output.resultPath, 'utf8'));
+  assert.equal(result.status, 'FAIL'); assert.equal(result.collectors[0].status, 'SUCCESS');
+  const merged = JSON.parse(await readFile(path.join(output.resultDir, 'merged.json'), 'utf8'));
+  assert.equal(merged.id, result.id); assert.equal(merged.status, 'FAIL'); assert.equal(merged.jobs, 1);
+});
+
 test('默认自动读取 ctest.lua，查询不构建，测试目标也可由普通 build 发现', when, async t => {
   const root = await fixture(t);
   const rootfile = path.join(root, 'xmake.lua');

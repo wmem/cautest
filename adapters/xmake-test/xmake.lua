@@ -155,10 +155,30 @@ interp_add_scopeapis({values = {{"cautest_initialize", function (interp)
     end
     api.project = function (input)
         local file = source()
-        if not fields(input, {"defaults", "profiles"}, file .. ": ctest.project") then return end
+        if not fields(input, {"defaults", "profiles", "collectors"}, file .. ": ctest.project") then return end
         if not check(not state.projectSource, "ctest.project may only be declared once") then return end
         state.projectSource = file
         state.project = table.clone(input)
+        if state.project.collectors then
+            if not check(type(state.project.collectors) == "table", file .. ": collectors must be a list") then return end
+            for index, collector in ipairs(state.project.collectors) do
+                if not fields(collector, {"id", "provider", "options", "timeoutMs"}, file .. ": collector") then return end
+                local copy = table.clone(collector)
+                if not check(type(copy.provider) == "table" and type(copy.provider.module) == "string", file .. ": collector.provider.module is required") then return end
+                copy.provider = table.clone(copy.provider)
+                copy.provider.module = path.absolute(copy.provider.module, path.directory(file))
+                if copy.provider.inputs then
+                    if not check(type(copy.provider.inputs) == "table", file .. ": collector.provider.inputs must be a list") then return end
+                    copy.provider.inputs = table.clone(copy.provider.inputs)
+                    for i, pattern in ipairs(copy.provider.inputs) do
+                        if not check(type(pattern) == "string", file .. ": invalid collector.provider.inputs pattern") then return end
+                        copy.provider.inputs[i] = path.absolute(pattern, path.directory(file))
+                    end
+                end
+                copy.origin = {file = file, declaration = index, includeChain = table.clone(state.chain)}
+                state.project.collectors[index] = copy
+            end
+        end
         if state.project.defaults then
             state.project.defaults = table.clone(state.project.defaults)
             for _, key in ipairs({"resultDir", "cacheDir", "workDir", "generatedDir"}) do

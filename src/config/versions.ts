@@ -1,11 +1,11 @@
 /** 由 versions.json 生成；请运行 `npm run versions:sync`，不要手工修改。 */
 export const CAUTEST_VERSIONS = Object.freeze({
-  release: "0.4.0",
+  release: "0.5.0",
   cApi: {"major":2,"minor":1},
   ctp: {"major":3,"minor":1},
   kernelAbi: {"major":3,"minor":0,"magic":"0xca7e57U"},
   probeAbi: {"major":1,"minor":0,"magic":"0xca7e50U"},
-  schemas: {"config":2,"result":1,"event":1,"cli":1,"buildInfo":1,"portableManifest":1,"cacheManifest":2,"fingerprint":2,"xmakeManifest":3,"artifactReceipt":2,"kernelContext":2},
+  schemas: {"config":2,"result":1,"event":1,"cli":1,"buildInfo":1,"portableManifest":1,"cacheManifest":2,"fingerprint":2,"xmakeManifest":4,"artifactReceipt":2,"kernelContext":2},
   caches: {"nativeFingerprint":2,"nativeManifest":3,"kernelFingerprint":6,"busyboxFingerprint":5,"mcuFingerprint":2,"moduleFingerprint":3,"moduleManifest":5,"agentFingerprint":3,"guestFingerprint":5,"rootfsFingerprint":5,"umlManifest":2},
 } as const);
 

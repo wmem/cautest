@@ -1,6 +1,8 @@
 /** Cautest 公共配置 Schema。这里的公开 JSDoc 会进入生成的 `.d.ts`。 */
 
 import type { EventRecorder } from "../../workflow/events.js";
+import type { ExecutedRun } from "../../result/run.js";
+import type { ScriptExec } from "../../system/script-test.js";
 import type { ArtifactStore, ResourceStore, ResultRecorder } from "../../workflow/lifecycle.js";
 
 /** Test Job 的测试层级。 */
@@ -355,6 +357,32 @@ export interface TestConfigInput {
 
   readonly defaults?: TestConfigDefaultsInput;
   readonly profiles?: readonly TestProfileInput[];
+  /** 所有选中 Job 完成后执行；失败和取消后仍尝试收集本轮结果。 */
+  readonly collectors?: readonly RunCollector[];
+}
+
+/** 运行结束收集器收到的本轮快照和独立超时信号。 */
+export interface RunCollectionContext {
+  readonly run: ExecutedRun;
+  readonly resultDir: string;
+  readonly signal: AbortSignal;
+  readonly output: (channel: "stdout" | "stderr", text: string) => void;
+  /** 使用本轮目录和超时信号执行命令；支持 argv，不经过 shell。 */
+  readonly exec: ScriptExec;
+}
+
+export interface RunCollectorInput {
+  readonly id: string;
+  readonly timeoutMs?: number;
+  readonly details?: Readonly<Record<string, unknown>>;
+  readonly collect: (context: RunCollectionContext) => void | Promise<void>;
+}
+
+declare const RUN_COLLECTOR_TYPE: unique symbol;
+
+/** 只能通过 runCollector() 创建；工厂构造期间不得执行检查或汇总。 */
+export interface RunCollector extends RunCollectorInput {
+  readonly [RUN_COLLECTOR_TYPE]: true;
 }
 
 declare const TEST_CONFIG_TYPE: unique symbol;
@@ -365,6 +393,7 @@ export interface TestConfig {
   readonly jobs: readonly TestJob[];
   readonly defaults: Readonly<ResolvedTestConfigDefaults>;
   readonly profiles: readonly Readonly<Required<TestProfileInput>>[];
+  readonly collectors: readonly RunCollector[];
 }
 
 /** 一个输入 Schema 明确、每次只产生一个 Test Job 的构造函数。 */

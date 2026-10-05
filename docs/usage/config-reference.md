@@ -55,6 +55,7 @@
 | 执行命令 | `execStep()`、`shellExec()` |
 | 接入已有测试结果 | `externalTest()`、`parseJsonResults()`、`parseJUnit()` |
 | 收集日志或自定义 Collect | `collectLogs()`、`collectStep()` |
+| 所有 Job 完成后的 Run 收集 | `runCollector()`、`testConfig.collectors` |
 
 ## Workflow 组合和扩展
 

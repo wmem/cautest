@@ -16,12 +16,13 @@ import type {
 import { CautestError } from "../model/error.js";
 import { normalizeWorkflow } from "../workflow/step.js";
 import { jobOriginText } from "./provenance.js";
+import { isRunCollector } from "./collector.js";
 
 const TEST_JOB = Symbol.for("@cautest/config/test-job");
 const TEST_CONFIG = Symbol.for("@cautest/config/test-config");
 const levels: readonly TestLevel[] = ["unit", "component", "integration", "system"];
 const jobFields = new Set(["id", "level", "description", "tags", "enabled", "timeoutMs", "env", "policy", "workflow"]);
-const configFields = new Set(["jobs", "defaults", "profiles"]);
+const configFields = new Set(["jobs", "defaults", "profiles", "collectors"]);
 const defaultFields = new Set(["resultDir", "cacheDir", "generatedDir", "workDir", "stepTimeoutMs", "jobTimeoutMs"]);
 const profileFields = new Set(["id", "reporters", "env"]);
 
@@ -175,6 +176,14 @@ export function testConfig(input: TestConfigInput): TestConfig {
   rejectUnknown(input, configFields, "Test Config");
   if (!Array.isArray(input.jobs)) throw new CautestError("config.jobs 必须是 TestJob 数组", { code: "config_error" });
   const jobsById = new Map<string, TestJob>();
+  if (input.collectors !== undefined && !Array.isArray(input.collectors)) throw new CautestError("config.collectors 必须是数组", { code: "config_error" });
+  const collectorIds = new Set<string>();
+  const collectors = (input.collectors ?? []).map((collector, index) => {
+    if (!isRunCollector(collector)) throw new CautestError(`collectors[${index}] 必须由 runCollector() 创建`, { code: "config_error" });
+    if (collectorIds.has(collector.id)) throw new CautestError(`Run Collector ID 重复: ${collector.id}`, { code: "config_error" });
+    collectorIds.add(collector.id);
+    return collector;
+  });
   const jobs = input.jobs.map((job, index) => {
     if (!isTestJob(job)) throw new CautestError(`jobs[${index}] 必须由 Test Job 构造函数创建`, { code: "config_error" });
     const first = jobsById.get(job.id);
@@ -192,6 +201,7 @@ export function testConfig(input: TestConfigInput): TestConfig {
     jobs: Object.freeze(jobs),
     defaults: normalizeDefaults(input.defaults),
     profiles: normalizeProfiles(input.profiles),
+    collectors: Object.freeze(collectors),
   }) as InternalTestConfig;
 }
 

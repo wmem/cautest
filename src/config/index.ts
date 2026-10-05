@@ -1,6 +1,7 @@
 export { CAUTEST_BUILD_INFO_SCHEMA_VERSION, CAUTEST_CLI_SCHEMA_VERSION, CAUTEST_CONFIG_SCHEMA_VERSION, CAUTEST_EVENT_SCHEMA_VERSION, CAUTEST_PORTABLE_MANIFEST_SCHEMA_VERSION, CAUTEST_RELEASE_VERSION, CAUTEST_RESULT_SCHEMA_VERSION, CAUTEST_VERSIONS } from "./versions.js";
 
 export { testConfig, testJob, withJobDefaults } from "./define.js";
+export { runCollector } from "./collector.js";
 export { expandFilePatterns } from "./file-pattern.js";
 export { jobNamespace } from "./namespace.js";
 export { nativeCTestJob, nativeCTestJobFactory } from "../jobs/native.js";
