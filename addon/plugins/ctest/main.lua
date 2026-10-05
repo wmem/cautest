@@ -1,6 +1,13 @@
 import("core.base.option")
 import("core.project.project")
 
+local function physical_directory(directory)
+    local previous = os.cd(directory)
+    local physical = os.curdir()
+    os.cd(previous)
+    return physical
+end
+
 function main()
     local directory = os.scriptdir()
     local entry = path.join(directory, "runtime/xmake.lua")
@@ -12,7 +19,12 @@ function main()
         os.isfile(project.rootfile()),
         "Cautest 需要工程 xmake.lua；请在工程目录执行或使用 -P 指定工程"
     )
-    local args = { "ct", "-P", os.projectdir(), "-F", project.rootfile() }
+    -- Xmake 会按 projectdir 计算外部源码的相对路径；它必须与实际 cwd 一致。
+    -- 保留启动目录的配置选择，只统一工程目录和入口文件的符号链接表示。
+    local projectdir = physical_directory(os.projectdir())
+    local projectfile =
+        path.join(physical_directory(path.directory(project.rootfile())), path.filename(project.rootfile()))
+    local args = { "ct", "-P", projectdir, "-F", projectfile }
     -- 原样保留既有参数及退出码，复用成熟的 Lua 配置解析和 Node 执行链路。
     for _, key in ipairs({
         "config",
