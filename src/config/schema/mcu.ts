@@ -13,7 +13,8 @@ import type {
 export interface ExistingFirmwareInput {
   readonly kind: "existing";
   readonly file: string;
-  readonly fingerprintInputs?: Readonly<Record<string, unknown>>;
+  /** Firmware 对端 HELLO 使用的协议标识，不从文件内容推断。 */
+  readonly buildId?: string;
 }
 
 /** 使用 Cautest 内置 Host Freestanding 模拟构建。 */
@@ -32,7 +33,8 @@ export interface HostSimulatedFirmwareInput {
 export interface CommandFirmwareInput extends CommandInput {
   readonly kind: "command";
   readonly output: string;
-  readonly fingerprintInputs?: Readonly<Record<string, unknown>>;
+  /** Firmware 对端 HELLO 使用的协议标识，不从文件内容推断。 */
+  readonly buildId?: string;
   readonly timeoutMs?: number;
 }
 

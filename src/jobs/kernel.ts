@@ -2,7 +2,8 @@ import {withBuildLock} from "../cache/build-lock.js";
 import {validBuildOutput, publishBuildOutput} from "../cache/build-output.js";
 import { umlRuntimeSteps } from "./uml-runtime.js";
 import { createHash } from "node:crypto";
-import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import {fileState, writeChanged, syncFiles} from "../cache/file-state.js";
+import { copyFile, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { KernelCTestJobFactoryInput, KernelCTestJobInput, KernelModuleDefaultsInput, KernelModuleInput, StepExecutionContext, TestJob, UmlKernelEnvironment, UmlKernelEnvironmentInput } from "../config/schema/index.js";
@@ -103,32 +104,38 @@ export async function buildKernel(environment: Readonly<UmlKernelEnvironmentInpu
   ]);
   const fragmentContents = [...userFragmentContents, requiredContents, ...(coverage ? [coverageContents] : [])];
   const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, buildEnvironment[key] ?? null]));
-  const identity = createHash("sha256").update(JSON.stringify({ schema: CAUTEST_CACHE_VERSIONS.kernelFingerprint, sourceIdentity, makeIdentity: makeIdentity.stdout, compilerIdentity: compilerIdentity.stdout, compilerTarget: compilerTarget.stdout, arch: input.arch ?? "um", crossCompile: input.crossCompile ?? "", configTarget: input.configTarget ?? "x86_64_defconfig", target: input.target ?? "linux", prepareModules: input.prepareModules !== false, makeArgs: input.makeArgs ?? [], environment: declaredEnvironment(context, input.env), fingerprintEnvironment })).update(Buffer.concat(fragmentContents)).digest("hex");
+  const identity = createHash("sha256").update(JSON.stringify({ schema: CAUTEST_CACHE_VERSIONS.kernelFingerprint, sourceIdentity, makeIdentity: makeIdentity.stdout, compilerIdentity: compilerIdentity.stdout, compilerTarget: compilerTarget.stdout, arch: input.arch ?? "um", crossCompile: input.crossCompile ?? "", configTarget: input.configTarget ?? "x86_64_defconfig", target: input.target ?? "linux", prepareModules: input.prepareModules !== false, makeArgs: input.makeArgs ?? [], environment: declaredEnvironment(context, input.env), fingerprintEnvironment })).digest("hex");
   const kernelRoot = path.resolve(context.project.configDir, input.cache?.enabled === false ? context.project.workDir : (input.cache?.directory ?? context.project.cacheDir));
   const output = path.join(kernelRoot, "kernel", identity);
   const requiredOutputs = [input.target ?? "linux", ".config", "include/config/kernel.release", ...(input.prepareModules === false ? [] : ["Module.symvers"])];
   return await withBuildLock(output, context.signal, async () => {
-  if (input.cache?.enabled !== false && await validBuildOutput(output, identity, requiredOutputs)) return {path: output, cacheHit: true};
-  await rm(output, { recursive: true, force: true });
-  await mkdir(output, { recursive: true });
-  const base = ["-C", source, `O=${output}`, `ARCH=${input.arch ?? "um"}`, ...(input.crossCompile === undefined ? [] : [`CROSS_COMPILE=${input.crossCompile}`]), ...(input.makeArgs ?? [])];
-  const commands = [[...base, input.configTarget ?? "x86_64_defconfig"]];
-  if (fragmentContents.length > 0) commands.push([...base, "olddefconfig"]);
-  commands.push([...base, `-j${input.jobs ?? 4}`, input.target ?? "linux"]);
-  if (input.prepareModules !== false) commands.push([...base, `-j${input.jobs ?? 4}`, "modules"]);
-  for (const [index, args] of commands.entries()) {
-    const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
-    if (result.exitCode !== 0) throw new CautestError(`Kernel 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
-    if (index === 0 && fragmentContents.length > 0) await writeFile(path.join(output, ".config"), mergeConfigText(await readFile(path.join(output, ".config"), "utf8"), Buffer.concat(fragmentContents).toString("utf8")));
-  }
-  await publishBuildOutput(output, identity, requiredOutputs);
-  return { path: output, cacheHit: false };
+    const valid = input.cache?.enabled !== false && await validBuildOutput(output, identity, requiredOutputs);
+    let previous: unknown;
+    try { previous = await fileState(path.join(output, input.target ?? "linux")); } catch { /* 首次构建。 */ }
+    if (input.cache?.enabled === false) await rm(output, {recursive: true, force: true});
+    await mkdir(output, {recursive: true});
+    const configuration = JSON.stringify({target: input.configTarget ?? "x86_64_defconfig", fragments: fragmentContents.map(item => item.toString("utf8"))});
+    let configure = true;
+    try { configure = await readFile(path.join(output, "cautest-config.json"), "utf8") !== configuration; await fileState(path.join(output, ".config")); } catch { configure = true; }
+    const base = ["-C", source, `O=${output}`, `ARCH=${input.arch ?? "um"}`, ...(input.crossCompile === undefined ? [] : [`CROSS_COMPILE=${input.crossCompile}`]), ...(input.makeArgs ?? [])];
+    const commands = configure ? [[...base, input.configTarget ?? "x86_64_defconfig"]] : [];
+    if (configure && fragmentContents.length > 0) commands.push([...base, "olddefconfig"]);
+    commands.push([...base, `-j${input.jobs ?? 4}`, input.target ?? "linux"]);
+    if (input.prepareModules !== false) commands.push([...base, `-j${input.jobs ?? 4}`, "modules"]);
+    for (const [index, args] of commands.entries()) {
+      const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
+      if (result.exitCode !== 0) throw new CautestError(`Kernel 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
+      if (configure && index === 0 && fragmentContents.length > 0) await writeFile(path.join(output, ".config"), mergeConfigText(await readFile(path.join(output, ".config"), "utf8"), Buffer.concat(fragmentContents).toString("utf8")));
+    }
+    await writeChanged(path.join(output, "cautest-config.json"), configuration);
+    await publishBuildOutput(output, identity, requiredOutputs);
+    return {path: output, cacheHit: valid && JSON.stringify(previous) === JSON.stringify(await fileState(path.join(output, input.target ?? "linux")))};
   });
 }
 
 async function generatedModule(input: KernelCTestJobInput, defaults: KernelModuleDefaultsInput, kernelOutput: string, context: Parameters<Parameters<typeof defineStep>[0]["execute"]>[0], dependencies: readonly string[]): Promise<KernelModuleArtifact> {
-  const root = await mkdtemp(path.join(context.project.workDir, `.${safe(input.id)}-generated-`));
-  try {
+  const root = path.join(context.project.generatedDir, "kernel", safe(input.id));
+  return await withBuildLock(root, context.signal, async () => {
     const moduleDir = path.join(root, "module");
     await mkdir(path.join(moduleDir, "include"), { recursive: true });
     const tests = await expandFilePatterns(input.tests, { baseDir: context.project.configDir, label: `jobs.${input.id}.tests` });
@@ -136,19 +143,21 @@ async function generatedModule(input: KernelCTestJobInput, defaults: KernelModul
     const headers = unique([...(defaults.headers ?? []), ...(input.headers ?? [])]);
     const expandedHeaders = headers.length === 0 ? [] : await expandFilePatterns(headers, { baseDir: context.project.configDir, label: `jobs.${input.id}.headers` });
     const objects: string[] = ["entry.o", "registry.o"];
-    for (const [index, source] of [...tests, ...sources].entries()) { const name = `source_${index}.c`; await copyFile(path.join(context.project.configDir, source), path.join(moduleDir, name)); objects.push(name.replace(/\.c$/u, ".o")); }
-    for (const header of expandedHeaders) await copyFile(path.join(context.project.configDir, header), path.join(moduleDir, "include", path.basename(header)));
+    const copies: {source: string; destination: string}[] = [];
+    for (const [index, source] of [...tests, ...sources].entries()) { const name = `source_${index}.c`; copies.push({source: path.join(context.project.configDir, source), destination: path.join(moduleDir, name)}); objects.push(name.replace(/\.c$/u, ".o")); }
+    for (const header of expandedHeaders) copies.push({source: path.join(context.project.configDir, header), destination: path.join(moduleDir, "include", path.basename(header))});
+    await syncFiles(moduleDir, copies);
     const suite = input.suites ?? [safe(input.id.split(".").at(-1) ?? input.id)];
     const moduleName = input.module?.name ?? safe(input.id);
     const registryName = `${safe(moduleName)}_registry`;
-    await writeFile(path.join(moduleDir, "registry.c"), `#include <cautest/cautest.h>\n${suite.map((item) => `CAUTEST_SUITE_DECLARE(${item});`).join("\n")}\nCAUTEST_REGISTRY(${registryName},\n${suite.map((item) => `    CAUTEST_SUITE_REF(${item})`).join(",\n")});\n`);
-    await writeFile(path.join(moduleDir, "entry.c"), `#include <linux/module.h>\n#include <cautest/kernel_runtime.h>\nextern const struct cautest_registry ${registryName};\nstatic int __init ${safe(moduleName)}_init(void) { return CAUTEST_KERNEL_REGISTER(${registryName}); }\nstatic void __exit ${safe(moduleName)}_exit(void) { WARN_ON(CAUTEST_KERNEL_UNREGISTER(${registryName})); }\nmodule_init(${safe(moduleName)}_init);\nmodule_exit(${safe(moduleName)}_exit);\nMODULE_LICENSE("${input.module?.license ?? "GPL"}");\n`);
+    await writeChanged(path.join(moduleDir, "registry.c"), `#include <cautest/cautest.h>\n${suite.map((item) => `CAUTEST_SUITE_DECLARE(${item});`).join("\n")}\nCAUTEST_REGISTRY(${registryName},\n${suite.map((item) => `    CAUTEST_SUITE_REF(${item})`).join(",\n")});\n`);
+    await writeChanged(path.join(moduleDir, "entry.c"), `#include <linux/module.h>\n#include <cautest/kernel_runtime.h>\nextern const struct cautest_registry ${registryName};\nstatic int __init ${safe(moduleName)}_init(void) { return CAUTEST_KERNEL_REGISTER(${registryName}); }\nstatic void __exit ${safe(moduleName)}_exit(void) { WARN_ON(CAUTEST_KERNEL_UNREGISTER(${registryName})); }\nmodule_init(${safe(moduleName)}_init);\nmodule_exit(${safe(moduleName)}_exit);\nMODULE_LICENSE("${input.module?.license ?? "GPL"}");\n`);
     const includeDirs = unique([...(defaults.includeDirs ?? []), ...(input.module?.includeDirs ?? [])]).map((directory) => `-I${path.resolve(context.project.configDir, directory)}`);
     const defines = { ...(defaults.defines ?? {}), ...(input.module?.defines ?? {}) };
     const flags = [...Object.entries(defines).map(([key, value]) => `-D${key}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`), ...(defaults.cflags ?? []), ...(input.module?.cflags ?? [])];
-    await writeFile(path.join(moduleDir, "Makefile"), `obj-m += ${moduleName}.o\n${moduleName}-y := ${objects.join(" ")}\n${input.coverage === undefined ? "" : "GCOV_PROFILE := y\n"}ccflags-y += -I${path.join(kitRoot, "include")} -I${path.join(kitRoot, "target/linux-kernel/include")} -I$(src)/include ${includeDirs.join(" ")} ${flags.join(" ")}\n`);
+    await writeChanged(path.join(moduleDir, "Makefile"), `obj-m += ${moduleName}.o\n${moduleName}-y := ${objects.join(" ")}\n${input.coverage === undefined ? "" : "GCOV_PROFILE := y\n"}ccflags-y += -I${path.join(kitRoot, "include")} -I${path.join(kitRoot, "target/linux-kernel/include")} -I$(src)/include ${includeDirs.join(" ")} ${flags.join(" ")}\n`);
     return await buildIsolatedKernelModule({ module: { name: moduleName, sourceDir: ".", sandboxRoot: ".", output: `${moduleName}.ko`, ...(defaults.make === undefined ? {} : { make: defaults.make }), ...((input.module?.jobs ?? defaults.jobs) === undefined ? {} : { jobs: input.module?.jobs ?? defaults.jobs }), ...(input.module?.makeVariables === undefined ? {} : { makeVariables: input.module.makeVariables }), ...(input.module?.makeArgs === undefined ? {} : { makeArgs: input.module.makeArgs }), ...((input.module?.cache ?? defaults.cache) === undefined ? {} : { cache: input.module?.cache ?? defaults.cache }) }, kernelOutput, configDir: moduleDir, cacheDir: path.join(context.project.cacheDir, "kernel-modules"), workDir: path.join(context.project.workDir, "kernel-modules"), arch: environmentValue(input.environment).kernel.arch ?? "um", ...(environmentValue(input.environment).kernel.crossCompile === undefined ? {} : { crossCompile: environmentValue(input.environment).kernel.crossCompile }), env: context.job.env, dependencySymbols: dependencies, signal: context.signal, output: context.output });
-  } finally { await rm(root, { recursive: true, force: true }); }
+  });
 }
 
 /** 创建完整 Kernel C Test Job；公共环境与 Module 配置保持独立指纹边界。 */

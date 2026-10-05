@@ -22,10 +22,11 @@ test('real Xmake public/interface/private compile configuration and public link 
 test('real native compiler/config transitions cannot reuse the prior compiler receipt',{skip:!xmake},async t=>{
  const root=await fixture(t);await writeFile(path.join(root,'test.c'),'#include <cautest/cautest.h>\nCAUTEST_CASE(ok){CAUTEST_EXPECT_EQ_INT(1,1);}\nCAUTEST_SUITE(matrix,CAUTEST_CASE_ENTRY(ok));\n');
  await writeFile(path.join(root,'xmake.lua'),'includes("tools/cautest/xmake.lua")\ntarget("test.matrix")\nset_kind("binary")\nadd_rules("cautest.native")\nadd_files("test.c")\nadd_values("cautest.registry.suites","matrix")\ntarget_end()\nctest.native {id="unit.matrix",target="test.matrix"}\n');
- command(root,['f','-y','--toolchain=gcc']);const gcc=await execute(root);assert.ok(gcc.metadata.receipt.context.configDigest);
+ command(root,['f','-y','--toolchain=gcc']);const gcc=await execute(root);assert.equal("configDigest" in gcc.metadata.receipt.context,false);
+ const gccBytes=await readFile(gcc.path);assert.ok(!gccBytes.includes(Buffer.from("clang version")));
  // Compiler availability is a required precondition of this explicit matrix, not a silent skip.
  const clangCheck=spawnSync('clang',['--version'],{encoding:'utf8'});assert.equal(clangCheck.status,0,'This matrix requires actual clang in PATH');
- command(root,['f','-y','--toolchain=clang']);const clang=await execute(root);assert.notEqual(clang.buildId,gcc.buildId);assert.notEqual(clang.metadata.receipt.context.configDigest,gcc.metadata.receipt.context.configDigest);
+ command(root,['f','-y','--toolchain=clang']);const clang=await execute(root);assert.equal(clang.buildId,gcc.buildId);assert.ok((await readFile(clang.path)).includes(Buffer.from("clang version")));
  command(root,['f','-y','--toolchain=gcc','-o','alternate-build']);const alternate=await execute(root);assert.notEqual(alternate.path,gcc.path);assert.ok(alternate.path.includes('alternate-build'));assert.ok((await stat(alternate.path)).size>0);
 });
 test('real 100/1000/2000-job list/filter measures command-tree peak RSS and emits no build artifacts',{skip:!xmake},async t=>{

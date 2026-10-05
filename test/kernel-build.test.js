@@ -43,8 +43,9 @@ test("Kernel 与 BusyBox 并发复用源码时只写各项目的 out-of-tree 目
   ]);
   const make = path.join(root, "fake-make.mjs");
   await writeFile(make, `#!${process.execPath}
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
+function write(file, text) { if (!existsSync(file) || !readFileSync(file).equals(Buffer.from(text))) writeFileSync(file, text); }
 const args = process.argv.slice(2);
 if (args.length === 1 && args[0] === "--version") { console.log("fake make 1"); process.exit(0); }
 const source = args[args.indexOf("-C") + 1];
@@ -52,12 +53,12 @@ const output = args.find((item) => item.startsWith("O=")).slice(2);
 const target = args.at(-1);
 mkdirSync(output, { recursive: true });
 mkdirSync(path.join(output, "include/config"), {recursive: true});
-writeFileSync(path.join(output, "include/config/kernel.release"), "fixture-only");
+write(path.join(output, "include/config/kernel.release"), "fixture-only");
 appendFileSync(process.env.CAUTEST_FAKE_MAKE_LOG, JSON.stringify({ source, output, target, args, profile: process.env.CAUTEST_PROFILE_ENV ?? null }) + "\\n");
-if (target.endsWith("defconfig") && target !== "olddefconfig") writeFileSync(path.join(output, ".config"), "CONFIG_FAKE=y\\n");
-if (target === "linux") writeFileSync(path.join(output, "linux"), readFileSync(path.join(source, "source.c")));
-if (target === "modules") writeFileSync(path.join(output, "Module.symvers"), "symbols\\n");
-if (target === "busybox") writeFileSync(path.join(output, "busybox"), readFileSync(path.join(source, "applets.c")));
+if (target.endsWith("defconfig") && target !== "olddefconfig") write(path.join(output, ".config"), "CONFIG_FAKE=y\\n");
+if (target === "linux") write(path.join(output, "linux"), readFileSync(path.join(source, "source.c")));
+if (target === "modules") write(path.join(output, "Module.symvers"), "symbols\\n");
+if (target === "busybox") write(path.join(output, "busybox"), readFileSync(path.join(source, "applets.c")));
 `);
   await chmod(make, 0o755);
   const linuxBefore = await tree(linux);
@@ -97,7 +98,10 @@ if (target === "busybox") writeFileSync(path.join(output, "busybox"), readFileSy
 
   await writeFile(path.join(linux, "source.c"), "int changed_kernel_source;\n");
   const changed = await build(projectA);
-  assert.notEqual(changed.kernelArtifact.path, first.kernelArtifact.path);
+  assert.equal(changed.kernelArtifact.path, first.kernelArtifact.path);
+  assert.equal(changed.kernelArtifact.cacheHit, false);
+  assert.ok(changed.calls.some(call => call.target === "linux"));
+  assert.ok(hit.calls.some(call => call.target === "linux"), "cache hits still invoke Make");
 
   const profiled = await build(projectA, "profile-one");
   const reprofiled = await build(projectA, "profile-two");

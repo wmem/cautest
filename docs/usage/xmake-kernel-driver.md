@@ -1,6 +1,6 @@
 # Xmake Kernel Test 与 Driver ABI
 
-本页描述已实现并执行过真实验收的 Xmake 产物接入接口。验证环境为 Linux x86_64、Xmake 3.1.1、Node 22.16.0、GCC 14.2.0、Linux 6.6.157 和 BusyBox 1.36.1；Driver 的 read/write/ioctl/非法输入及 Kernel C Test 都在实际 UML 内执行。其他平台与实板 MCU 不由此推定通过。
+本页描述已实现并执行过真实验收的 Xmake 产物接入接口。Driver 的 read/write/ioctl/非法输入及 Kernel C Test 都在实际 UML 内执行，验证环境与本轮结果见[测试策略](../tests/testing.md#xmake-增量的验收边界)。其他平台与实板 MCU 不由此推定通过。
 
 ## 单一 Environment、两条测试路线
 
@@ -22,7 +22,7 @@ ctest.driver {
 }
 ```
 
-Environment 模块导出 `createEnvironment({projectRoot, origin, options})`，返回现有 `umlKernelEnvironment({...})` 描述符。同名 Environment 在一次 Manifest 加载中只创建一次，其本地静态 import 依赖进入配置来源和摘要。工厂必须是纯声明，不得编译、开串口、启动 VM；`list`/`plan` 会调用工厂，但不会执行工作流。源码目录等普通路径应相对 `projectRoot` 解析，而不是生成 Manifest 所在目录。`configFragments` 是相对配置根的 File Pattern，应写成 `configFragments: ["uml-host.config"]`，不能传绝对路径。
+Environment 模块导出 `createEnvironment({projectRoot, origin, options})`，返回现有 `umlKernelEnvironment({...})` 描述符。同名 Environment 在一次 Manifest 加载中只创建一次，其本地静态 import 依赖进入配置来源记录。工厂必须是纯声明，不得编译、开串口、启动 VM；`list`/`plan` 会调用工厂，但不会执行工作流。源码目录等普通路径应相对 `projectRoot` 解析，而不是生成 Manifest 所在目录。`configFragments` 是相对配置根的 File Pattern，应写成 `configFragments: ["uml-host.config"]`，不能传绝对路径。
 
 Kernel/BusyBox/Rootfs 仍由既有 JS build Steps 构建和缓存，所有 Job 使用同一个 Environment 描述。产品 `.ko` 与 Driver Guest 只由引用的 Xmake target 构建，JS 不复制其产品源码列表、宏或 Kbuild 模型。每个 Job 独立启动并清理 UML；共享产物不表示共享 VM 会话。
 
@@ -32,9 +32,9 @@ Driver 路线：Environment → 一个或多个产品 `.ko` → 独立静态 Gue
 
 ## 构建上下文与多角色 Receipt
 
-模块 target 显式导出 `ko`、`symbols`、`order`、`kernel-context` 四种角色。所有文件先经过通用 Receipt 的路径、大小、SHA-256 校验，随后检查 `.ko` 是 x86_64 ELF relocatable object、vermagic release 正确，并将 `kernel-context` JSON 与当前 Environment 严格比较。
+模块 target 显式导出 `ko`、`symbols`、`order`、`kernel-context` 四种角色。所有文件先经过通用 Receipt 的角色、绝对路径和存在性校验，随后检查 `.ko` 是 x86_64 ELF relocatable object、vermagic release 正确，并将 `kernel-context` JSON 与当前 Environment 严格比较。
 
-Kernel Context v1 由 `versions.json.schemas.kernelContext` 管理。包含 Kernel 构建目录、实际 image 路径、ARCH、crossCompile、release，以及 `.config`、`Module.symvers`、Kernel image 的内容摘要。它独立于 Xmake BuildContext，也独立于 CTP Build ID。现有 CTP 3.1 和 Kernel ABI 3.0 未改变。
+Kernel Context v2 由 `versions.json.schemas.kernelContext` 管理。包含 Kernel 构建目录、实际 image 路径、ARCH、crossCompile、release，以及 `.config`、`Module.symvers`、Kernel image 的 size、mtimeNs、mode 元数据。它独立于 Xmake BuildContext，也独立于 CTP Build ID。现有 CTP 3.1 和 Kernel ABI 3.0 未改变。
 
 执行层仅在模块 build Step 的子进程环境中提供：
 
@@ -46,7 +46,7 @@ CAUTEST_KERNEL_CROSS_COMPILE
 CAUTEST_EXTRA_SYMBOLS
 ```
 
-这些变量不修改全局 `process.env`，不能通过 Job/profile `env` 覆盖为冲突值。模块 target 必须使用提供的上下文，构建前后验证内容未变化，并把同一 Context 写入导出文件。示例 [product_build.lua](../../examples/xmake/kernel-driver/product_build.lua) 在临时源码副本中执行产品原有 Makefile，结束后清理暂存目录，不使用 `M=<产品源码树>` 污染源码。
+这些变量不修改全局 `process.env`，不能通过 Job/profile `env` 覆盖为冲突值。模块 target 必须使用提供的上下文，构建前后验证元数据与 release 未变化，并把同一 Context 写入导出文件。示例 [product_build.lua](../../examples/xmake/kernel-driver/product_build.lua) 在临时源码副本中执行产品原有 Makefile，结束后清理暂存目录，不使用 `M=<产品源码树>` 污染源码。
 
 多个 Driver refs 按声明顺序构建、加载；之前模块的 symbols 进入后续模块的 Kbuild extra symbols。重复 ref 明确报错。Kbuild 对空白路径的限制不由 Cautest 隐藏；示例要求 Kernel 和模块构建路径无空白。
 
@@ -81,12 +81,11 @@ xmake ct --reporter=json,junit --tag=uml
 
 ## 缓存与真实验收入口
 
-Kernel、BusyBox、Agent、Guest 和 rootfs 缓存均以完整构建结束时原子发布的
-`.cautest-build-manifest.json` 为准；命中时校验文件大小、权限和 SHA-256，不能仅凭路径存在
-认定产物有效。Kernel 同时校验镜像、`.config`、`Module.symvers` 和 `kernel.release`。
-rootfs 指纹纳入实际 BusyBox/Agent/模块/Guest 字节、Overlay 顺序，以及 Guest Endpoint 和安装路径，
-避免相同声明 ID 下的不同输入复用镜像。更改这些契约只提升对应 Cache 版本，不改 CTP/Kernel ABI。
-这是缓存完整性检查，不是对任意工具链、隐藏依赖或跨进程并发构建的完整证明。
+Kernel/BusyBox 每轮进入 Make，Agent/Guest 通过 Make 与 depfile 增量构建。
+配置参数决定稳定构建目录；源码变更不会创建一份内容摘要目录。Module 隔离输入同步和产物标记使用
+size、mtime、mode 等元数据，Rootfs 缓存纳入实际输入的路径与元数据、Overlay 顺序、Guest Endpoint 和安装路径。
+这些元数据用于增量和缓存状态判断，不是内容完整性校验；相同大小且恢复时间戳的修改不会被发现。
+协议身份检查、编译失败阻止运行和 Linux 构建锁保持有效。实现边界见[执行架构](../architecture/overview.md)。
 
 真实 Xmake UML 验收不属于默认单元测试。提供明确的源码与工具路径后执行：
 
@@ -114,7 +113,7 @@ npm run test:xmake:uml
 
 默认验收还通过旧 `kernelCTestJob` / `driverAbiCTestJob` 编译入口运行相同 C Case，逐项比较新旧 CTP Case 结果；只改变构建来源，不新建执行器。
 
-默认负向矩阵使用真实内核及 initramfs，覆盖 Ready 超时、取消、错误 Catalog/Guest Build ID、Guest Case 失败、Guest 早退、模块初始化失败、编译失败时拒用旧模块、Kernel Case 失败、恢复及损坏缓存重建。被测 Job 的预期 FAIL/ERROR 不等于验收程序失败；验收程序检查准确阶段、Case、退出码、日志与资源关闭。
+默认负向矩阵使用真实内核及 initramfs，覆盖 Ready 超时、取消、错误 Catalog/Guest Build ID、Guest Case 失败、Guest 早退、模块初始化失败、编译失败时拒用旧模块、Kernel Case 失败、恢复及缺失产物重建。被测 Job 的预期 FAIL/ERROR 不等于验收程序失败；验收程序检查准确阶段、Case、退出码、日志与资源关闭。
 
 UML 进程由启动步骤独占 POSIX 进程组。取消、Ready 超时、错误身份、早退及 spawn 错误都会回收所属进程与后代；停止操作幂等，collect/defer 共用同一清理动作。单元测试的明确 Agent 模拟器只验证故障机制；真实验收另检查实际 Linux 控制台和所启动进程组没有存活成员。
 

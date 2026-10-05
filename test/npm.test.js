@@ -36,7 +36,7 @@ test("npm tarball installs and runs in an empty consumer offline without dev dep
   const env = { ...process.env, npm_config_offline: "true", npm_config_audit: "false", npm_config_fund: "false", npm_config_cache: path.join(temporary, "cache") };
   // npm pack executes prepare. Isolate its tsc writes from parallel tests importing dist.
   const packageRoot = path.join(temporary, "package-source");
-  await cp(root, packageRoot, {recursive:true, filter:(source)=>!path.relative(root,source).split(path.sep).some(part=>[".git","node_modules","dist",".cautest","build"].includes(part))});
+  await cp(root, packageRoot, {recursive:true, filter:(source)=>path.relative(root,source).split(path.sep)[0]!=="build"&&!path.relative(root,source).split(path.sep).some(part=>[".git","node_modules","dist",".cautest"].includes(part))});
   await symlink(path.join(root,"node_modules"),path.join(packageRoot,"node_modules"),"dir");
   const packed = JSON.parse((await exec("npm", ["pack", "--json", "--pack-destination", temporary], { cwd: packageRoot, env, maxBuffer: 10 * 1024 * 1024 })).stdout)[0];
   await writeFile(path.join(consumer, "package.json"), JSON.stringify({ name: "consumer", private: true, type: "module" }));

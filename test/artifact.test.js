@@ -8,17 +8,17 @@ import {hashFile} from '../dist/cache/fingerprint.js';
 import {resolveArtifact} from '../dist/artifacts/index.js';
 import {nativeCTestJob,mcuCTestJob,nativeArtifactJob,mcuArtifactJob,executeWorkflow} from '../dist/config/index.js';
 const root=fileURLToPath(new URL('..',import.meta.url));
-async function receipt(target,file,buildId,projectRoot=root){return {schemaVersion:1,kind:'cautest.artifact-receipt',target,context:{projectRoot,plat:'linux',arch:'x86_64',mode:'release',buildDir:path.join(projectRoot,'build')},...(buildId===undefined?{}:{protocolBuildId:buildId}),outputs:[{role:'primary',path:file,size:(await stat(file)).size,sha256:await hashFile(file)}]};}
+async function receipt(target,file,buildId,projectRoot=root){return {schemaVersion:2,kind:'cautest.artifact-receipt',target,context:{projectRoot,plat:'linux',arch:'x86_64',mode:'release',buildDir:path.join(projectRoot,'build')},...(buildId===undefined?{}:{protocolBuildId:buildId}),outputs:[{role:'primary',path:file,size:(await stat(file)).size}]};}
 const project=(dir)=>({configDir:root,workDir:path.join(dir,'work'),resultDir:path.join(dir,'results'),cacheDir:path.join(dir,'cache'),generatedDir:path.join(dir,'generated')});
-test('receipt strictly validates version/target/output/context/bytes and separates protocol identity',async()=>{
+test('receipt strictly validates version/target/output/context/existence and separates protocol identity',async()=>{
  const dir=await mkdtemp(path.join(tmpdir(),'ct-receipt-'));
  try {
  const file=path.join(dir,'artifact');await writeFile(file,'hello');const r=await receipt('test.foo',file,'hello-id');const ref={target:'test.foo'};
  assert.equal((await resolveArtifact(r,ref)).buildId,'hello-id');
- for(const invalid of [{...r,schemaVersion:2},{...r,unknown:true},{...r,target:'other'},{...r,protocolBuildId:undefined},{...r,outputs:[...r.outputs,...r.outputs]},{...r,outputs:[{...r.outputs[0],path:'relative'}]}])await assert.rejects(resolveArtifact(invalid,ref));
+ for(const invalid of [{...r,schemaVersion:1},{...r,unknown:true},{...r,target:'other'},{...r,protocolBuildId:undefined},{...r,outputs:[...r.outputs,...r.outputs]},{...r,outputs:[{...r.outputs[0],path:'relative'}]}])await assert.rejects(resolveArtifact(invalid,ref));
  await assert.rejects(resolveArtifact(r,{target:'test.foo',output:'firmware-bin'}),/role/);
  await assert.rejects(resolveArtifact(r,ref,{...r.context,arch:'arm64'}),/context mismatch/);
- await writeFile(file,'other');await assert.rejects(resolveArtifact(r,ref),/stale\/corrupt/);
+ await writeFile(file,'other');assert.equal((await resolveArtifact(r,ref)).path,file);
  await rm(file);await assert.rejects(resolveArtifact(r,ref),/inaccessible/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });
@@ -52,7 +52,7 @@ test('MCU registers owned cleanup before flash/reset; borrowed boards remain unt
  for(const stage of ['flash','reset'])for(const ownership of ['owned','borrowed']){
  let closed=0;
  const adapter={flash(){if(stage==='flash')throw new Error('flash failed');},reset(){throw new Error('reset failed');},openTransport(){throw new Error('must not open');},close(){closed++;}};
- const result=await executeWorkflow(mcuCTestJob({id:'component.cleanup',firmware:{kind:'existing',file},board:{kind:'external',adapter,ownership}}),{project:project(dir)});
+ const result=await executeWorkflow(mcuCTestJob({id:'component.cleanup',firmware:{kind:'existing',file,buildId:'fixture'},board:{kind:'external',adapter,ownership}}),{project:project(dir)});
  assert.equal(result.status,'ERROR');assert.equal(closed,ownership==='owned'?1:0);
  }
  }finally{await rm(dir,{recursive:true,force:true});}

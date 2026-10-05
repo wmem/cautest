@@ -1,7 +1,7 @@
 import path from "node:path";
 import { stat } from "node:fs/promises";
 import type { StepExecutionContext, WorkflowStep } from "../config/schema/common.js";
-import { hashFile, stableSerialize } from "../cache/fingerprint.js";
+import { stableSerialize } from "../cache/fingerprint.js";
 import { CautestError } from "../model/error.js";
 import { defineStep } from "../workflow/step.js";
 
@@ -14,11 +14,10 @@ export interface BuildContext {
   readonly arch: string;
   readonly mode: string;
   readonly buildDir: string;
-  readonly configDigest?: string;
 }
-export interface ArtifactOutput { readonly role: string; readonly path: string; readonly size: number; readonly sha256: string }
+export interface ArtifactOutput { readonly role: string; readonly path: string; readonly size: number; }
 export interface ArtifactReceipt {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly kind: "cautest.artifact-receipt";
   readonly target: string;
   readonly context: BuildContext;
@@ -38,10 +37,9 @@ export function object(value: unknown, fields: readonly string[], label: string)
   return value as Record<string, unknown>;
 }
 export function validateBuildContext(value: unknown): asserts value is BuildContext {
-  const v = object(value, ["projectRoot", "plat", "arch", "mode", "buildDir", "configDigest"], "BuildContext");
+  const v = object(value, ["projectRoot", "plat", "arch", "mode", "buildDir"], "BuildContext");
   for (const key of ["projectRoot", "plat", "arch", "mode", "buildDir"]) if (typeof v[key] !== "string" || !(v[key] as string).length) fail(`BuildContext.${key} must be a nonempty string`);
   if (!path.isAbsolute(v.projectRoot as string) || !path.isAbsolute(v.buildDir as string)) fail("BuildContext paths must be absolute");
-  if (v.configDigest !== undefined && (typeof v.configDigest !== "string" || !/^[0-9a-f]{64}$/u.test(v.configDigest))) fail("BuildContext.configDigest must be SHA-256");
 }
 export function validateArtifactRef(value: unknown): asserts value is ArtifactRef {
   const v = object(value, ["target", "output"], "ArtifactRef");
@@ -51,9 +49,8 @@ export function validateArtifactRef(value: unknown): asserts value is ArtifactRe
 export function assertCompatibleContext(expected: BuildContext, actual: BuildContext): void {
   validateBuildContext(expected); validateBuildContext(actual);
   for (const key of ["projectRoot", "plat", "arch", "mode", "buildDir"] as const) if (actual[key] !== expected[key]) fail(`Build context mismatch (${key}): expected ${expected[key]}, received ${actual[key]}`);
-  if (expected.configDigest !== undefined && expected.configDigest !== actual.configDigest) fail("Xmake configuration changed during this run; re-export the manifest");
 }
-/** Validate shape, roles, context AND current bytes. A receipt is not a trust bypass. */
+/** 校验产物角色、构建上下文和文件存在性；不读取二进制内容。 */
 export async function resolveArtifact(value: unknown, ref: ArtifactRef, expected?: BuildContext, protocolRequired = true): Promise<ResolvedArtifact> {
   validateArtifactRef(ref);
   const v = object(value, ["schemaVersion", "kind", "target", "context", "protocolBuildId", "outputs"], "ArtifactReceipt");
@@ -66,14 +63,14 @@ export async function resolveArtifact(value: unknown, ref: ArtifactRef, expected
   if (!Array.isArray(v.outputs) || v.outputs.length === 0) fail("Receipt outputs must be a nonempty array");
   const roles = new Set<string>();
   for (const candidate of v.outputs) {
-    const output = object(candidate, ["role", "path", "size", "sha256"], "ArtifactOutput");
+    const output = object(candidate, ["role", "path", "size"], "ArtifactOutput");
     if (typeof output.role !== "string" || !output.role.length || roles.has(output.role)) fail("Duplicate or missing output role");
     roles.add(output.role);
     if (typeof output.path !== "string" || !path.isAbsolute(output.path)) fail("Artifact output path must be absolute");
-    if (!Number.isSafeInteger(output.size) || (output.size as number) < 0 || typeof output.sha256 !== "string" || !/^[0-9a-f]{64}$/u.test(output.sha256)) fail("Invalid artifact content identity");
+    if (!Number.isSafeInteger(output.size) || (output.size as number) < 0) fail("Invalid artifact size");
     try {
       const info = await stat(output.path);
-      if (!info.isFile() || info.size !== output.size || await hashFile(output.path) !== output.sha256) fail(`Artifact missing/stale/corrupt: ${output.path}`);
+      if (!info.isFile()) fail(`Artifact missing: ${output.path}`);
     } catch (cause) { if (cause instanceof CautestError) throw cause; throw new CautestError(`Artifact inaccessible: ${output.path}`, { code: "build_error", cause }); }
   }
   const receipt = value as ArtifactReceipt;
@@ -97,7 +94,7 @@ export function artifactBuildStep(input: { readonly name: string; readonly ref: 
       const receipt = await input.provider.build(input.ref, context);
       const artifact = await resolveArtifact(receipt, input.ref, input.context, input.protocolRequired ?? true);
       context.state.set(slot(input.name), artifact);
-      context.artifacts.publish({ kind: "build-artifact", name: input.name, path: artifact.path, fingerprint: artifact.output.sha256, ...(artifact.buildId ? { buildId: artifact.buildId } : {}), metadata: { receipt } });
+      context.artifacts.publish({ kind: "build-artifact", name: input.name, path: artifact.path, ...(artifact.buildId ? { buildId: artifact.buildId } : {}), metadata: { receipt } });
       return { diagnostics: [{ code: "artifact_ready", message: artifact.path, context: stableSerialize(receipt.context) }] };
     },
   });

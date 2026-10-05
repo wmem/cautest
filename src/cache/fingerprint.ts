@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { CautestError } from "../model/error.js";
+import {fileState} from "./file-state.js";
 import { CAUTEST_VERSIONS } from "../config/versions.js";
 
 type Json = null | boolean | number | string | readonly Json[] | Readonly<{ readonly [key: string]: Json }>;
@@ -28,7 +29,7 @@ export interface FingerprintInput {
   readonly values?: Readonly<Record<string, unknown>>;
 }
 
-/** 生成与对象键、文件声明顺序无关的强内容指纹。 */
+/** 生成参数与文件元数据的缓存键；不读取输入内容，hashFile 仅用于显式完整性校验。 */
 export async function createFingerprint(input: FingerprintInput = {}, options: { readonly baseDir?: string } = {}): Promise<string> {
   const baseDir = path.resolve(options.baseDir ?? process.cwd());
   const files = [...new Set((input.files ?? []).map((file) => path.resolve(baseDir, file)))].sort();
@@ -37,7 +38,7 @@ export async function createFingerprint(input: FingerprintInput = {}, options: {
     let info;
     try { info = await stat(file); } catch (cause) { throw new CautestError(`Fingerprint 输入不存在: ${file}`, { code: "cache_error", cause }); }
     if (!info.isFile()) throw new CautestError(`Fingerprint 输入不是普通文件: ${file}`, { code: "cache_error" });
-    fileInputs.push({ path: path.relative(baseDir, file).split(path.sep).join("/"), sha256: await hashFile(file) });
+    fileInputs.push({ path: path.relative(baseDir, file).split(path.sep).join("/"), state: await fileState(file) });
   }
   return hashBytes(stableSerialize({ schemaVersion: CAUTEST_VERSIONS.schemas.fingerprint, namespace: input.namespace ?? "cautest", files: fileInputs, generated: input.generated ?? {}, tool: input.tool ?? {}, args: input.args ?? [], env: input.env ?? {}, values: input.values ?? {} }));
 }

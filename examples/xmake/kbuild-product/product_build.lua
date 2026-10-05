@@ -4,11 +4,11 @@ function main(_target, here)
     local kernel = config.get("kernel_build")
     assert(kernel and os.isdir(kernel), "Configure --kernel_build=<prepared Kernel build/headers>; no implicit running Kernel")
     kernel = path.absolute(kernel, os.projectdir())
-    local identity = {schemaVersion=1, arch="x86_64", kernelBuild=kernel, inputs={}}
+    local identity = {schemaVersion=2, arch="x86_64", kernelBuild=kernel, inputs={}}
     for _, name in ipairs({".config", "Module.symvers", "include/config/kernel.release"}) do
         local file = path.join(kernel,name)
         assert(os.isfile(file), "Required Kernel identity input missing: " .. file)
-        identity.inputs[name] = hash.sha256(file):lower()
+        identity.inputs[name] = {size = os.filesize(file), mtime = os.mtime(file)}
     end
     local configuration = io.readfile(path.join(kernel,".config"))
     assert(configuration:find("CONFIG_X86_64=y",1,true), "This example only accepts a prepared x86_64 Kernel; UML uses a separate Environment")
@@ -23,7 +23,8 @@ function main(_target, here)
         os.cp(path.join(here,"driver/cautest_demo.c"),path.join(staging,"cautest_demo.c"))
         os.vrunv("make", {"-C",kernel,"M=" .. staging,"ARCH=x86_64","CAUTEST_DEMO_VALUE=" .. tostring(config.get("demo_value") or "7"),"-j2","modules"})
         for _, name in ipairs({".config", "Module.symvers", "include/config/kernel.release"}) do
-            assert(hash.sha256(path.join(kernel,name)):lower()==identity.inputs[name], "Kernel identity changed during Kbuild")
+            local file, state = path.join(kernel, name), identity.inputs[name]
+            assert(os.isfile(file) and os.filesize(file) == state.size and os.mtime(file) == state.mtime, "Kernel metadata changed during Kbuild")
         end
         io.writefile(path.join(staging,"kernel-identity.json"),json.encode(identity))
         os.mkdir(output)

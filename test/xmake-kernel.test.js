@@ -20,7 +20,7 @@ test('real Xmake Kernel/Driver declarations are side-effect-free and the indepen
   run(root,['build','-y','test.driver-guest']);
   const description=path.join(root,'guest-artifact.json');run(root,['cautest-artifact','--target=test.driver-guest',`--output-file=${description}`]);
   const info=JSON.parse(await readFile(description,'utf8'));
-  const receipt={schemaVersion:1,kind:'cautest.artifact-receipt',target:info.target,context:info.context,protocolBuildId:info.protocolBuildId,outputs:await Promise.all(info.outputs.map(async output=>({...output,size:(await stat(output.path)).size,sha256:await hashFile(output.path)})))};
+  const receipt={schemaVersion:2,kind:'cautest.artifact-receipt',target:info.target,context:info.context,protocolBuildId:info.protocolBuildId,outputs:await Promise.all(info.outputs.map(async output=>({...output,size:(await stat(output.path)).size})))};
   const artifact=await resolveArtifact(receipt,{target:'test.driver-guest'},info.context,true);assert.equal((await consumeDriverGuest(artifact,'driver-guest')).buildId,info.protocolBuildId);
   await cp(path.join(kit,'test/fixtures/native/smoke_test.c'),path.join(root,'smoke.c'));
   await appendFile(path.join(root,'ctest.lua'),'\ntarget("test.guest-smoke")\nset_kind("binary")\nset_default(false)\nadd_rules("cautest.driver-guest")\nadd_files("smoke.c")\nadd_values("cautest.registry.suites","smoke")\ntarget_end()\nctest.native {id="unit.guest-smoke",target="test.guest-smoke"}\n');

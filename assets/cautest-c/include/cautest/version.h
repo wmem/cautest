@@ -2,7 +2,7 @@
 #define CAUTEST_VERSION_H
 
 /* 由 versions.json 生成；请运行 `npm run versions:sync`，不要手工修改。 */
-#define CAUTEST_RELEASE_VERSION "0.3.1"
+#define CAUTEST_RELEASE_VERSION "0.4.0"
 #define CAUTEST_C_API_MAJOR 2U
 #define CAUTEST_C_API_MINOR 1U
 #define CAUTEST_CTP_PROTOCOL_MAJOR 3U

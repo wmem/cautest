@@ -1,9 +1,11 @@
-import { createHash } from "node:crypto";
+import {hashBytes, stableSerialize} from "../cache/fingerprint.js";
+import {withBuildLock} from "../cache/build-lock.js";
+import {fileState, buildIdentity, writeChanged} from "../cache/file-state.js";
+import {compileC} from "../build/incremental.js";
 import { chmod, copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { McuBoardAdapter, McuCTestJobInput, TestJob, StepExecutionContext, WorkflowStep } from "../config/schema/index.js";
-import { CAUTEST_CACHE_VERSIONS } from "../config/versions.js";
 import { expandFilePatterns } from "../config/file-pattern.js";
 import { testJob } from "../config/define.js";
 import { CautestError } from "../model/error.js";
@@ -62,26 +64,32 @@ async function firmware(input: McuCTestJobInput, context: Parameters<Parameters<
     output = path.resolve(context.project.configDir, specification.output);
     const sources = await expandFilePatterns(specification.sources, { baseDir: context.project.configDir, label: `jobs.${input.id}.firmware.sources` });
     const headers = specification.headers === undefined ? [] : await expandFilePatterns(specification.headers, { baseDir: context.project.configDir, label: `jobs.${input.id}.firmware.headers` });
-    const bytes = await Promise.all([
-      ...[...sources, ...headers].map((file) => readFile(path.join(context.project.configDir, file))),
-      readFile(path.join(kitRoot, "include/cautest/version.h")),
-      ...kitSources.map((file) => readFile(path.join(kitRoot, file))),
-    ]);
     const compiler = specification.compiler ?? "cc";
     const environment = effectiveEnvironment(context, specification.env);
-    const version = await runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, env: environment, signal: context.signal });
-    const buildId = createHash("sha256").update(version.stdout).update(Buffer.concat(bytes)).update(JSON.stringify({ schema: CAUTEST_CACHE_VERSIONS.mcuFingerprint, cflags: specification.cflags ?? [], environment: declaredEnvironment(context, specification.env) })).digest("hex").slice(0, 24);
-    await mkdir(path.dirname(output), { recursive: true });
-    await mkdir(context.project.workDir, { recursive: true });
-    const includeDirs = [...new Set(headers.map((header) => path.dirname(path.join(context.project.configDir, header))))];
-    const result = await runCommand({ program: compiler, args: ["-std=c99", "-ffreestanding", "-fno-builtin", "-Wall", "-Wextra", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/freestanding")}`, `-I${path.join(kitRoot, "target/mcu-reference")}`, ...includeDirs.map((directory) => `-I${directory}`), `-DCAUTEST_MCU_BUILD_ID=\"${buildId}\"`, ...(specification.cflags ?? []), ...sources.map((source) => path.join(context.project.configDir, source)), ...kitSources.map((source) => path.join(kitRoot, source)), "-o", output], cwd: context.project.workDir, env: environment, signal: context.signal, onOutput: context.output });
-    if (result.exitCode !== 0) throw new CautestError(`Host MCU Firmware 编译失败 (exit ${result.exitCode})`, { code: "build_error" });
-    await chmod(output, 0o755);
-    return Object.freeze({ path: output, buildId });
+    const key = hashBytes(stableSerialize({compiler, sources, headers, flags: specification.cflags ?? [], environment: declaredEnvironment(context, specification.env)}));
+    const directory = path.join(context.project.workDir, `mcu-${input.id.replace(/[^A-Za-z0-9_-]/gu, "_")}`, key);
+    const buildTarget = async () => {
+      const buildId = await buildIdentity(directory);
+      await mkdir(path.dirname(output), { recursive: true });
+      await mkdir(context.project.workDir, { recursive: true });
+      const includeDirs = [...new Set(headers.map((header) => path.dirname(path.join(context.project.configDir, header))))];
+      // 不同环境共享显式 output 时，回切旧环境必须重新链接其对象。
+      const publication = path.join(directory, "published-output.json");
+      let relink = true;
+      try { relink = await readFile(publication, "utf8") !== JSON.stringify(await fileState(output)); } catch { /* 首次发布。 */ }
+      await compileC({compiler, directory, output, relink, sources: sources.map(source => path.join(context.project.configDir, source)).concat(kitSources.map(source => path.join(kitRoot, source))),
+        cflags: ["-std=c99", "-ffreestanding", "-fno-builtin", "-Wall", "-Wextra", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/freestanding")}`, `-I${path.join(kitRoot, "target/mcu-reference")}`, ...includeDirs.map(directory => `-I${directory}`), `-DCAUTEST_MCU_BUILD_ID="${buildId}"`, ...(specification.cflags ?? [])],
+        dependencies: headers.map(file => path.join(context.project.configDir, file)), env: environment, signal: context.signal, onOutput: context.output});
+      await chmod(output, 0o755);
+      await writeChanged(publication, JSON.stringify(await fileState(output)));
+      return Object.freeze({ path: output, buildId });
+    };
+    return process.platform === "linux" ? await withBuildLock(output, context.signal, buildTarget) : await buildTarget();
   }
-  const contents = await readFile(output);
-  const fingerprintInputs = specification.fingerprintInputs ?? {};
-  return Object.freeze({ path: output, buildId: createHash("sha256").update(contents).update(JSON.stringify({ schema: CAUTEST_CACHE_VERSIONS.mcuFingerprint, fingerprintInputs })).digest("hex").slice(0, 24) });
+  try { await fileState(output); } catch { throw new CautestError(`MCU Firmware 不存在: ${output}`, {code: "build_error"}); }
+  const configured = specification.buildId ?? input.run?.expectedBuildId;
+  if (!configured) throw new CautestError("existing/command Firmware 必须提供 buildId，与设备 HELLO 一致", {code: "config_error"});
+  return Object.freeze({path: output, buildId: configured});
 }
 
 /** Existing and external artifact builds share these exact Board/CTP/cleanup steps. */
@@ -161,7 +169,7 @@ export function mcuCTestJob(input: McuCTestJobInput): TestJob {
   if (input.reconnects !== undefined && (!Number.isInteger(input.reconnects) || input.reconnects < 0)) throw new CautestError("MCU reconnects 必须是非负整数", { code: "config_error" });
   const firmwareName = input.firmwareName ?? "firmware";
   const boardName = input.boardName ?? "board";
-  const build = defineStep({ kind: "mcuFirmwareBuild", name: firmwareName, phase: "build", details: { ...input.firmware }, ...(("timeoutMs" in input.firmware && input.firmware.timeoutMs !== undefined) ? { timeoutMs: input.firmware.timeoutMs } : {}), async execute(context) { const artifact = await firmware(input, context); context.state.set(`firmware:${firmwareName}`, artifact); context.artifacts.publish({ kind: "mcu-firmware", name: firmwareName, path: artifact.path, fingerprint: artifact.buildId, buildId: artifact.buildId, metadata: { source: input.firmware.kind } }); return { diagnostics: [{ code: "firmware_ready", message: artifact.path }] }; } });
+  const build = defineStep({ kind: "mcuFirmwareBuild", name: firmwareName, phase: "build", details: { ...input.firmware }, ...(("timeoutMs" in input.firmware && input.firmware.timeoutMs !== undefined) ? { timeoutMs: input.firmware.timeoutMs } : {}), async execute(context) { const artifact = await firmware(input, context); context.state.set(`firmware:${firmwareName}`, artifact); context.artifacts.publish({ kind: "mcu-firmware", name: firmwareName, path: artifact.path, buildId: artifact.buildId, metadata: { source: input.firmware.kind } }); return { diagnostics: [{ code: "firmware_ready", message: artifact.path }] }; } });
   const runtime = mcuRuntimeSteps(input, { artifact: (context) => context.state.get(`firmware:${firmwareName}`) as FirmwareArtifact | undefined });
   return testJob({ id: input.id, level: input.level ?? "component", tags: input.tags ?? ["component", "mcu"], workflow: [build, ...runtime], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }

@@ -25,9 +25,14 @@ test('real generation dependency, mocks and conditional source selection take ef
  await writeFile(path.join(root,'value.txt'),'42');await writeFile(path.join(root,'mock.c'),'int sensor_read(void){return 42;}\n');await writeFile(path.join(root,'real.c'),'int sensor_read(void){return -1;}\n');
  await writeFile(path.join(root,'generated_test.c'),'#include <cautest/cautest.h>\n#include "value.h"\nint sensor_read(void);\nCAUTEST_CASE(value){CAUTEST_EXPECT_EQ_INT(CONFIG_VALUE,sensor_read());}\nCAUTEST_SUITE(generated_test,CAUTEST_CASE_ENTRY(value));\n');
  await appendFile(path.join(root,'ctest.lua'),`\ntarget("generate.config")\n set_kind("phony")\n set_policy("build.fence",true)\n on_build(function ()\n  os.mkdir("generated")\n  local text="#define CONFIG_VALUE " .. io.readfile("value.txt") .. "\\n"\n  if not os.isfile("generated/value.h") or io.readfile("generated/value.h")~=text then io.writefile("generated/value.h",text) end\n end)\ntarget_end()\ntarget("test.generated")\n set_kind("binary")\n set_default(false)\n add_rules("cautest.native")\n add_deps("generate.config")\n add_includedirs("generated")\n add_files("generated_test.c")\n if is_plat("linux") then add_files("mock.c") else add_files("real.c") end\n add_values("cautest.registry.suites","generated_test")\ntarget_end()\nctest.native {id="unit.generated",target="test.generated"}\n`);
- const first=await result(root,['unit.generated']);const old=artifact(first.jobs[0]);await writeFile(path.join(root,'value.txt'),'43');await writeFile(path.join(root,'mock.c'),'int sensor_read(void){return 43;}\n');const next=await result(root,['unit.generated']);assert.notEqual(artifact(next.jobs[0]).buildId,old.buildId);assert.equal(next.status,'SUCCESS');
+ const first=await result(root,['unit.generated']);const old=artifact(first.jobs[0]);await writeFile(path.join(root,'value.txt'),'43');await writeFile(path.join(root,'mock.c'),'int sensor_read(void){return 43;}\n');const next=await result(root,['unit.generated']);assert.equal(artifact(next.jobs[0]).buildId,old.buildId);assert.equal(next.status,'SUCCESS');
  const oldTime=await stat(path.join(root,'mock.c'));
- for(const value of [44,45,46]){await writeFile(path.join(root,'value.txt'),String(value));await writeFile(path.join(root,'mock.c'),`int sensor_read(void){return ${value};}\n`);await utimes(path.join(root,'mock.c'),oldTime.atime,oldTime.mtime);assert.equal((await result(root,['unit.generated'])).status,'SUCCESS');}
+ // 恢复旧时间戳的内容修改按 Make 规则不会重编译；显式 touch 后恢复。
+ await writeFile(path.join(root,'value.txt'),'44');await writeFile(path.join(root,'mock.c'),'int sensor_read(void){return 44;}\n');
+ await utimes(path.join(root,'mock.c'),oldTime.atime,oldTime.mtime);
+ assert.equal((await result(root,['unit.generated'],1)).status,'FAIL');
+ const now=new Date();await utimes(path.join(root,'mock.c'),now,now);
+ assert.equal((await result(root,['unit.generated'])).status,'SUCCESS');
 }));
 test('real 100/1000 job discovery, fragment addition/removal, changed cwd and deterministic config digest',when,()=>fixture(async root=>{
  await writeFile(path.join(root,'ctest.lua'),'ctest.include {patterns={"fragments/*.lua"}}\n');await mkdir(path.join(root,'fragments'));

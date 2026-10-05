@@ -22,7 +22,7 @@ async function fixture(fn){const root=await mkdtemp(path.join(tmpdir(),'ct-kerne
  await writeFile(path.join(root,'Module.symvers'),'fixture-symbol\n');await writeFile(path.join(root,'modules.order'),'fixture.ko\n');
  await writeFile(path.join(root,'guest.c'),'int main(void){return 0;}\n');cc(root,['-static','guest.c','-o','guest']);cc(root,['guest.c','-o','dynamic']);
  const buildContext={projectRoot:root,buildDir:path.join(root,'build'),plat:'linux',arch:'x86_64',mode:'release'};
- async function receipt(target,outputs,protocolBuildId){return {schemaVersion:1,kind:'cautest.artifact-receipt',target,context:buildContext,...(protocolBuildId?{protocolBuildId}:{}),outputs:await Promise.all(Object.entries(outputs).map(async([role,file])=>{const absolute=path.join(root,file);return {role,path:absolute,size:(await stat(absolute)).size,sha256:await hashFile(absolute)};}))};}
+ async function receipt(target,outputs,protocolBuildId){return {schemaVersion:2,kind:'cautest.artifact-receipt',target,context:buildContext,...(protocolBuildId?{protocolBuildId}:{}),outputs:await Promise.all(Object.entries(outputs).map(async([role,file])=>{const absolute=path.join(root,file);return {role,path:absolute,size:(await stat(absolute)).size};}))};}
  const moduleReceipt=await receipt('driver',{ko:'fixture.ko',symbols:'Module.symvers',order:'modules.order','kernel-context':'kernel-context.json'});
  const guestReceipt=await receipt('guest',{primary:'guest'},'fixture-ctp-id');
  await fn({root,kernel,identity,buildContext,receipt,moduleReceipt,guestReceipt});
@@ -31,8 +31,8 @@ async function fixture(fn){const root=await mkdtemp(path.join(tmpdir(),'ct-kerne
 test('Kernel context and explicit module roles reject mismatched configurations, releases and executable masquerades',()=>fixture(async f=>{
  const artifact=await resolveArtifact(f.moduleReceipt,{target:'driver',output:'ko'},f.buildContext,false);
  assert.equal((await consumeKernelModule(artifact,f.identity,'driver-1')).module,artifact.path);
- assert.throws(()=>assertKernelContext({...f.identity,configSha256:'0'.repeat(64)},f.identity),/context mismatch/);
- assert.throws(()=>assertKernelContext(f.identity,{...f.identity,schemaVersion:2}),/schema/);
+ assert.throws(()=>assertKernelContext({...f.identity,configState:{...f.identity.configState,mtimeNs:'0'}},f.identity),/context mismatch/);
+ assert.throws(()=>assertKernelContext(f.identity,{...f.identity,schemaVersion:1}),/schema/);
  for(const role of ['symbols','order','kernel-context'])await assert.rejects(consumeKernelModule({...artifact,receipt:{...artifact.receipt,outputs:artifact.receipt.outputs.filter(x=>x.role!==role)}},f.identity,'driver-1'),/missing output role/);
  await writeFile(path.join(f.root,'kernel-context.json'),JSON.stringify({...f.identity,release:'other-release'}));
  await assert.rejects(consumeKernelModule(artifact,f.identity,'driver-1'),/context mismatch/);

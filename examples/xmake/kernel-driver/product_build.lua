@@ -6,13 +6,20 @@ function main(target, root, directory, module)
     local context_file = os.getenv("CAUTEST_KERNEL_CONTEXT")
     assert(kernel and context_file, "This test target needs the shared UML Environment; invoke xmake ct")
     local context = json.decode(io.readfile(context_file))
-    assert(context.kind == "cautest.kernel-context" and context.schemaVersion == 1 and (context.arch == "um" or context.arch == "x86_64"), "Invalid explicit Kernel context")
+    assert(context.kind == "cautest.kernel-context" and context.schemaVersion == 2 and (context.arch == "um" or context.arch == "x86_64"), "Invalid explicit Kernel context")
+    local files = {path.join(kernel, ".config"), path.join(kernel, "Module.symvers"), context.imagePath}
+    local states = {}
+    for _, file in ipairs(files) do
+        assert(os.isfile(file), "Missing Kernel input: " .. file)
+        states[file] = {size = os.filesize(file), mtime = os.mtime(file)}
+    end
     local function verify()
         assert(path.absolute(kernel) == context.outputDir, "Kernel build path mismatch")
-        for file, digest in pairs({[path.join(kernel,".config")]=context.configSha256, [path.join(kernel,"Module.symvers")]=context.symbolsSha256, [context.imagePath]=context.imageSha256}) do
-            assert(os.isfile(file) and hash.sha256(file):lower() == digest, "Kernel changed during module build: " .. file)
+        for file, state in pairs(states) do
+            assert(os.isfile(file) and os.filesize(file) == state.size and os.mtime(file) == state.mtime,
+                   "Kernel metadata changed during module build: " .. file)
         end
-        assert(io.readfile(path.join(kernel,"include/config/kernel.release")):trim() == context.release, "Kernel release changed")
+        assert(io.readfile(path.join(kernel, "include/config/kernel.release")):trim() == context.release, "Kernel release changed")
     end
     verify()
     local config = io.readfile(path.join(kernel,".config"))

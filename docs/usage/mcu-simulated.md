@@ -72,4 +72,4 @@ cd examples/mcu-sim
 
 成功时 `mcu_math/adds_values` 和 `mcu_limits/clamps_values` 为 PASS，结果中还包含 Firmware Artifact 和 Board 生命周期。同一个 Firmware、Board 和启动生命周期内可以继续增加产品源码、测试文件和 Registry Suite；工具链、硬件或独立 CI 选择不同时再拆 Job。通用规则见[组织典型项目](project-organization.md)。
 
-需要模拟分片、断线或损坏 Frame 时配置 `board: { kind: "simulated", ... }`；接真实硬件时使用 `firmware.kind: "existing"` 或 `"command"` 并提供 External Adapter。`mcuCTestJob()` → `McuCTestJobInput` → `lib/config/schema/mcu.d.ts`，Board Adapter 也定义在同一文件；完整映射见[配置 API 索引](config-reference.md)。
+需要模拟分片、断线或损坏 Frame 时配置 `board: { kind: "simulated", ... }`；接真实硬件时使用 `firmware.kind: "existing"` 或 `"command"` 并提供 External Adapter 和与固件 HELLO 一致的 `firmware.buildId`（或 `run.expectedBuildId`）。Build ID 独立于固件内容，Host 模拟构建通过 Make/depfile 判断增量。`mcuCTestJob()` → `McuCTestJobInput` → `lib/config/schema/mcu.d.ts`，Board Adapter 也定义在同一文件；完整映射见[配置 API 索引](config-reference.md)。

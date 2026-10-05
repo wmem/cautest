@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { TestConfig, TestJob } from "./schema/common.js";
@@ -53,7 +52,7 @@ export interface ConfigHashResult {
   readonly sources: readonly string[];
 }
 
-/** 对所有已发现的配置来源内容和最终归一化结果计算位置无关的 SHA-256。 */
+/** 仅对已解析的配置数据生成报告标识；来源文件用于诊断，不读取内容计算摘要。 */
 export async function calculateConfigHash(
   config: TestConfig,
   configPath: string,
@@ -67,17 +66,6 @@ export async function calculateConfigHash(
   }
   const ordered = [...sourcePaths].sort((left, right) => sourceIdentity(left, configDir).localeCompare(sourceIdentity(right, configDir)));
   const hash = createHash("sha256").update("cautest-config-v2\0");
-  for (const sourcePath of ordered) {
-    let contents: Buffer;
-    try {
-      contents = await readFile(sourcePath);
-    } catch (cause) {
-      throw new CautestError(`无法读取配置来源 ${sourcePath}`, { code: "config_error", cause });
-    }
-    const identity = sourceIdentity(sourcePath, configDir);
-    hash.update(`${identity.length}:${identity}:${contents.length}:`);
-    hash.update(contents);
-  }
   hash.update(JSON.stringify(stable({
     defaults: config.defaults,
     profiles: config.profiles,

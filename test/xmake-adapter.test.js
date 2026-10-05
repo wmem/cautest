@@ -43,17 +43,17 @@ test('real vendored entry: side-effect-free list/plan, deterministic fragments, 
 }));
 test('real Native multi-module/suite CTP, same-build source reuse and product library macro isolation',when,()=>fixture(async root=>{
  const r=await result(root);assert.equal(r.status,'SUCCESS');assert.equal(r.jobs.length,2);assert.equal(r.jobs.flatMap(j=>j.groups).length,3);assert.equal(r.jobs.flatMap(j=>j.groups.flatMap(g=>g.cases)).length,5);
- for(const job of r.jobs){const a=artifact(job);assert.match(a.buildId,/^[a-f0-9]{64}$/);assert.notEqual(a.buildId,a.fingerprint);assert.equal(a.metadata.receipt.target,job.jobId==='unit.math'?'test.math':'test.checksum');}
+ for(const job of r.jobs){const a=artifact(job);assert.match(a.buildId,/^[a-f0-9]{24}$/);assert.notEqual(a.buildId,a.fingerprint);assert.equal(a.metadata.receipt.target,job.jobId==='unit.math'?'test.math':'test.checksum');}
  run(root,['build','-y','demo'],0,{CAUTEST_NODE:'/missing/node'});const executable=path.join(root,'build/linux/x86_64/release/demo');assert.equal(spawnSync(executable,[],{encoding:'utf8'}).status,0);
  const pass=await result(root,['--suite=math_second','unit.math']);assert.equal(pass.jobs[0].groups[0].cases.length,1);
  await result(root,['--case=deliberate_failure','unit.math'],1);
  const files=await readdir(path.dirname(json(root,['--reporter=json,junit','unit.checksum']).resultPath));assert.ok(files.some(f=>f.endsWith('.xml'))||files.includes('reports'));
 }));
-test('real build session: shared target built once, stable binary, corrupted residual rebuilt, error blocks CTP',when,()=>fixture(async root=>{
+test('real build session: shared target built once, stable binary, missing output rebuilt, error blocks CTP',when,()=>fixture(async root=>{
  const first=await result(root,['unit.math']);const a=artifact(first.jobs[0]);const before=await stat(a.path);const second=await result(root,['unit.math']);assert.equal(artifact(second.jobs[0]).buildId,a.buildId);assert.equal((await stat(a.path)).mtimeMs,before.mtimeMs);
  await appendFile(path.join(root,'ctest.lua'),'\nctest.native {id="unit.shared",target="test.math",tags={"host"},run={case="smoke"}}\n');
  const shared=await result(root,['unit.math','unit.shared']);assert.equal(shared.jobs.length,2);assert.equal(shared.jobs.flatMap(j=>j.artifacts.filter(a=>a.kind==='log'&&a.name==='xmake-test.math')).length,1);
- await writeFile(a.path,'CORRUPTED OUTPUT');const restored=await result(root,['unit.math']);assert.equal(restored.status,'SUCCESS');assert.ok((await stat(a.path)).size>1000);
+ await rm(a.path);const restored=await result(root,['unit.math']);assert.equal(restored.status,'SUCCESS');assert.ok((await stat(a.path)).size>1000);
  await appendFile(path.join(root,'modules/math/math_ops.c'),'\n#error required_build_failure\n');const failed=await result(root,['unit.math'],2);assert.equal(failed.jobs[0].steps[1].status,'SKIPPED');assert.match(JSON.stringify(failed),/required_build_failure/);
 }));
 test('real collector diagnoses duplicate IDs, empty required patterns, unknown fields, cycles and reserved tasks',when,()=>fixture(async root=>{

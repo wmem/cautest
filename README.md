@@ -1,5 +1,7 @@
 # Cautest
 
+测试构建的增量由 Xmake/Make/Kbuild 管理；内置直接 C 编译 helper 需要 Make 和支持 `-MMD -MP` 的编译器。运行不为计算摘要遍历源码树，也不计算源码/产物内容摘要；隔离构建仍需枚举和复制输入。依赖与缓存边界见[执行架构](docs/architecture/overview.md)。
+
 ## Xmake Addon 命令
 
 本仓库提供 Addon `cautest`，安装后可以在消费工程中直接运行 `xmake ctest`，无需复制工具源码或在工程中 `includes()`。默认读取工程根目录 `ctest.lua`，`--config=<路径>` 可选择其他配置；相对路径按工程根目录定位，其他目录执行时使用 `-P <工程目录>`。

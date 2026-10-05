@@ -28,7 +28,7 @@ export function nativeArtifactJob(input: NativeArtifactJobInput): TestJob {
     ...(coverage===undefined?[]:[nativeCoverageStep({name,coverage,async notes(ctx){
       let artifact;
       try { artifact=getArtifact(ctx,name); } catch { return undefined; }
-      return artifact.receipt.outputs.filter(output=>output.role.startsWith("gcov-note-")).map(output=>({path:output.path,sha256:output.sha256}));
+      return artifact.receipt.outputs.filter(output=>output.role.startsWith("gcov-note-")).map(output=>({path:output.path}));
     }})])]});
 }
 export function mcuArtifactJob(input: ArtifactJobInput & Omit<McuCTestJobInput, "firmware">, options: {readonly onProvision?:(context:StepExecutionContext)=>void} = {}): TestJob {

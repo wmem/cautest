@@ -9,7 +9,5 @@ function get()
         mode = config.get("mode") or "release",
         buildDir = path.absolute(config.builddir() or "build", root)
     }
-    local file = config.filepath()
-    if os.isfile(file) then result.configDigest = hash.sha256(file):lower() end
     return result
 end

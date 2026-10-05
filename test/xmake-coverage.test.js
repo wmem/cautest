@@ -74,9 +74,9 @@ test('real Xmake gcov: repeated runs isolate data and collect after a failing C 
  assert.equal(aliases.jobs.flatMap(j=>j.artifacts.filter(a=>a.kind==='log'&&a.name==='xmake-test.first')).length,1);
  for(const job of aliases.jobs){assert.equal(count(await sourceReport(job,path.join(root,'a/value.c')),'HIT_A'),0);assert.ok(count(await sourceReport(job,path.join(root,'b/value.c')),'HIT_B')>0);}
 }));
-test('real Xmake gcov: deleted/corrupted notes trigger rebuild instead of reusing a stale receipt',when,()=>fixture(async root=>{
+test('real Xmake gcov: missing notes rebuild their objects; failed builds cannot reuse a stale receipt',when,()=>fixture(async root=>{
  const initial=await result(root,['unit.first']);const notes=receipt(initial.jobs[0]).outputs.filter(o=>o.role.startsWith('gcov-note-'));
- await rm(notes[0].path);await writeFile(notes[1].path,'CORRUPT');const next=await result(root,['unit.first']);assert.equal(next.status,'SUCCESS');assert.ok((await stat(notes[0].path)).size>10);assert.ok((await stat(notes[1].path)).size>10);
+ await rm(notes[0].path);await rm(notes[1].path);const next=await result(root,['unit.first']);assert.equal(next.status,'SUCCESS');assert.ok((await stat(notes[0].path)).size>10);assert.ok((await stat(notes[1].path)).size>10);
 }));
 test('real Xmake gcov: missing instrumentation/tool and invalid declarations fail explicitly',when,()=>fixture(async root=>{
  const file=path.join(root,'xmake.lua');const original=await readFile(file,'utf8');

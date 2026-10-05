@@ -6,7 +6,7 @@ Native C Test 把可以在开发机直接编译和运行的 C 代码变成标准
 
 Job 声明测试源码、产品源码和必要的构建输入。执行时，Cautest 解析文件 Pattern，生成 Registry 和程序入口，把源码与 C Runtime 编译为本机可执行文件，再启动目标进程。Host 与目标进程通过 CTP3 交换 Catalog、选择条件和执行事件，因此结果保留 Suite、Case、Assertion、日志以及 expected/actual，而不依赖 Console 文本反推状态。
 
-编译和运行是两个独立责任。构建输出由包含 Compiler、Flag、宏、源码、Header 和声明环境的指纹管理；缓存命中后仍校验 Manifest 和产物完整性。运行阶段负责选择、Case 超时和 Suite Policy，改变这些条件不要求重新描述 Job 的构建输入。
+编译和运行是两个独立责任。构建目录按 Compiler、Flag、宏、输入路径和声明环境区分；源码与 Header 的时间戳依赖由 Make 和编译器 depfile 管理，每轮仍调用 Make，不读取文件内容判断缓存。构建失败会阻止运行，缺失输出由 Make 重建；不提供二进制内容损坏检测。运行阶段负责选择、Case 超时和 Suite Policy，改变这些条件不要求重新描述 Job 的构建输入。
 
 ## 边界、失败与附加产物
 

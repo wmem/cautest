@@ -87,7 +87,7 @@ else {
           assert.ok(run.jobs[0].steps.find(step => step.kind === kind)?.diagnostics.some(item => item.code === 'cache_miss'), `Fresh ${kind} must actually build`);
         }
         if (label === 'cache-hit') for (const job of run.jobs) for (const kind of ['kernelBuild', 'busyboxBuild']) {
-          assert.ok(job.steps.find(step => step.kind === kind)?.diagnostics.some(item => item.code === 'cache_hit'), `${job.jobId}/${kind} must hit a byte-validated cache`);
+          assert.ok(job.steps.find(step => step.kind === kind)?.diagnostics.some(item => item.code === 'cache_hit'), `${job.jobId}/${kind} must reuse the incremental build output`);
         }
         runs.push({label, ...summary}); passedRun = run;
       }

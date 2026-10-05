@@ -6,10 +6,14 @@
 
 ## 未发布
 
+- 0.4.0：测试运行取消源码、Header、配置原文和产物的内容摘要及 Kernel/BusyBox 整树扫描。宿主 Xmake/Make/Kbuild 判断增量，直接 C 编译 helper 使用 Make 和编译器 depfile；构建失败阻止运行、缺失产物重建、协议与资源生命周期检查继续保留。
+- 参数和路径用于稳定构建目录，Rootfs 与隔离输入同步使用文件元数据。Build ID 改为独立 Target 标识，源码重建不必改变 ID；取消内容损坏检测与 provider 源文件在运行期间的摘要监视，发行包校验保留。
+- Xmake Manifest v3、Artifact Receipt v2、Kernel Context v2 及对应 Cache Schema 升级，旧内容摘要缓存失效。外部 existing/command MCU 固件须提供与 HELLO 一致的 `buildId`，也可用 `run.expectedBuildId`；不再从固件字节推断协议身份。直接编译 helper 新增 Make/depfile 编译器依赖。当前尚未发布或更新全局 addon。
+
 - Native Artifact 的构建和输出查询显式传递工程目录，避免子工程从自己的目录启动时被 Xmake 自动识别为父工程；新增嵌套工程真实回归。
 
-- 补齐 Xmake Native 的 gcov 链路：`cautest.gcov` 配置 GCC 插桩，`ctest.native.coverage` 在本轮测试后收集报告；旧 Native 编译入口共用收集实现。gcno 纳入 Artifact Receipt 的字节校验，gcda 按运行隔离，同名源码和显式插桩的共享库保留独立数据。覆盖率目标关闭只恢复 `.o` 的 Xmake 编译缓存，普通增量构建保留。
-- Xmake Manifest 升至 v2，并兼容读取未声明 coverage 的 v1；Artifact Receipt、C API、CTP、Result 和 Cache 版本保持不变。尚未执行版本发布。
+- 补齐 Xmake Native 的 gcov 链路：`cautest.gcov` 配置 GCC 插桩，`ctest.native.coverage` 在本轮测试后收集报告；旧 Native 编译入口共用收集实现。gcno 纳入 Artifact Receipt 的显式输出角色，gcda 按运行隔离，同名源码和显式插桩的共享库保留独立数据。覆盖率目标关闭只恢复 `.o` 的 Xmake 编译缓存，普通增量构建保留。
+- Xmake Manifest 支持 coverage，并继续读取未声明 coverage 的 v1；本轮 Schema/Cache 变更见上述 0.4.0 条目，C API、CTP 和 Result 保持不变。
 - 修复 `xmake ct` 在加载保存配置之前收集声明的问题；执行时重新解释配置相关声明，使 `has_config()` 和 `get_config()` 反映 `xmake f` 的选项。list/plan 的重解释不加载目标、不执行构建钩子，也不安装 addon/package。
 
 ## 0.3.1 — 2026-09-23

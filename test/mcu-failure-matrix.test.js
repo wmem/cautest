@@ -5,7 +5,7 @@ import {hashFile} from '../dist/cache/fingerprint.js';import {loadManifest} from
 test('MCU owned/borrowed flash/reset/open failures and timeouts preserve cleanup and close late transports',{skip:process.platform!=='linux'},async t=>{
  const root=await mkdtemp(path.join(tmpdir(),'ct-mcu-failures-'));t.after(()=>rm(root,{recursive:true,force:true}));const binary=path.join(root,'firmware');await writeFile(binary,'artifact');
  const buildContext={projectRoot:root,plat:'linux',arch:'x86_64',mode:'release',buildDir:path.join(root,'build')};
- const receipt={schemaVersion:1,kind:'cautest.artifact-receipt',target:'firmware',context:buildContext,protocolBuildId:'identity',outputs:[{role:'primary',path:binary,size:8,sha256:await hashFile(binary)}]};
+ const receipt={schemaVersion:2,kind:'cautest.artifact-receipt',target:'firmware',context:buildContext,protocolBuildId:'identity',outputs:[{role:'primary',path:binary,size:8}]};
  for(const ownership of ['owned','borrowed'])for(const mode of ['flash','reset','open','flash-timeout','reset-timeout','open-timeout','invalid','cleanup-fail']){
   const prefix=ownership+'-'+mode,log=path.join(root,prefix+'.log'),module=path.join(root,prefix+'.mjs');
   await writeFile(module,`import {appendFileSync} from 'node:fs';import {setTimeout as delay} from 'node:timers/promises';const log=v=>appendFileSync(${JSON.stringify(log)},v+'\\n');

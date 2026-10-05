@@ -8,7 +8,11 @@ Cautest 的边界不是某一种测试框架，而是把不同目标环境的准
 
 Workflow Engine 为每个 Job 建立五类共享状态：Artifact Store 保存可供下游和 CI 使用的构建/日志产物；Resource Store 管理进程、UML 和 Board 的所有权及生命周期；Result Recorder 汇总结构化 Suite/Case；Event Recorder 实时记录 Run、Job、Step、Artifact 和 Resource 事件；Cleanup Stack 在结束时按注册逆序执行一次。普通 Step 出错后只运行声明为 `always` 或 `on-failure` 的 collect Step，清理始终执行。
 
-构建缓存不是跨 Step 的隐式全局变量。Native Binary、Kernel、BusyBox、Kernel Module、Guest Program 和 Rootfs 各有独立指纹边界。Module 构建在专属 Sandbox 中执行，源码树不会作为 Kbuild 的 `M=`；发布时校验 Manifest 内所有必需 Artifact。这个边界使同一源码可以由不同 Kernel/ARCH Job 并发构建。
+构建由原构建系统判断增量。Xmake provider 每轮调用普通 build，Kernel 和 BusyBox 每轮调用 Make/Kbuild；Cautest 不为判断缓存读取源码树、Git diff、Header 或二进制内容。内置直接编译 C 的 helper 通过 [compileC](../../src/build/incremental.ts) 生成 Makefile，编译器用 `-MMD -MP` 记录真实 Header 依赖。无变化时 Make 不编译，源码/依赖或构建参数变化时更新产物；构建失败即阻止下游运行，不回退到旧输出。直接编译 helper 需要宿主 Make 和支持 depfile 的 C 编译器。
+
+参数与输入路径用于选择稳定构建目录，短参数键不代表源码内容。Module 使用专属 Sandbox，按 size/mtime/mode 同步输入，不改写未变化的文件；源码树不会作为 Kbuild 的 `M=`。Linux 构建锁覆盖同步、构建和发布，支持不同 Kernel/ARCH 的独立目录。Rootfs 需要枚举 Overlay 以制作归档，但只用路径、mtime、size 等元数据决定镜像缓存，文件读取用于实际打包。
+
+协议 Build ID 独立于文件摘要，标识配置后的 Target 构建目录；同一目录的源码重建可以保留 ID。HELLO/Boot 校验仍用于拒绝其他 Target 或错误会话，不证明二进制内容完全一致。产物 Receipt 校验角色、上下文与文件存在性；受管输出标记比较元数据。恢复旧时间戳的内容修改不会被当作损坏检查发现，必要时显式清理或重建。发行包的 SHA-256 安装校验仍保留，不属于每轮测试构建。
 
 ## Target 与 Host 的分工
 

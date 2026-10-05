@@ -6,7 +6,7 @@ Kernel/UML C Test 用于必须在 Linux Kernel 上下文中执行的源码。它
 
 一个 Job 依次准备 Kernel 和 BusyBox、构建 Runtime 与 Test Module、生成 Rootfs、启动 UML，再由 Guest Agent 把 Kernel Endpoint 接入 CTP3 Session。Host 在执行前获得 Catalog 并应用 Suite、Case、参数、超时和停止策略；测试事件最终进入与 Native、MCU 相同的 Result 模型。
 
-Kernel、BusyBox、Module、Guest Program 和 Rootfs 各有独立缓存指纹。自动 Module 和已有 Kbuild Module 都在 `.cautest/work` 的专属 Sandbox 中构建，Kbuild 的 `M=` 不指向项目源码目录。发布 Cache 时校验 `.ko`、`Module.symvers`、`modules.order` 及可选 GCOV Artifact，因此同一源码可以为不同 Kernel 或 ARCH 并发构建。
+Kernel、BusyBox、Module、Guest Program 和 Rootfs 各有独立构建目录；源码增量由 Make/Kbuild 与 depfile 管理，不扫描源码内容计算指纹。自动 Module 和已有 Kbuild Module 都在 `.cautest/work` 的专属 Sandbox 中构建，Kbuild 的 `M=` 不指向项目源码目录。发布 Cache 时记录元数据与存在性，包含 `.ko`、`Module.symvers`、`modules.order` 及可选 GCOV Artifact，因此同一源码可以为不同 Kernel 或 ARCH 并发构建。
 
 ## 身份、失败与覆盖率边界
 

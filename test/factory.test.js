@@ -119,15 +119,22 @@ export default testConfig({ jobs: [...jobs] });
   return path.join(root, "cautest.config.mjs");
 }
 
-test("configHash 覆盖配置片段内容和最终解析结果且不依赖检出位置", async () => {
+test("configHash 描述最终配置，忽略源码注释与检出位置", async () => {
   const firstRoot = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-hash-a-"));
   const secondRoot = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-hash-b-"));
   const changedRoot = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-hash-c-"));
   const first = await loadConfig(await writeConfigTree(firstRoot));
   const second = await loadConfig(await writeConfigTree(secondRoot));
-  const changed = await loadConfig(await writeConfigTree(changedRoot, "// 修改片段内容也必须改变指纹"));
+  const changed = await loadConfig(await writeConfigTree(changedRoot, "// 注释不影响解析后的配置数据"));
   assert.equal(first.hash, second.hash);
-  assert.notEqual(first.hash, changed.hash);
+  assert.equal(first.hash, changed.hash);
+  const dataRoot = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-config-data-"));
+  await writeConfigTree(dataRoot);
+  // 改变实际声明值，而不是源文件原文。
+  const jobs = path.join(dataRoot, "project/config/jobs.mjs");
+  await writeFile(jobs, (await readFile(jobs, "utf8")).replace("name: 'example'", "name: 'other'"));
+  const resolved = await loadConfig(path.join(dataRoot, "project/cautest.config.mjs"));
+  assert.notEqual(resolved.hash, first.hash);
   assert.deepEqual(first.sources.map((source) => path.basename(source)).sort(), ["cautest.config.mjs", "factory.mjs", "index.mjs", "jobs.mjs"]);
   assert.equal((await readFile(first.sources[1], "utf8")).length > 0, true);
 });

@@ -12,6 +12,19 @@ function configure_coverage(target)
     target:add("defines", "CAUTEST_GCOV=1")
 end
 
+-- gcno 是编译副产物；缺失时移除对应对象，让 Xmake 正常重编译。
+function prepare_coverage(target)
+    for _, batch in pairs(target:sourcebatches()) do
+        if batch.sourcekind == "cc" or batch.sourcekind == "cxx" then
+            for _, object in ipairs(batch.objectfiles or {}) do
+                if os.isfile(object) and not os.isfile(object:gsub("%.[^%.]+$", ".gcno")) then
+                    os.rm(object)
+                end
+            end
+        end
+    end
+end
+
 -- 只声明本次目标及已显式插桩依赖的真实输出，不扫描整个 build 目录。
 function coverage_notes(target)
     if not target:values("cautest.gcov") then return {} end
@@ -52,54 +65,20 @@ function generate(target, toolroot)
         seen[suite] = true
     end
     local dir = directory(target)
-    local files, found = {}, {}
-    local function add(file)
-        file = path.absolute(file, os.projectdir())
-        if file ~= path.join(dir,"entry.c") and file ~= path.join(dir,"registry.c") and os.isfile(file) and not found[file] then
-            found[file] = true; table.insert(files,file)
-        end
-    end
-    local function inputs(component)
-        for _, file in ipairs(component:sourcefiles()) do add(file) end
-        for _, include in ipairs(table.wrap(component:get("includedirs"))) do
-            for _, file in ipairs(os.files(path.join(path.absolute(include,os.projectdir()), "**.h"))) do add(file) end
-        end
-    end
-    inputs(target)
-    for _, dependency in ipairs(target:orderdeps() or {}) do inputs(dependency) end
-    add(path.join(toolroot,"adapters/xmake-test/modules/native.lua"))
-    add(path.join(toolroot,"adapters/xmake-test/rules/native.lua"))
-    add(path.join(toolroot,"versions.json"))
-    table.sort(files)
     local workspace = target:values("cautest.workspaceSize") or 65536
     local timeout = target:values("cautest.caseTimeoutMs") or 1000
     assert(type(workspace)=="number" and workspace>0 and workspace==math.floor(workspace), "cautest.workspaceSize must be a positive integer")
     assert(type(timeout)=="number" and timeout>0 and timeout==math.floor(timeout), "cautest.caseTimeoutMs must be a positive integer")
-    -- Stable input identity is distinct from the SHA-256 of the final linked output.
-    local parts = {simulated and "cautest-mcu-simulation-v1" or (target:data("cautest.driver_guest") and "cautest-driver-guest-v1" or "cautest-native-v1"), target:name(), config.get("plat") or os.host(), config.get("arch") or os.arch(), config.get("mode") or "release", table.concat(suites,","), tostring(workspace), tostring(timeout)}
-    for _, key in ipairs({"defines","undefines","cxflags","cflags","ldflags","links","languages","includedirs","toolchains"}) do
-        table.insert(parts, key .. "=" .. json.encode(target:get(key) or {}))
+    -- 协议身份独立于源码内容；构建依赖由宿主构建系统管理。
+    local identity = path.join(dir, "identity.json")
+    local id
+    if os.isfile(identity) then id = json.decode(io.readfile(identity)).protocolBuildId end
+    if not id then
+        id = hash.uuid():gsub("-", ""):lower():sub(1, 24)
+        write_changed(identity, json.encode({protocolBuildId = id}))
     end
-    for _, dependency in ipairs(target:orderdeps() or {}) do
-        table.insert(parts,"dependency=" .. dependency:name())
-        for _, key in ipairs({"defines","undefines","cxflags","cflags","ldflags","links","languages","includedirs","toolchains"}) do
-            table.insert(parts,key .. "=" .. json.encode(dependency:get(key) or {}))
-        end
-    end
-    if os.isfile(config.filepath()) then table.insert(parts,hash.sha256(config.filepath())) end
-    for _, file in ipairs(files) do table.insert(parts,file);table.insert(parts,hash.sha256(file)) end
-    local input_id = hash.sha256(bytes(table.concat(parts,"\0"))):lower()
-    -- Reference MCU storage is 32 bytes; preserve its ABI with a 24-hex identity.
-    local id = simulated and input_id:sub(1,24) or input_id
-    target:data_set("cautest.protocolBuildId",id)
-    -- Content-sensitive command line also invalidates Xmake's timestamp cache
-    -- when two generated/source updates occur in the same filesystem second.
-    target:add("defines", 'CAUTEST_INPUT_ID="' .. input_id .. '"')
+    target:data_set("cautest.protocolBuildId", id)
     if simulated then target:add("defines", 'CAUTEST_MCU_BUILD_ID="' .. id .. '"') end
-    -- Force the linker dependency key as well: same-second object updates
-    -- otherwise let timestamp-based incremental linking retain an old binary.
-    target:add("ldflags", "-Wl,--build-id=0x" .. input_id, {force=true})
-    write_changed(path.join(dir,"identity.json"), json.encode({protocolBuildId=id}))
     local registry = {"#include <cautest/cautest.h>\n"}
     for _, suite in ipairs(suites) do table.insert(registry,"CAUTEST_SUITE_DECLARE(" .. suite .. ");\n") end
     table.insert(registry,"\nCAUTEST_REGISTRY(" .. (simulated and "cautest_mcu_registry" or "cautest_generated_registry") .. ",\n")

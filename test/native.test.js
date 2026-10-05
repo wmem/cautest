@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmod, mkdtemp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, mkdir, readdir, readFile, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -48,7 +48,8 @@ test("Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓
   assert.deepEqual(await readdir(path.join(projectRoot, "test/fixtures/native")), before);
   const cacheKeys = await readdir(path.join(temporary, "cache/native"));
   assert.equal(cacheKeys.length, 1);
-  assert.equal(JSON.parse(await readFile(path.join(temporary, "cache/native", cacheKeys[0], "manifest.json"), "utf8")).schema, 2);
+  assert.match(await readFile(path.join(temporary, "cache/native", cacheKeys[0], "Makefile"), "utf8"), /-MMD -MP|'-MMD' '-MP'/);
+  assert.match(await readFile(path.join(temporary, "cache/native", cacheKeys[0], "source_0.d"), "utf8"), /cautest\.h/);
 
   const covered = nativeCTestJob({
     id: "unit.native.coverage",
@@ -63,7 +64,7 @@ test("Native Job 展开、真实编译并通过 CTP3 返回结构化结果和缓
   assert.equal((await readdir(path.join(temporary, "results/coverage/unit-native-coverage"))).some((name) => name.endsWith(".gcov")), true);
 });
 
-test("Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性", async () => {
+test("Native 发布 Build/Log/Coverage Artifact，缺失输出时由 Make 重建", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-native-artifacts-"));
   const project = { configDir: projectRoot, resultDir: path.join(temporary, "results"), cacheDir: path.join(temporary, "cache"), generatedDir: path.join(temporary, "generated"), workDir: path.join(temporary, "work") };
   const definition = nativeCTestJob({ id: "unit.native.behavior", tests: ["test/fixtures/native/native_cases.c"], suites: ["native_cases", "snapshot_cases"], run: { include: ["native_cases/pass_case", "native_cases/parameter_case@*"] }, coverage: {} });
@@ -75,7 +76,7 @@ test("Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性", asyn
   assert.equal(first.status, "SUCCESS");
   assert.equal(eventProbe.status, "FAIL");
   const binary = first.artifacts.find((item) => item.kind === "native-test");
-  assert.equal(binary.buildId.length, 64); assert.equal(binary.metadata.cacheHit, false);
+  assert.equal(binary.buildId.length, 24); assert.equal(binary.metadata.cacheHit, false);
   assert.match(await readFile(first.artifacts.find((item) => item.name.endsWith("-stdout")).path, "utf8"), /native stdout marker/u);
   assert.match(await readFile(first.artifacts.find((item) => item.name.endsWith("-stderr")).path, "utf8"), /native stderr marker/u);
   assert.match(await readFile(first.artifacts.find((item) => item.name.endsWith("-target")).path, "utf8"), /native structured log/u);
@@ -84,17 +85,17 @@ test("Native 发布 Build/Log/Coverage Artifact 并保持 Cache 完整性", asyn
   const sessionDiagnostic = first.steps[1].diagnostics.find((item) => item.code === "c_test_session");
   assert.deepEqual(sessionDiagnostic.selection.map((item) => item.name), ["native_cases/pass_case", "native_cases/parameter_case@one", "native_cases/parameter_case@two"]);
   const coverage = first.artifacts.find((item) => item.kind === "coverage"); assert.equal(coverage.metadata.adapter, "gcov"); assert.ok(coverage.metadata.reports.some((file) => file.endsWith(".gcov")));
-  await writeFile(binary.path, "corrupt");
+  await rm(binary.path);
   const repaired = await executeWorkflow(definition, { project }); assert.equal(repaired.status, "SUCCESS"); assert.equal(repaired.steps[0].diagnostics[0].code, "cache_miss");
 });
 
-test("Native Header 与 fingerprintEnv 进入指纹，自定义 Cache 根受边界保护", async () => {
+test("Native Header 时间戳触发重建，环境参数区分构建目录，Cache 根受边界保护", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "cautest-v2-native-fingerprint-")); const include = path.join(temporary, "include"); await mkdir(include); const header = path.join(include, "config.h"); await writeFile(header, "#define REV 1\n");
   await writeFile(path.join(temporary, "case.c"), "#include <cautest/cautest.h>\nCAUTEST_CASE(passes) { (void)suite_fixture; (void)case_fixture; (void)cautest_parameter; CAUTEST_EXPECT_TRUE(1); }\nCAUTEST_SUITE(smoke, CAUTEST_CASE_ENTRY(passes));\n");
   const project = { configDir: temporary, resultDir: path.join(temporary, "results"), cacheDir: path.join(temporary, ".cautest/cache"), generatedDir: path.join(temporary, ".cautest/generated"), workDir: path.join(temporary, ".cautest/work") };
   const make = (mode, cache) => nativeCTestJob({ id: "unit.native.fingerprint", tests: ["case.c"], headers: ["include/config.h"], suites: ["smoke"], env: { MODE: mode }, build: { cache: { fingerprintEnv: ["MODE"], ...(cache === undefined ? {} : { directory: cache }) } }, run: { include: ["smoke/passes"] } });
   const first = await executeWorkflow(make("debug"), { project }); await writeFile(header, "#define REV 2\n"); const headerChanged = await executeWorkflow(make("debug"), { project }); const envChanged = await executeWorkflow(make("release"), { project });
-  assert.notEqual(first.artifacts[0].buildId, headerChanged.artifacts[0].buildId); assert.notEqual(headerChanged.artifacts[0].buildId, envChanged.artifacts[0].buildId);
+  assert.equal(first.artifacts[0].buildId, headerChanged.artifacts[0].buildId); assert.equal(headerChanged.artifacts[0].metadata.cacheHit, false); assert.notEqual(headerChanged.artifacts[0].buildId, envChanged.artifacts[0].buildId);
   const unsafe = await executeWorkflow(make("debug", temporary), { project }); assert.equal(unsafe.status, "ERROR"); assert.match(unsafe.errors[0].message, /专用子目录/u);
 });
 

@@ -1,7 +1,9 @@
 import {withBuildLock} from "../cache/build-lock.js";
 import {ownedProcessStop} from "../runtime/owned-process.js";
 import {validBuildOutput, publishBuildOutput} from "../cache/build-output.js";
-import { createHash } from "node:crypto";
+import {createHash} from "node:crypto";
+import {fileState, writeChanged, buildIdentity} from "../cache/file-state.js";
+import {compileC} from "../build/incremental.js";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import type { Duplex } from "node:stream";
@@ -45,28 +47,20 @@ async function archiveEntries(root: string, relative = ""): Promise<string[]> {
   return output;
 }
 
-async function hashFiles(locations: readonly string[], metadata: unknown): Promise<string> {
+async function metadataKey(locations: readonly string[], metadata: unknown): Promise<string> {
   const hash = createHash("sha256").update(JSON.stringify(metadata));
   for (const location of [...locations].sort()) {
     const info = await lstat(location);
     hash.update(location).update(String(info.mode));
     if (info.isSymbolicLink()) hash.update(await import("node:fs/promises").then(({ readlink }) => readlink(location)));
-    else if (info.isFile()) hash.update(await readFile(location));
+    else if (info.isFile()) hash.update(JSON.stringify(await fileState(location)));
   }
   return hash.digest("hex");
 }
 
-/** 对 Git Worktree 使用 HEAD、完整 Diff 和未跟踪文件，对普通目录使用内容树。 */
-export async function sourceTreeIdentity(source: string, context: StepExecutionContext): Promise<string> {
-  const environment = effectiveEnvironment(context);
-  const head = await runCommand({ program: "git", args: ["-C", source, "rev-parse", "HEAD"], cwd: context.project.configDir, env: environment, signal: context.signal });
-  if (head.exitCode === 0) {
-    const diff = await runCommand({ program: "git", args: ["-C", source, "diff", "--binary", "HEAD"], cwd: context.project.configDir, env: environment, signal: context.signal });
-    const untracked = await runCommand({ program: "git", args: ["-C", source, "ls-files", "--others", "--exclude-standard"], cwd: context.project.configDir, env: environment, signal: context.signal });
-    const extra = untracked.stdout.split("\n").filter(Boolean).map((item) => path.join(source, item));
-    return await hashFiles(extra, { head: head.stdout.trim(), diff: diff.stdout });
-  }
-  return await hashFiles((await files(source)).map((item) => path.join(source, item)), { source: "tree" });
+/** 构建槽位由源码路径区分；源码增量交给 Make，不扫描内容树或 Git diff。 */
+export async function sourceTreeIdentity(source: string, _context: StepExecutionContext): Promise<string> {
+  return path.resolve(source);
 }
 
 /** 按 Kconfig/BusyBox Config Fragment 覆盖已有 `.config`。 */
@@ -97,32 +91,36 @@ export async function buildBusyBox(input: BusyBoxBuildInput, context: StepExecut
     runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, env: buildEnvironment, signal: context.signal }),
   ]);
   const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, buildEnvironment[key] ?? null]));
-  const key = await hashFiles(fragments.map((item) => path.join(context.project.configDir, item)), { schema: CAUTEST_CACHE_VERSIONS.busyboxFingerprint, identity, make: version.stdout, compiler: compilerVersion.stdout, compilerTarget: compilerTarget.stdout, static: input.static !== false, makeArgs: input.makeArgs ?? [], environment: declaredEnvironment(context, input.env), fingerprintEnvironment });
+  const key = await metadataKey([], {fragments, schema: CAUTEST_CACHE_VERSIONS.busyboxFingerprint, identity, make: version.stdout, compiler: compilerVersion.stdout, compilerTarget: compilerTarget.stdout, static: input.static !== false, makeArgs: input.makeArgs ?? [], environment: declaredEnvironment(context, input.env), fingerprintEnvironment });
   const cacheEnabled = input.cache?.enabled !== false;
   const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (input.cache?.directory ?? context.project.cacheDir) : context.project.workDir);
   const output = path.join(cacheRoot, "busybox", key);
   const binary = path.join(output, "busybox");
   return await withBuildLock(output, context.signal, async () => {
-  if (cacheEnabled) {
-    if (await validBuildOutput(output, key, ["busybox", ".config"])) return {path: binary, buildId: key, cacheHit: true};
-  }
-  await rm(output, { recursive: true, force: true });
-  await mkdir(output, { recursive: true });
-  const base = ["-C", source, `O=${output}`, ...(input.makeArgs ?? [])];
-  for (const args of [[...base, "defconfig"]]) {
-    const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
-    if (result.exitCode !== 0) throw new CautestError(`BusyBox 配置失败 (exit ${result.exitCode})`, { code: "build_error" });
-  }
-  const defaults = `${input.static === false ? "" : "CONFIG_STATIC=y\n"}CONFIG_SH_IS_ASH=y\nCONFIG_ASH=y\nCONFIG_MOUNT=y\nCONFIG_INSMOD=y\nCONFIG_POWEROFF=y\nCONFIG_REBOOT=y\n# CONFIG_TC is not set\n`;
-  const fragmentText = (await Promise.all(fragments.map((item) => readFile(path.join(context.project.configDir, item), "utf8")))).join("\n");
-  const configPath = path.join(output, ".config");
-  await writeFile(configPath, mergeConfigText(await readFile(configPath, "utf8"), defaults + fragmentText));
-  for (const args of [[...base, "silentoldconfig"], [...base, `-j${input.jobs ?? 4}`, "busybox"]]) {
-    const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
-    if (result.exitCode !== 0) throw new CautestError(`BusyBox 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
-  }
-  await publishBuildOutput(output, key, ["busybox", ".config"]);
-  return { path: binary, buildId: key, cacheHit: false };
+    const valid = cacheEnabled && await validBuildOutput(output, key, ["busybox", ".config"]);
+    let previous: unknown;
+    try { previous = await fileState(binary); } catch { /* 首次构建。 */ }
+    if (!cacheEnabled) await rm(output, {recursive: true, force: true});
+    await mkdir(output, {recursive: true});
+    const configuration = JSON.stringify({fragments: await Promise.all(fragments.map(item => readFile(path.join(context.project.configDir, item), "utf8"))), static: input.static !== false});
+    let configure = true;
+    try { configure = await readFile(path.join(output, "cautest-config.json"), "utf8") !== configuration; await fileState(path.join(output, ".config")); } catch { configure = true; }
+    const base = ["-C", source, `O=${output}`, ...(input.makeArgs ?? [])];
+    for (const args of (configure ? [[...base, "defconfig"]] : [])) {
+      const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
+      if (result.exitCode !== 0) throw new CautestError(`BusyBox 配置失败 (exit ${result.exitCode})`, { code: "build_error" });
+    }
+    const defaults = `${input.static === false ? "" : "CONFIG_STATIC=y\n"}CONFIG_SH_IS_ASH=y\nCONFIG_ASH=y\nCONFIG_MOUNT=y\nCONFIG_INSMOD=y\nCONFIG_POWEROFF=y\nCONFIG_REBOOT=y\n# CONFIG_TC is not set\n`;
+    const fragmentText = (await Promise.all(fragments.map((item) => readFile(path.join(context.project.configDir, item), "utf8")))).join("\n");
+    const configPath = path.join(output, ".config");
+    if (configure) await writeChanged(configPath, mergeConfigText(await readFile(configPath, "utf8"), defaults + fragmentText));
+    for (const args of [...(configure ? [[...base, "silentoldconfig"]] : []), [...base, `-j${input.jobs ?? 4}`, "busybox"]]) {
+      const result = await runCommand({ program: make, args, cwd: context.project.configDir, env: buildEnvironment, signal: context.signal, onOutput: context.output });
+      if (result.exitCode !== 0) throw new CautestError(`BusyBox 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
+    }
+    await writeChanged(path.join(output, "cautest-config.json"), configuration);
+    await publishBuildOutput(output, key, ["busybox", ".config"]);
+    return {path: binary, buildId: key, cacheHit: valid && JSON.stringify(previous) === JSON.stringify(await fileState(binary))};
   });
 }
 
@@ -131,18 +129,15 @@ async function buildAgent(context: StepExecutionContext): Promise<GuestProgramAr
   const environment = effectiveEnvironment(context);
   const compiler = environment.CC ?? "cc";
   const version = await runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, env: environment, signal: context.signal });
-  const key = await hashFiles([source, path.join(kitRoot, "include/cautest/version.h"), path.join(kitRoot, "platform/linux-kernel/include/cautest/kernel_abi.h")], { version: version.stdout, schema: CAUTEST_CACHE_VERSIONS.agentFingerprint, environment: declaredEnvironment(context) });
+  const key = await metadataKey([], {source, version: version.stdout, schema: CAUTEST_CACHE_VERSIONS.agentFingerprint, environment: declaredEnvironment(context) });
   const directory = path.join(context.project.cacheDir, "uml-agent", key);
   const target = path.join(directory, "agent");
   return await withBuildLock(directory, context.signal, async () => {
-  if (await validBuildOutput(directory, key, ["agent"])) return {name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit: true};
-  await rm(directory, {recursive: true, force: true});
-  await mkdir(directory, { recursive: true });
-  const result = await runCommand({ program: compiler, args: ["-O2", "-std=c99", "-Wall", "-Wextra", "-static", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/linux-kernel/include")}`, source, "-o", target], cwd: directory, env: environment, signal: context.signal, onOutput: context.output });
-  if (result.exitCode !== 0) throw new CautestError(`UML Guest Agent 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
-  await chmod(target, 0o755);
-  await publishBuildOutput(directory, key, ["agent"]);
-  return { name: "agent", path: target, buildId: key, endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit: false };
+    const cacheHit = await compileC({compiler, directory, output: target, sources: [source],
+      cflags: ["-O2", "-std=c99", "-Wall", "-Wextra", "-static", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/linux-kernel/include")}`],
+      env: environment, signal: context.signal, onOutput: context.output});
+    await chmod(target, 0o755);
+    return {name: "agent", path: target, buildId: await buildIdentity(directory), endpoint: "", installPath: "/opt/cautest/bin/agent", cacheHit};
   });
 }
 
@@ -156,9 +151,8 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
     runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, env: environment, signal: context.signal }),
     runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, env: environment, signal: context.signal }),
   ]);
-  const locations = [...sources, ...headers].map((item) => path.join(context.project.configDir, item));
   const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, environment[key] ?? null]));
-  const key = await hashFiles(locations, {
+  const key = await metadataKey([], {
     schema: CAUTEST_CACHE_VERSIONS.guestFingerprint,
     name: input.name,
     compiler: version.stdout,
@@ -178,18 +172,14 @@ export async function buildGuestProgram(input: UmlGuestProgramInput, context: St
   const directory = path.join(cacheRoot, "guest-programs", key);
   const target = path.join(directory, input.name);
   return await withBuildLock(directory, context.signal, async () => {
-  if (cacheEnabled) {
-    if (await validBuildOutput(directory, key, [input.name])) return {name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}`, cacheHit: true};
-  }
-  await rm(directory, { recursive: true, force: true });
-  await mkdir(directory, { recursive: true });
-  const includes = [...new Set([...(input.includeDirs ?? []).map((item) => path.resolve(context.project.configDir, item)), ...headers.map((item) => path.dirname(path.join(context.project.configDir, item)))])];
-  const definitions = Object.entries(input.defines ?? {}).map(([name, value]) => `-D${name}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`);
-  const result = await runCommand({ program: compiler, args: ["-std=c99", "-Wall", "-Wextra", ...(input.static === false ? [] : ["-static"]), ...includes.map((item) => `-I${item}`), ...definitions, ...(input.cflags ?? []), ...sources.map((item) => path.join(context.project.configDir, item)), ...(input.ldflags ?? []), "-o", target], cwd: directory, env: environment, signal: context.signal, onOutput: context.output });
-  if (result.exitCode !== 0) throw new CautestError(`Guest Program ${input.name} 构建失败 (exit ${result.exitCode})`, { code: "build_error" });
-  await chmod(target, 0o755);
-  await publishBuildOutput(directory, key, [input.name]);
-  return { name: input.name, path: target, buildId: key, endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}`, cacheHit: false };
+    if (!cacheEnabled) await rm(directory, {recursive: true, force: true});
+    const includes = [...new Set([...(input.includeDirs ?? []).map(item => path.resolve(context.project.configDir, item)), ...headers.map(item => path.dirname(path.join(context.project.configDir, item)))])];
+    const definitions = Object.entries(input.defines ?? {}).map(([name, value]) => `-D${name}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`);
+    const cacheHit = await compileC({compiler, directory, output: target, sources: sources.map(item => path.join(context.project.configDir, item)),
+      cflags: ["-std=c99", "-Wall", "-Wextra", ...(input.static === false ? [] : ["-static"]), ...includes.map(item => `-I${item}`), ...definitions, ...(input.cflags ?? [])],
+      ldflags: input.ldflags ?? [], dependencies: headers.map(item => path.join(context.project.configDir, item)), env: environment, signal: context.signal, onOutput: context.output, rebuild: !cacheEnabled});
+    await chmod(target, 0o755);
+    return {name: input.name, path: target, buildId: await buildIdentity(directory), endpoint: input.endpoint ?? input.name, installPath: input.installPath ?? `/opt/cautest/bin/${input.name}`, cacheHit};
   });
 }
 
@@ -208,11 +198,10 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
     runCommand({ program: compiler, args: ["--version"], cwd: context.project.configDir, env: environment, signal: context.signal }),
     runCommand({ program: compiler, args: ["-dumpmachine"], cwd: context.project.configDir, env: environment, signal: context.signal }),
   ]);
-  const product = [...tests, ...sources, ...headers].map((item) => path.join(context.project.configDir, item));
   const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c", "agent/uml-guest-agent/probe_client.c"].map((item) => path.join(kitRoot, item));
   const fingerprintEnvironment = Object.fromEntries((input.cache?.fingerprintEnv ?? []).map((key) => [key, environment[key] ?? null]));
   const name = input.name ?? jobId.replace(/[^A-Za-z0-9_-]/gu, "-");
-  const key = await hashFiles([...product, path.join(kitRoot, "include/cautest/version.h"), ...kitSources], {
+  const key = await metadataKey([], {
     schema: CAUTEST_CACHE_VERSIONS.guestFingerprint,
     name,
     compiler: version.stdout,
@@ -234,20 +223,19 @@ export async function buildDriverGuestCTest(jobId: string, input: DriverGuestCTe
   const directory = path.join(cacheRoot, "driver-guest", key);
   const target = path.join(directory, name);
   return await withBuildLock(directory, context.signal, async () => {
-  if (cacheEnabled) {
-    if (await validBuildOutput(directory, key, [name])) return {name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}`, cacheHit: true};
-  }
-  await rm(directory, { recursive: true, force: true }); await mkdir(directory, { recursive: true });
-  const registry = path.join(directory, "registry.c"); const entry = path.join(directory, "entry.c");
-  await Promise.all([writeFile(registry, registrySource(suites)), writeFile(entry, entrySource(key))]);
-  const includes = [...new Set([...(input.includeDirs ?? []).map((item) => path.resolve(context.project.configDir, item)), ...headers.map((item) => path.dirname(path.join(context.project.configDir, item)))])];
-  const definitions = Object.entries(input.defines ?? {}).map(([name, value]) => `-D${name}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`);
-  const args = ["-std=c99", "-Wall", "-Wextra", ...(input.static === false ? [] : ["-static"]), `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/posix")}`, `-I${path.join(kitRoot, "platform/linux-kernel/include")}`, `-I${path.join(kitRoot, "target/posix")}`, `-I${path.join(kitRoot, "agent/uml-guest-agent")}`, ...includes.map((item) => `-I${item}`), ...definitions, ...(input.cflags ?? []), ...tests.map((item) => path.join(context.project.configDir, item)), ...sources.map((item) => path.join(context.project.configDir, item)), registry, entry, ...kitSources, ...(input.ldflags ?? []), "-o", target];
-  const result = await runCommand({ program: compiler, args, cwd: directory, env: environment, signal: context.signal, onOutput: context.output });
-  if (result.exitCode !== 0) throw new CautestError(`Driver Guest C Test 构建失败 (exit ${result.exitCode})\n${result.stderr}`, { code: "build_error" });
-  await chmod(target, 0o755);
-  await publishBuildOutput(directory, key, [name]);
-  return { name, path: target, buildId: key, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}`, cacheHit: false };
+    if (!cacheEnabled) await rm(directory, {recursive: true, force: true});
+    await mkdir(directory, {recursive: true});
+    const buildId = await buildIdentity(directory);
+    const registry = path.join(directory, "registry.c"); const entry = path.join(directory, "entry.c");
+    await Promise.all([writeChanged(registry, registrySource(suites)), writeChanged(entry, entrySource(buildId))]);
+    const includes = [...new Set([...(input.includeDirs ?? []).map((item) => path.resolve(context.project.configDir, item)), ...headers.map((item) => path.dirname(path.join(context.project.configDir, item)))])];
+    const definitions = Object.entries(input.defines ?? {}).map(([name, value]) => `-D${name}${value === null ? "" : `=${value === true ? 1 : value === false ? 0 : value}`}`);
+    const cacheHit = await compileC({compiler, directory, output: target,
+      sources: [...tests, ...sources].map(item => path.join(context.project.configDir, item)).concat([registry, entry], kitSources),
+      cflags: ["-std=c99", "-Wall", "-Wextra", ...(input.static === false ? [] : ["-static"]), `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/posix")}`, `-I${path.join(kitRoot, "platform/linux-kernel/include")}`, `-I${path.join(kitRoot, "target/posix")}`, `-I${path.join(kitRoot, "agent/uml-guest-agent")}`, ...includes.map(item => `-I${item}`), ...definitions, ...(input.cflags ?? [])],
+      ldflags: input.ldflags ?? [], dependencies: headers.map(item => path.join(context.project.configDir, item)), env: environment, signal: context.signal, onOutput: context.output, rebuild: !cacheEnabled});
+    await chmod(target, 0o755);
+    return {name, path: target, buildId, endpoint: input.endpoint ?? name, installPath: `/opt/cautest/bin/${name}`, cacheHit};
   });
 }
 
@@ -269,38 +257,38 @@ export async function buildRootfs(options: { readonly name: string; readonly env
   const overlays = options.environment.rootfs?.overlays ?? [];
   const overlayFiles = (await Promise.all(overlays.map(async (item) => (await files(path.resolve(context.project.configDir, item))).map((file) => path.join(context.project.configDir, item, file))))).flat();
   const payloadFiles = [options.busybox.path, agent.path, ...options.modules.map(item => item.module), ...(options.programs ?? []).map(item => item.path), ...overlayFiles];
-  const key = await hashFiles(payloadFiles, {schema: CAUTEST_CACHE_VERSIONS.rootfsFingerprint, overlays, busybox: options.busybox.buildId, agent: agent.buildId, modules: options.modules.map(item => [item.name, item.cacheKey]), programs: (options.programs ?? []).map(item => [item.name, item.buildId, item.endpoint, item.installPath]), coverage: options.coverage === true, environment: declaredEnvironment(context)});
+  const key = await metadataKey(payloadFiles, {schema: CAUTEST_CACHE_VERSIONS.rootfsFingerprint, overlays, busybox: options.busybox.buildId, agent: agent.buildId, modules: options.modules.map(item => [item.name, item.cacheKey]), programs: (options.programs ?? []).map(item => [item.name, item.buildId, item.endpoint, item.installPath]), coverage: options.coverage === true, environment: declaredEnvironment(context)});
   const cacheEnabled = options.environment.rootfs?.cache?.enabled !== false;
   const cacheRoot = path.resolve(context.project.configDir, cacheEnabled ? (options.environment.rootfs?.cache?.directory ?? path.join(context.project.cacheDir, "rootfs")) : context.project.workDir);
   const directory = path.join(cacheRoot, key);
   const archive = path.join(directory, "rootfs.cpio");
   const endpoints = new Map<string, { type: "kernel" | "process"; buildId: string }>([["kernel", { type: "kernel", buildId: key }], ...(options.programs ?? []).map((item) => [item.endpoint, { type: "process" as const, buildId: item.buildId }] as const)]);
   return await withBuildLock(directory, context.signal, async () => {
-  if (cacheEnabled) {
-    if (await validBuildOutput(directory, key, ["rootfs.cpio"])) return {kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints, cacheHit: true};
-  }
-  await rm(directory, { recursive: true, force: true });
-  await mkdir(cacheRoot, { recursive: true });
-  const temporary = await mkdtemp(path.join(cacheRoot, `.${key.slice(0, 12)}-`));
-  try {
-    const root = path.join(temporary, "root");
-    for (const item of ["bin", "dev", "etc/cautest", "mnt/cautest-coverage", "opt/cautest/bin", "opt/cautest/modules", "proc", "sys", "tmp"]) await mkdir(path.join(root, item), { recursive: true });
-    await copyFile(options.busybox.path, path.join(root, "bin/busybox")); await chmod(path.join(root, "bin/busybox"), 0o755);
-    for (const applet of ["sh", "mount", "insmod", "poweroff", "reboot"]) await symlink("busybox", path.join(root, "bin", applet));
-    await copyFile(agent.path, path.join(root, "opt/cautest/bin/agent")); await chmod(path.join(root, "opt/cautest/bin/agent"), 0o755);
-    for (const [index, module] of options.modules.entries()) await copyFile(module.module, path.join(root, "opt/cautest/modules", `${String(index).padStart(2, "0")}-${module.name}.ko`));
-    for (const program of options.programs ?? []) { const target = path.join(root, program.installPath.replace(/^\/+/, "")); await mkdir(path.dirname(target), { recursive: true }); await copyFile(program.path, target); await chmod(target, 0o755); }
-    for (const overlay of overlays) await cp(path.resolve(context.project.configDir, overlay), root, { recursive: true, force: true });
-    const catalog = [`build_id=${key}`, `kernel\tkernel\t${key}\t/dev/cautest`, ...(options.programs ?? []).map((item) => `${item.endpoint}\tprocess\t${item.buildId}\t${item.installPath}`), ""].join("\n");
-    await writeFile(path.join(root, "etc/cautest/catalog"), catalog);
-    const coverage = options.coverage ? `/bin/busybox mkdir -p /sys/kernel/debug\nmount -t debugfs debugfs /sys/kernel/debug\ncoverage_dir=$(/bin/busybox sed -n 's/.*cautest.coverage_dir=\\([^ ]*\\).*/\\1/p' /proc/cmdline)\n[ -n "$coverage_dir" ] || exec /bin/sh\nmount -t hostfs none /mnt/cautest-coverage -o "$coverage_dir" || exec /bin/sh\n` : "";
-    await writeFile(path.join(root, "init"), `#!/bin/sh\nmount -t devtmpfs devtmpfs /dev\nmount -t proc proc /proc\nmount -t sysfs sysfs /sys\n${coverage}for module in /opt/cautest/modules/*.ko; do insmod "$module" || exec /bin/sh; done\necho "cautest: modules loaded" >/dev/console\nexec /opt/cautest/bin/agent /dev/ttyS0 /etc/cautest/catalog\n`); await chmod(path.join(root, "init"), 0o755);
-    await cpio(root, path.join(temporary, "rootfs.cpio"), options.environment.rootfs?.cpio ?? "cpio", context.signal, effectiveEnvironment(context));
-    await publishBuildOutput(temporary, key, ["rootfs.cpio"]);
-    await mkdir(path.dirname(directory), { recursive: true });
-    try { await rename(temporary, directory); } catch (cause) { if (!await validBuildOutput(directory, key, ["rootfs.cpio"])) throw cause; }
-  } finally { await rm(temporary, { recursive: true, force: true }); }
-  return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints, cacheHit: false };
+    if (cacheEnabled) {
+      if (await validBuildOutput(directory, key, ["rootfs.cpio"])) return {kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints, cacheHit: true};
+    }
+    await rm(directory, { recursive: true, force: true });
+    await mkdir(cacheRoot, { recursive: true });
+    const temporary = await mkdtemp(path.join(cacheRoot, `.${key.slice(0, 12)}-`));
+    try {
+      const root = path.join(temporary, "root");
+      for (const item of ["bin", "dev", "etc/cautest", "mnt/cautest-coverage", "opt/cautest/bin", "opt/cautest/modules", "proc", "sys", "tmp"]) await mkdir(path.join(root, item), { recursive: true });
+      await copyFile(options.busybox.path, path.join(root, "bin/busybox")); await chmod(path.join(root, "bin/busybox"), 0o755);
+      for (const applet of ["sh", "mount", "insmod", "poweroff", "reboot"]) await symlink("busybox", path.join(root, "bin", applet));
+      await copyFile(agent.path, path.join(root, "opt/cautest/bin/agent")); await chmod(path.join(root, "opt/cautest/bin/agent"), 0o755);
+      for (const [index, module] of options.modules.entries()) await copyFile(module.module, path.join(root, "opt/cautest/modules", `${String(index).padStart(2, "0")}-${module.name}.ko`));
+      for (const program of options.programs ?? []) { const target = path.join(root, program.installPath.replace(/^\/+/, "")); await mkdir(path.dirname(target), { recursive: true }); await copyFile(program.path, target); await chmod(target, 0o755); }
+      for (const overlay of overlays) await cp(path.resolve(context.project.configDir, overlay), root, { recursive: true, force: true });
+      const catalog = [`build_id=${key}`, `kernel\tkernel\t${key}\t/dev/cautest`, ...(options.programs ?? []).map((item) => `${item.endpoint}\tprocess\t${item.buildId}\t${item.installPath}`), ""].join("\n");
+      await writeFile(path.join(root, "etc/cautest/catalog"), catalog);
+      const coverage = options.coverage ? `/bin/busybox mkdir -p /sys/kernel/debug\nmount -t debugfs debugfs /sys/kernel/debug\ncoverage_dir=$(/bin/busybox sed -n 's/.*cautest.coverage_dir=\\([^ ]*\\).*/\\1/p' /proc/cmdline)\n[ -n "$coverage_dir" ] || exec /bin/sh\nmount -t hostfs none /mnt/cautest-coverage -o "$coverage_dir" || exec /bin/sh\n` : "";
+      await writeFile(path.join(root, "init"), `#!/bin/sh\nmount -t devtmpfs devtmpfs /dev\nmount -t proc proc /proc\nmount -t sysfs sysfs /sys\n${coverage}for module in /opt/cautest/modules/*.ko; do insmod "$module" || exec /bin/sh; done\necho "cautest: modules loaded" >/dev/console\nexec /opt/cautest/bin/agent /dev/ttyS0 /etc/cautest/catalog\n`); await chmod(path.join(root, "init"), 0o755);
+      await cpio(root, path.join(temporary, "rootfs.cpio"), options.environment.rootfs?.cpio ?? "cpio", context.signal, effectiveEnvironment(context));
+      await publishBuildOutput(temporary, key, ["rootfs.cpio"]);
+      await mkdir(path.dirname(directory), { recursive: true });
+      try { await rename(temporary, directory); } catch (cause) { if (!await validBuildOutput(directory, key, ["rootfs.cpio"])) throw cause; }
+    } finally { await rm(temporary, { recursive: true, force: true }); }
+    return { kernelPath: path.join(options.kernelOutput, options.environment.kernel.target ?? "linux"), rootfsPath: archive, buildId: key, endpoints, cacheHit: false };
   });
 }
 

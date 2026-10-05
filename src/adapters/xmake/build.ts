@@ -2,9 +2,10 @@ import {withBuildLock} from "../../cache/build-lock.js";
 import path from "node:path";
 import { mkdir, readFile, writeFile, rename, stat } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { hashBytes, hashFile, stableSerialize } from "../../cache/fingerprint.js";
+import { stableSerialize } from "../../cache/fingerprint.js";
 import { assertCompatibleContext, object, resolveArtifact, validateBuildContext, type ArtifactReceipt, type ArtifactRef, type BuildContext, type BuildProvider } from "../../artifacts/index.js";
 import type { StepExecutionContext } from "../../config/schema/common.js";
+import {CAUTEST_VERSIONS} from "../../config/versions.js";
 import { CautestError } from "../../model/error.js";
 import { effectiveEnvironment } from "../../runtime/environment.js";
 import { runCommand } from "../../runtime/process.js";
@@ -22,23 +23,16 @@ export class XmakeBuildProvider implements BuildProvider {
   readonly #outputs = new Map<string,{target:string;gcovNote:boolean}>();
   #context: BuildContext;
   readonly program: string;
-  readonly sources: ReadonlyMap<string,string>;
   readonly #testConfig: string | undefined;
   readonly #workingDirectory: string;
-  constructor(program: string, context: BuildContext, sources: ReadonlyMap<string,string> = new Map()) {
-    this.program=program; this.#context=context; this.sources=sources;
+  constructor(program: string, context: BuildContext) {
+    this.program=program; this.#context=context;
     this.#testConfig=process.env.CAUTEST_XMAKE_CONFIG;
     this.#workingDirectory=process.env.CAUTEST_XMAKE_WORKINGDIR??context.projectRoot;
   }
-  async #checkSources(): Promise<void> {
-    for (const [file,digest] of this.sources) if (await hashFile(file)!==digest) throw new CautestError(`Definition changed during run: ${file}; re-run xmake ct`,{code:"build_error"});
-  }
-  #receiptFile(target: string, environment: string, context=this.#context): string {
-    return path.join(context.projectRoot,".cautest/xmake/receipts",`${hashBytes(stableSerialize({target,context,environment}))}.json`);
-  }
   async build(ref: ArtifactRef, context: StepExecutionContext): Promise<ArtifactReceipt> {
     context.signal.throwIfAborted();
-    const environment=hashBytes(stableSerialize(context.job.env));
+    const environment=stableSerialize(context.job.env);
     const previous=this.#environments.get(ref.target);
     if(previous!==undefined&&previous!==environment) throw new CautestError(`Conflicting build env for target ${ref.target}; use explicitly isolated Xmake targets/configurations`,{code:"build_error"});
     this.#environments.set(ref.target,environment);
@@ -46,7 +40,6 @@ export class XmakeBuildProvider implements BuildProvider {
     let pending=this.#builds.get(key);
     if(pending===undefined){pending=this.#build(ref,context);this.#builds.set(key,pending);}
     const receipt=await pending;
-    await this.#checkSources();
     await resolveArtifact(receipt,ref,this.#context,false);
     return receipt;
   }
@@ -57,7 +50,6 @@ export class XmakeBuildProvider implements BuildProvider {
     return await withBuildLock(path.join(this.#context.projectRoot, ".cautest/xmake/session"), context.signal, () => this.#buildLocked(ref, context));
   }
   async #buildLocked(ref: ArtifactRef, context: StepExecutionContext): Promise<ArtifactReceipt> {
-    await this.#checkSources();
     const directory=path.join(context.project.resultDir,context.job.id);
     await mkdir(directory,{recursive:true});
     const name=ref.target.replace(/[^A-Za-z0-9_.-]/gu,"-");
@@ -76,13 +68,8 @@ export class XmakeBuildProvider implements BuildProvider {
         onOutput(channel,text){chunks.push(`[${channel}] ${text}`);context.output(channel,text);}});
       if(result.exitCode!==0) throw new CautestError(`Xmake ${args[0]} failed (exit ${result.exitCode}) for ${ref.target}\n${result.stderr || result.stdout}`,{code:"build_error"});
     };
-    let rebuild=false;
     try{
-      const old:unknown=JSON.parse(await readFile(this.#receiptFile(ref.target, hashBytes(stableSerialize(context.job.env))),"utf8"));
-      await resolveArtifact(old,ref,this.#context,false);
-    }catch{rebuild=true;} // never bless unknown or corrupted residual output after a previous failed build
-    try{
-      await command(["build","-y",...(rebuild?["-r"]:[]),ref.target]);
+      await command(["build","-y",ref.target]);
       context.signal.throwIfAborted();
       await command(["cautest-artifact",`--target=${ref.target}`,`--output-file=${description}`]);
       const raw=object(JSON.parse(await readFile(description,"utf8")),["schemaVersion","kind","target","context","protocolBuildId","outputs"],"Artifact description");
@@ -101,13 +88,11 @@ export class XmakeBuildProvider implements BuildProvider {
         this.#outputs.set(item.path,{target:ref.target,gcovNote});
         const info=await stat(item.path);
         if(!info.isFile())throw new CautestError(`Xmake output is not a file: ${item.path}`,{code:"build_error"});
-        outputs.push({role:item.role,path:item.path,size:info.size,sha256:await hashFile(item.path)});
+        outputs.push({role:item.role,path:item.path,size:info.size});
       }
-      const receipt:ArtifactReceipt={schemaVersion:1,kind:"cautest.artifact-receipt",target:ref.target,context:this.#context,outputs,
+      const receipt:ArtifactReceipt={schemaVersion:CAUTEST_VERSIONS.schemas.artifactReceipt,kind:"cautest.artifact-receipt",target:ref.target,context:this.#context,outputs,
         ...(raw.protocolBuildId===undefined?{}:{protocolBuildId:raw.protocolBuildId as string})};
       await resolveArtifact(receipt,ref,this.#context,false);
-      await this.#checkSources();
-      await atomic(this.#receiptFile(ref.target, hashBytes(stableSerialize(context.job.env))),receipt);
       await atomic(path.join(directory,`receipt-${name}.json`),receipt);
       return receipt;
     }catch(cause){

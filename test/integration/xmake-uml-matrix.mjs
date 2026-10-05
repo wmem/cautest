@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import {readFile, writeFile, mkdir, readdir} from 'node:fs/promises';
+import {readFile, writeFile, mkdir, readdir, rm} from 'node:fs/promises';
 import {setTimeout as delay} from 'node:timers/promises';
 import {testJob, defineStep, executeWorkflow} from '../../dist/config/index.js';
 import {startUml, collectUml, runUmlEndpoint, buildRootfs} from '../../dist/uml/runtime.js';
@@ -80,8 +80,8 @@ async function lifecycleMatrix(root, driver, records) {
   }
 }
 
-/** Exercise the exact cached image's integrity check, then boot the repaired image. */
-async function rootfsIntegrity(root, driver, records) {
+/** 删除实际缓存镜像后重建，再启动重建的镜像。 */
+async function rootfsRebuild(root, driver, records) {
   const image = driver.artifacts.find(item => item.kind === 'uml-image');
   const kernel = driver.artifacts.find(item => item.kind === 'uml-kernel');
   const busybox = driver.artifacts.find(item => item.kind === 'busybox');
@@ -98,26 +98,32 @@ async function rootfsIntegrity(root, driver, records) {
   const cached = await buildRootfs(options, context);
   assert.equal(cached.buildId, image.buildId, 'This must be the exact real acceptance image, not a separate fixture');
   assert.equal(cached.cacheHit, true);
-  const bytes = await readFile(cached.rootfsPath); bytes[0] ^= 1; await writeFile(cached.rootfsPath, bytes);
+  await rm(cached.rootfsPath);
   const repaired = await buildRootfs(options, context); assert.equal(repaired.cacheHit, false); assert.equal(repaired.buildId, cached.buildId);
   assert.equal((await buildRootfs(options, context)).cacheHit, true);
   // lifecycleMatrix next boots this exact repaired file before any product rebuild.
-  records.push({label: 'rootfs-same-size-corruption', status: 'PASS', rootfsPath: repaired.rootfsPath, buildId: repaired.buildId});
+  records.push({label: 'rootfs-missing-output', status: 'PASS', rootfsPath: repaired.rootfsPath, buildId: repaired.buildId});
 }
 
 export async function runUmlMatrix({root, xmake, passedRun}) {
   const records = [];
   const driver = passedRun.jobs.find(job => job.jobId === 'integration.driver.abi');
   assert.ok(driver && driver.status === 'SUCCESS');
-  await rootfsIntegrity(root, driver, records);
+  await rootfsRebuild(root, driver, records);
   await lifecycleMatrix(root, driver, records);
   const names = ['environment.mjs', 'product/driver/cautest_echo.c', 'product/guest/driver_test.c', 'product/kernel/math_test.c'];
   const original = new Map(await Promise.all(names.map(async name => [name, await readFile(path.join(root, name), 'utf8')])));
+  // Xmake 的依赖检查使用秒级 mtime。负例紧接编译结束修改源码时，
+  // 必须跨过时间戳粒度，否则测试会运行上一场景的对象文件。
+  const writeFixture = async (name, source) => {
+    await delay(1100);
+    await writeFile(path.join(root, name), source);
+  };
   const patch = async (name, from, to) => {
     const source = original.get(name); assert.ok(source.includes(from), `${name}: fixture anchor missing`);
-    await writeFile(path.join(root, name), source.replace(from, to));
+    await writeFixture(name, source.replace(from, to));
   };
-  const restore = async () => {for (const [name, source] of original) await writeFile(path.join(root, name), source);};
+  const restore = async () => {for (const [name, source] of original) await writeFixture(name, source);};
   async function run(label, jobId, status, code) {
     const command = await xmake(label, ['ct', '--json', '--reporter=json,junit', ...(jobId ? [jobId] : [])], 10 * 60_000);
     assert.equal(command.status, code, `${label}: ${command.stdout}\n${command.stderr}`);
@@ -133,7 +139,7 @@ export async function runUmlMatrix({root, xmake, passedRun}) {
     assert.deepEqual(casesOf(result.jobs[0]).map(item => [item.name, item.status]), [['read_write', 'FAIL'], ['ioctl_value', 'PASS'], ['invalid_input', 'PASS']]);
     await restore();
 
-    await writeFile(path.join(root, 'product/guest/driver_test.c'), original.get('product/guest/driver_test.c') + `
+    await writeFixture('product/guest/driver_test.c', original.get('product/guest/driver_test.c') + `
 __attribute__((constructor)) static void acceptance_guest_exit(void) {
     static const char reason[] = "cautest acceptance: guest exit19\\n";
     (void)write(2, reason, sizeof(reason) - 1); _exit(19);
@@ -152,7 +158,7 @@ __attribute__((constructor)) static void acceptance_guest_exit(void) {
     assert.equal(result.jobs[0].steps.find(step => step.kind === 'cTestRun').status, 'SKIPPED');
     await restore();
 
-    await writeFile(path.join(root, 'product/driver/cautest_echo.c'), original.get('product/driver/cautest_echo.c') + '\n#error acceptance_driver_build_failure\n');
+    await writeFixture('product/driver/cautest_echo.c', original.get('product/driver/cautest_echo.c') + '\n#error acceptance_driver_build_failure\n');
     result = await run('stale-module-after-build-failure', 'integration.driver.abi', 'ERROR', 2);
     assert.match(JSON.stringify(result), /acceptance_driver_build_failure/);
     assert.ok(!result.jobs[0].resources.some(item => item.kind === 'uml'));
@@ -170,8 +176,8 @@ __attribute__((constructor)) static void acceptance_guest_exit(void) {
     for (const job of result.jobs) {assertClosed(job); assert.ok(casesOf(job).every(item => item.status === 'PASS'));}
     const recoveredDriver = result.jobs.find(job => job.jobId === 'integration.driver.abi');
     const busybox = recoveredDriver.artifacts.find(item => item.kind === 'busybox');
-    const bytes = await readFile(busybox.path); bytes[bytes.length - 1] ^= 1; await writeFile(busybox.path, bytes);
-    result = await run('busybox-corruption-recovery', 'integration.driver.abi', 'SUCCESS', 0);
+    await rm(busybox.path);
+    result = await run('busybox-missing-output-recovery', 'integration.driver.abi', 'SUCCESS', 0);
     assertClosed(result.jobs[0]);
     assert.ok(result.jobs[0].steps.find(step => step.kind === 'busyboxBuild').diagnostics.some(item => item.code === 'cache_miss'));
     assert.ok(result.jobs[0].steps.find(step => step.kind === 'kernelBuild').diagnostics.some(item => item.code === 'cache_hit'));

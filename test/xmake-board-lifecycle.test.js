@@ -16,8 +16,8 @@ test('late owned Board factory cannot flash after timeout and closes exactly onc
       const binary = path.join(root, 'firmware');
       await writeFile(binary, 'artifact');
       const buildContext = {projectRoot: root, plat: 'linux', arch: 'x86_64', mode: 'release', buildDir: path.join(root, 'build')};
-      const receipt = {schemaVersion: 1, kind: 'cautest.artifact-receipt', target: 'firmware', context: buildContext,
-        protocolBuildId: 'id', outputs: [{role: 'primary', path: binary, size: (await stat(binary)).size, sha256: await hashFile(binary)}]};
+      const receipt = {schemaVersion: 2, kind: 'cautest.artifact-receipt', target: 'firmware', context: buildContext,
+        protocolBuildId: 'id', outputs: [{role: 'primary', path: binary, size: (await stat(binary)).size}]};
       for (const ownership of ['owned', 'borrowed']) {
         const log = path.join(root, ownership + '.log'), module = path.join(root, ownership + '.mjs');
         // Return the adapter only AFTER an observed cancellation, not after a guessed sleep.

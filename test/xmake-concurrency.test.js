@@ -64,3 +64,30 @@ if(args[0]==='build'){const changed=spawnSync(real,['f','-y','-m','debug'],{stdi
  assert.equal(result.jobs[0].steps.find(s=>s.kind==='cTestRun').status,'SKIPPED');assert.equal(result.jobs[0].groups.length,0);
  const recovered=await run(root);assert.equal(recovered.result.status,'SUCCESS');assert.equal(recovered.result.jobs[0].artifacts.find(a=>a.kind==='build-artifact').metadata.receipt.context.mode,'debug');
 });
+
+test('配置文件仅序列化文本变化时，真实 Xmake 构建与查询仍可进入 CTP', {skip: !xmake}, async t => {
+ const root = await fixture(t, 23);
+ const listing = spawnSync(xmake, ['ct', '--list', '--json'], {cwd: root, env, encoding: 'utf8', timeout: 20000});
+ assert.equal(listing.status, 0, listing.stdout + listing.stderr);
+ const directory = path.join(root, '.cautest/xmake/manifests');
+ const [name] = await readdir(directory);
+ const manifest = JSON.parse(await readFile(path.join(directory, name), 'utf8'));
+ const wrapper = path.join(root, 'serialization-xmake.mjs');
+ await writeFile(wrapper, `#!${process.execPath}
+import {spawnSync} from 'node:child_process';
+import {appendFileSync} from 'node:fs';
+const args=process.argv.slice(2);
+const result=spawnSync(${JSON.stringify(xmake)},args,{stdio:'inherit'});
+if(result.status!==0)process.exit(result.status??2);
+if(args[0]==='build')appendFileSync(${JSON.stringify(path.join(root, '.xmake/linux/x86_64/xmake.conf'))},'\\n-- 序列化文本变化，配置值保持一致\\n');
+`, {mode: 0o755});
+ manifest.xmake = wrapper;
+ const file = path.join(root, 'serialization-manifest.json');
+ await writeFile(file, JSON.stringify(manifest));
+ const attempted = spawnSync(process.execPath, [path.join(kit, 'adapters/xmake-test/entry.mjs'), '--manifest', file, 'run', '--json'], {cwd: root, env, encoding: 'utf8', timeout: 40000, maxBuffer: 16 * 1024 * 1024});
+ assert.equal(attempted.status, 0, attempted.stdout + attempted.stderr);
+ const summary = JSON.parse(attempted.stdout), result = JSON.parse(await readFile(summary.resultPath, 'utf8'));
+ assert.equal(result.status, 'SUCCESS');
+ assert.equal(result.jobs[0].groups[0].cases[0].status, 'PASS');
+ assert.match(await readFile(path.join(root, '.xmake/linux/x86_64/xmake.conf'), 'utf8'), /序列化文本变化/);
+});

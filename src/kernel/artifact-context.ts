@@ -1,6 +1,7 @@
 import path from "node:path";
 import {readFile, realpath} from "node:fs/promises";
-import {hashFile, stableSerialize} from "../cache/fingerprint.js";
+import {stableSerialize} from "../cache/fingerprint.js";
+import {fileState} from "../cache/file-state.js";
 import {object, type ResolvedArtifact} from "../artifacts/index.js";
 import {CAUTEST_VERSIONS} from "../config/versions.js";
 import {CautestError} from "../model/error.js";
@@ -9,37 +10,37 @@ import type {GuestProgramArtifact} from "../uml/runtime.js";
 
 /** A kernel ABI/build identity, not a CTP HELLO identity or an Xmake configuration. */
 export interface KernelArtifactContext {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly kind: "cautest.kernel-context";
   readonly outputDir: string;
   readonly arch: string;
   readonly crossCompile: string;
   readonly release: string;
-  readonly configSha256: string;
-  readonly symbolsSha256: string;
-  readonly imageSha256: string;
+  readonly configState: Awaited<ReturnType<typeof fileState>>;
+  readonly symbolsState: Awaited<ReturnType<typeof fileState>>;
+  readonly imageState: Awaited<ReturnType<typeof fileState>>;
   readonly imagePath: string;
 }
 function fail(message: string): never { throw new CautestError(message, {code: "build_error"}); }
 export async function captureKernelContext(outputDir: string, options: {readonly arch?: string; readonly crossCompile?: string; readonly target?: string} = {}): Promise<KernelArtifactContext> {
   const root = await realpath(outputDir);
   const imagePath = await realpath(path.join(root, options.target ?? "linux"));
-  const [configSha256, symbolsSha256, imageSha256, release] = await Promise.all([
-    hashFile(path.join(root, ".config")), hashFile(path.join(root, "Module.symvers")),
-    hashFile(imagePath), readFile(path.join(root, "include/config/kernel.release"), "utf8"),
+  const [configState, symbolsState, imageState, release] = await Promise.all([
+    fileState(path.join(root, ".config")), fileState(path.join(root, "Module.symvers")),
+    fileState(imagePath), readFile(path.join(root, "include/config/kernel.release"), "utf8"),
   ]);
   if (!release.trim() || /\s/u.test(release.trim())) fail("Invalid Kernel release identity");
   return Object.freeze({schemaVersion: CAUTEST_VERSIONS.schemas.kernelContext, kind: "cautest.kernel-context", outputDir: root,
-    arch: options.arch ?? "um", crossCompile: options.crossCompile ?? "", release: release.trim(), configSha256, symbolsSha256, imageSha256, imagePath});
+    arch: options.arch ?? "um", crossCompile: options.crossCompile ?? "", release: release.trim(), configState, symbolsState, imageState, imagePath});
 }
 export function validateKernelContext(value: unknown): asserts value is KernelArtifactContext {
-  const v = object(value, ["schemaVersion", "kind", "outputDir", "arch", "crossCompile", "release", "configSha256", "symbolsSha256", "imageSha256", "imagePath"], "Kernel context");
+  const v = object(value, ["schemaVersion", "kind", "outputDir", "arch", "crossCompile", "release", "configState", "symbolsState", "imageState", "imagePath"], "Kernel context");
   if (v.schemaVersion !== CAUTEST_VERSIONS.schemas.kernelContext || v.kind !== "cautest.kernel-context") fail("Unsupported Kernel context schema/kind");
   if (typeof v.outputDir !== "string" || !path.isAbsolute(v.outputDir)) fail("Kernel context outputDir must be absolute");
   if (typeof v.imagePath !== "string" || !path.isAbsolute(v.imagePath)) fail("Kernel imagePath must be absolute");
   for (const key of ["arch", "release"]) if (typeof v[key] !== "string" || !v[key] || /\s/u.test(v[key] as string)) fail(`Invalid Kernel context ${key}`);
   if (typeof v.crossCompile !== "string") fail("Invalid Kernel crossCompile");
-  for (const key of ["configSha256", "symbolsSha256", "imageSha256"]) if (typeof v[key] !== "string" || !/^[0-9a-f]{64}$/u.test(v[key] as string)) fail(`Invalid Kernel context ${key}`);
+  for (const key of ["configState", "symbolsState", "imageState"]) { const state = v[key] as Record<string,unknown> | undefined; if (!state || typeof state.size !== "number" || typeof state.mtimeNs !== "string" || typeof state.mode !== "number") fail(`Invalid Kernel context ${key}`); }
 }
 export function assertKernelContext(expected: KernelArtifactContext, actual: unknown): void {
   validateKernelContext(actual);
@@ -65,7 +66,7 @@ export async function consumeKernelModule(artifact: ResolvedArtifact, expected: 
   const offset = bytes.indexOf(Buffer.from("vermagic="));
   const end = offset < 0 ? -1 : bytes.indexOf(0, offset);
   if (offset < 0 || end < 0 || bytes.subarray(offset + 9, end).toString("utf8").split(" ")[0] !== expected.release) fail("Kernel module vermagic does not match the shared Environment release");
-  return {name, module: artifact.path, symbols: role("symbols"), modulesOrder: role("order"), cacheKey: artifact.output.sha256,
+  return {name, module: artifact.path, symbols: role("symbols"), modulesOrder: role("order"), cacheKey: artifact.buildId || artifact.receipt.target,
     cacheHit: false, coverageNotes: [], coverageSources: []};
 }
 export async function consumeDriverGuest(artifact: ResolvedArtifact, name: string): Promise<GuestProgramArtifact> {

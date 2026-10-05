@@ -12,7 +12,7 @@ test('real product Kbuild phony target exports role-checked ELF, symbols and Ker
   const good=await result();assert.equal(good.status,'SUCCESS');assert.equal(good.jobs[0].artifacts.filter(a=>a.kind==='log'&&a.name==='xmake-product.driver').length,1);
   const artifact=good.jobs[0].artifacts.find(a=>a.kind==='build-artifact'&&a.name==='module');assert.equal(artifact.metadata.receipt.outputs.length,4);
   assert.deepEqual((await readdir(path.join(root,'driver'))).sort(),['Makefile','cautest_demo.c']);
-  const old=artifact.fingerprint;run(root,['f','-y',`--kernel_build=${kernel}`,'--demo_value=8']);const changed=await result();assert.notEqual(changed.jobs[0].artifacts.find(a=>a.kind==='build-artifact'&&a.name==='module').fingerprint,old);
+  const old=await readFile(artifact.path);run(root,['f','-y',`--kernel_build=${kernel}`,'--demo_value=8']);const changed=await result();assert.notDeepEqual(await readFile(changed.jobs[0].artifacts.find(a=>a.kind==='build-artifact'&&a.name==='module').path),old);
   await appendFile(path.join(root,'driver/cautest_demo.c'),'\n#error injected_driver_build_failure\n');const failed=await result(2);assert.equal(failed.jobs[0].steps.at(-1).status,'SKIPPED');assert.match(JSON.stringify(failed),/injected_driver_build_failure/);assert.deepEqual((await readdir(path.join(root,'driver'))).sort(),['Makefile','cautest_demo.c']);assert.ok(!(await readdir(path.join(root,'build'))).some(n=>n.startsWith('.driver-')));
  }finally{if(!process.env.CAUTEST_KEEP_FIXTURE)await rm(root,{recursive:true,force:true});else console.log(root);}
 });

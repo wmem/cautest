@@ -1,5 +1,8 @@
-import { createHash } from "node:crypto";
-import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import {withBuildLock} from "../cache/build-lock.js";
+import {hashBytes, stableSerialize} from "../cache/fingerprint.js";
+import {buildIdentity, writeChanged} from "../cache/file-state.js";
+import {compileC} from "../build/incremental.js";
+import { chmod, mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CDefineValue, NativeCTestJobFactoryInput, NativeCTestJobInput, TestJob, StepExecutionContext, WorkflowStep, CTestRunInput } from "../config/schema/index.js";
@@ -55,40 +58,9 @@ function defineArgument(name: string, value: CDefineValue): string {
   return `-D${name}=${typeof value === "boolean" ? (value ? "1" : "0") : String(value)}`;
 }
 
-async function sha256(file: string): Promise<string> { return createHash("sha256").update(await readFile(file)).digest("hex"); }
-
-async function fingerprint(files: readonly string[], metadata: unknown, configDir: string): Promise<string> {
-  const hash = createHash("sha256").update(JSON.stringify(metadata));
-  for (const file of [...files].sort()) {
-    const identity = path.relative(configDir, file).split(path.sep).join("/");
-    hash.update(`\0${identity}\0`);
-    hash.update(await readFile(file));
-  }
-  return hash.digest("hex");
-}
-
-async function cacheValid(directory: string, target: string, key: string): Promise<boolean> {
-  try {
-    const manifest = JSON.parse(await readFile(path.join(directory, "manifest.json"), "utf8")) as { schema?: number; key?: string; outputs?: Array<{ path: string; size: number; sha256: string }> };
-    if (manifest.schema !== CAUTEST_CACHE_VERSIONS.nativeManifest || manifest.key !== key || !Array.isArray(manifest.outputs)) return false;
-    const actual = (await readdir(directory)).filter((name) => name !== "manifest.json").sort();
-    if (actual.length !== manifest.outputs.length || actual.some((name, index) => name !== manifest.outputs?.[index]?.path)) return false;
-    for (const output of manifest.outputs) {
-      const info = await stat(path.join(directory, output.path));
-      if (!info.isFile() || info.size !== output.size || await sha256(path.join(directory, output.path)) !== output.sha256) return false;
-    }
-    return await stat(target).then((info) => info.isFile());
-  } catch { return false; }
-}
-
-async function outputManifest(directory: string): Promise<readonly { path: string; size: number; sha256: string }[]> {
-  const outputs = [];
-  for (const name of (await readdir(directory)).filter((item) => item !== "manifest.json").sort()) {
-    const info = await stat(path.join(directory, name));
-    if (!info.isFile()) throw new CautestError(`Native Cache 包含非文件输出: ${name}`, { code: "cache_error" });
-    outputs.push({ path: name, size: info.size, sha256: await sha256(path.join(directory, name)) });
-  }
-  return outputs;
+function fingerprint(files: readonly string[], metadata: unknown, configDir: string): string {
+  // 缓存目录只区分构建参数与输入路径，源码依赖交给 Make/depfile。
+  return hashBytes(stableSerialize({metadata, files: files.map(file => path.relative(configDir, file)).sort()}));
 }
 
 function registrySource(suites: readonly string[]): string {
@@ -204,13 +176,11 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
         environment: declaredEnvironment(context),
         fingerprintEnv: Object.fromEntries((build.cache?.fingerprintEnv ?? []).map((key) => [key, environment[key] ?? null])),
       };
-      const key = await fingerprint([...productFiles, ...kitInputs.map((file) => path.join(kitRoot, file))], metadata, project);
+      const key = fingerprint([...productFiles, ...kitInputs.map((file) => path.join(kitRoot, file))], metadata, project);
       const generatedDir = path.resolve(project, build.generatedDir ?? path.join(context.project.generatedDir, "native", artifactName, key));
       await mkdir(generatedDir, { recursive: true });
       const registry = path.join(generatedDir, "registry.c");
       const entry = path.join(generatedDir, "entry.c");
-      await writeFile(registry, registrySource(suites));
-      await writeFile(entry, entrySource(key, build.workspaceSize ?? 65_536, effectiveRun.caseTimeoutMs ?? 1_000));
       const cacheEnabled = build.cache?.enabled !== false;
       validateConfiguredCacheRoot(project, build.cache?.directory);
       const cacheRoot = path.resolve(project, cacheEnabled ? (build.cache?.directory ?? path.join(context.project.cacheDir, "native")) : path.join(context.project.workDir, "native"));
@@ -218,26 +188,22 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
       const cacheDir = path.join(cacheRoot, key);
       if (path.dirname(cacheDir) !== cacheRoot || path.basename(cacheDir) !== key) throw new CautestError("Native Cache 路径无效", { code: "cache_error" });
       const targetPath = path.join(cacheDir, "target");
-      let hit = cacheEnabled && await cacheValid(cacheDir, targetPath, key);
-      if (!hit) {
-        if (!await cacheValid(cacheDir, targetPath, key)) await rm(cacheDir, { recursive: true, force: true });
-        const temporary = await mkdtemp(path.join(cacheRoot, `.${key.slice(0, 12)}-`));
-        try {
-          const temporaryTarget = path.join(temporary, "target");
-          const args = ["-std=c99", "-Wall", "-Wextra", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/posix")}`, `-I${path.join(kitRoot, "target/posix")}`, ...includeDirs.map((directory) => `-I${directory}`), ...Object.entries(build.defines ?? {}).map(([name, value]) => defineArgument(name, value)), ...(input.coverage === undefined ? [] : ["--coverage", "-DCAUTEST_GCOV=1"]), ...(build.cflags ?? []), ...expandedTests.map((file) => path.join(project, file)), ...expandedSources.map((file) => path.join(project, file)), registry, entry, ...kitSources.map((file) => path.join(kitRoot, file)), ...(build.ldflags ?? []), "-o", temporaryTarget];
-          const result = await runCommand({ program: compiler, args, cwd: temporary, env: environment, signal: context.signal, onOutput: context.output });
-          if (result.exitCode !== 0) throw new CautestError(`Native 编译失败 (exit ${result.exitCode})\n${result.stderr}`, { code: "build_error" });
-          await chmod(temporaryTarget, 0o755);
-          await writeFile(path.join(temporary, "manifest.json"), `${JSON.stringify({ schema: CAUTEST_CACHE_VERSIONS.nativeManifest, key, outputs: await outputManifest(temporary) }, null, 2)}\n`);
-          try { await rename(temporary, cacheDir); }
-          catch (cause) { if (!await cacheValid(cacheDir, targetPath, key)) throw cause; await rm(temporary, { recursive: true, force: true }); }
-        } catch (cause) { await rm(temporary, { recursive: true, force: true }); throw cause; }
-        hit = false;
-      }
-      const artifact = Object.freeze({ path: targetPath, buildId: key, objectDir: cacheDir, sources: [...expandedTests, ...expandedSources], coverage: input.coverage !== undefined, cacheHit: hit }) satisfies NativeArtifact;
-      context.state.set(`native:${artifactName}`, artifact);
-      context.artifacts.publish({ kind: "native-test", name: artifactName, path: targetPath, fingerprint: key, buildId: key, metadata: { cacheHit: hit, objectDir: cacheDir, sources: artifact.sources, coverage: artifact.coverage } });
-      return { diagnostics: [{ code: hit ? "cache_hit" : (cacheEnabled ? "cache_miss" : "cache_disabled"), message: targetPath }] };
+      const buildTarget = async () => {
+        if (!cacheEnabled) await rm(cacheDir, {recursive: true, force: true});
+        const buildId = await buildIdentity(cacheDir);
+        await writeChanged(registry, registrySource(suites));
+        await writeChanged(entry, entrySource(buildId, build.workspaceSize ?? 65_536, effectiveRun.caseTimeoutMs ?? 1_000));
+        const flags = ["-std=c99", "-Wall", "-Wextra", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/posix")}`, `-I${path.join(kitRoot, "target/posix")}`, ...includeDirs.map(directory => `-I${directory}`), ...Object.entries(build.defines ?? {}).map(([name, value]) => defineArgument(name, value)), ...(input.coverage === undefined ? [] : ["--coverage", "-DCAUTEST_GCOV=1"]), ...(build.cflags ?? [])];
+        const hit = await compileC({compiler, sources: [...expandedTests, ...expandedSources].map(file => path.join(project, file)).concat([registry, entry], kitSources.map(file => path.join(kitRoot, file))),
+          directory: cacheDir, output: targetPath, cflags: flags, ldflags: build.ldflags ?? [], dependencies: expandedHeaders.map(file => path.join(project, file)),
+          env: environment, signal: context.signal, onOutput: context.output, rebuild: !cacheEnabled});
+        await chmod(targetPath, 0o755);
+        const artifact = Object.freeze({ path: targetPath, buildId, objectDir: cacheDir, sources: [...expandedTests, ...expandedSources], coverage: input.coverage !== undefined, cacheHit: hit }) satisfies NativeArtifact;
+        context.state.set(`native:${artifactName}`, artifact);
+        context.artifacts.publish({ kind: "native-test", name: artifactName, path: targetPath, buildId, metadata: { cacheHit: hit, objectDir: cacheDir, sources: artifact.sources, coverage: artifact.coverage } });
+        return { diagnostics: [{ code: hit ? "cache_hit" : (cacheEnabled ? "cache_miss" : "cache_disabled"), message: targetPath }] };
+      };
+      return process.platform === "linux" ? await withBuildLock(cacheDir, context.signal, buildTarget) : await buildTarget();
     },
   });
   const execute = nativeRuntimeStep({ name: artifactName, run, allowEmpty: input.policy?.allowEmpty === true, coveragePrefixStrip: 100,

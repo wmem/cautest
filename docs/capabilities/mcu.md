@@ -10,7 +10,7 @@ Host 模拟会真实编译并启动一个 Firmware 子进程，再通过受控 F
 
 ## 身份、恢复与所有权
 
-Flash 后的 Build ID 和 Reset 返回的 Boot ID 必须与 HELLO 一致，旧 Firmware 或旧启动实例会在执行前被拒绝。断线属于可恢复错误时，Job 可以在限定次数内重新连接；每次重连都会建立新 Session、重新 HELLO 和 LIST，旧 Catalog ID 不会复用。执行超时只有在显式允许时参与恢复。
+Flash 后的 Build ID 和 Reset 返回的 Boot ID 必须与 HELLO 一致，其他 Target 身份或旧启动实例会在执行前被拒绝。Build ID 不代表固件内容摘要：同一构建目录内的源码重建可以保留 ID。existing/command 固件须显式提供与固件 HELLO 一致的 `firmware.buildId`，也可用 `run.expectedBuildId`；工具不从固件字节推断协议身份。断线属于可恢复错误时，Job 可以在限定次数内重新连接；每次重连都会建立新 Session、重新 HELLO 和 LIST，旧 Catalog ID 不会复用。执行超时只有在显式允许时参与恢复。
 
 owned Adapter 在 Cleanup 中关闭；borrowed Adapter 只附加、不代替项目管理生命周期。重试耗尽、身份不匹配、Transport 或协议错误属于基础设施错误，Firmware 中的 Assertion、FAIL、SKIP 和 ERROR 则进入标准 C Test 结果。
 

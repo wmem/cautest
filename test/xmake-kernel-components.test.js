@@ -22,7 +22,7 @@ test('real Kernel Runtime and product/Test modules build through Xmake against e
   const before=await sources();
   for(const target of ['test.kernel','product.driver']){
    run(['build','-y',target]);const desc=path.join(root,'description.json');run(['cautest-artifact',`--target=${target}`,`--output-file=${desc}`]);
-   const value=JSON.parse(await readFile(desc,'utf8')),receipt={schemaVersion:1,kind:'cautest.artifact-receipt',target,context:value.context,outputs:await Promise.all(value.outputs.map(async o=>({...o,size:(await stat(o.path)).size,sha256:await hashFile(o.path)})))};
+   const value=JSON.parse(await readFile(desc,'utf8')),receipt={schemaVersion:2,kind:'cautest.artifact-receipt',target,context:value.context,outputs:await Promise.all(value.outputs.map(async o=>({...o,size:(await stat(o.path)).size})))};
    const resolved=await resolveArtifact(receipt,{target,output:'ko'},value.context,false);const module=await consumeKernelModule(resolved,expected,target.replace('.','-'));assert.ok(module.module.endsWith('.ko'));assert.equal(resolved.receipt.outputs.length,4);
   }
   assert.deepEqual(await sources(),before);assert.deepEqual(await captureKernelContext(kernel,{arch:'x86_64',target:'vmlinux'}),expected);

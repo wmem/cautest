@@ -2,12 +2,11 @@ import { copyFile, mkdir, readdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
 import type { NativeCoverageInput, StepExecutionContext, WorkflowStep } from "../config/schema/index.js";
 import { CautestError } from "../model/error.js";
-import { hashFile } from "../cache/fingerprint.js";
 import { effectiveEnvironment } from "../runtime/environment.js";
 import { runCommand } from "../runtime/process.js";
 import { defineStep } from "../workflow/step.js";
 
-export interface NativeCoverageNote { readonly path: string; readonly sha256?: string }
+export interface NativeCoverageNote { readonly path: string; }
 export async function coverageFiles(root: string, extension: string): Promise<string[]> {
   const files: string[] = [];
   try {
@@ -53,7 +52,6 @@ export function nativeCoverageStep(options: {
       await rm(reportsRoot, { recursive: true, force: true });
       for (const [index, note] of notes.entries()) {
         if (!path.isAbsolute(note.path) || !note.path.endsWith(".gcno")) throw new CautestError("无效的 GCOV notes 路径", { code: "cache_error" });
-        if (note.sha256 !== undefined && await hashFile(note.path) !== note.sha256) throw new CautestError(`GCOV notes 已变化: ${note.path}`, { code: "cache_error" });
         const directory = path.join(objects, String(index));
         const reportDir = options.rawLayout === "flat" ? output : path.join(reportsRoot, String(index));
         await mkdir(directory, { recursive: true });

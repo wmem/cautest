@@ -24,7 +24,8 @@ test('MCU factories are lazy, owned/borrowed failure cleanup is respected, wrong
  const failed=await result(root,[],2);assert.match(JSON.stringify(failed),/injected flash failure/);assert.equal(await readFile(path.join(root,'lifecycle.log'),'utf8'),'factory\nflash\nclose\n');assert.equal(failed.jobs[0].cleanup.at(-1).status,'SUCCESS');
  await writeFile(path.join(root,'lifecycle.log'),'');await writeFile(cfg,base.replace('ownership = "owned"','ownership = "borrowed"').replace('maxReadSize = 2, maxWriteSize = 1','flashFail = true'));
  await result(root,[],2);assert.equal(await readFile(path.join(root,'lifecycle.log'),'utf8'),'factory\nflash\n');
- await appendFile(path.join(root,'firmware.c'),'\n/* new firmware must not accept old board image */\n');
+ // 清除构建目录后创建独立 Target 身份，旧板上镜像不得匹配新身份。
+ await rm(path.join(root,'build'), {recursive:true,force:true});
  await writeFile(cfg,base.replace('maxReadSize = 2, maxWriteSize = 1','stale = true'));
  const wrong=await result(root,[],2);assert.match(wrong.jobs[0].steps.find(s=>s.kind==='mcuCTestRun').error.message,/Build ID 不匹配/);assert.equal(wrong.jobs[0].resources.find(r=>r.kind==='physical-lock').state,'closed');
  await writeFile(cfg,base.replace('maxReadSize = 2, maxWriteSize = 1','wrongBoot = true'));

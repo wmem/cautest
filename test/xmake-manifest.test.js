@@ -10,14 +10,14 @@ const origin={file:path.join(root,'ctest.lua'),declaration:1,includeChain:[path.
 const manifest=()=>({schemaVersion:1,kind:'cautest.xmake-manifest',projectRoot:root,xmake:'/bin/xmake',buildContext:{projectRoot:root,plat:'linux',arch:'x86_64',mode:'release',buildDir:path.join(root,'build')},project:{},jobs:[{kind:'native',id:'unit.ok',target:'test.ok',origin}],boards:[],environments:[],sources:[]});
 test('Xmake manifest rejects plan JSON, unsupported versions, unknown and incomplete fields',()=>{
  const good=manifest();assert.doesNotThrow(()=>validateManifest(good));
- const bad=[{...good,kind:'plan'},{...good,schemaVersion:3},{...good,extra:true},{...good,buildContext:{...good.buildContext,arch:undefined}},{...good,jobs:[{...good.jobs[0],macroScan:true}]},{...good,jobs:[{...good.jobs[0],target:undefined}]},{...good,jobs:[{...good.jobs[0],run:{session:{typo:100}}}]}];
+ const bad=[{...good,kind:'plan'},{...good,schemaVersion:99},{...good,extra:true},{...good,buildContext:{...good.buildContext,arch:undefined}},{...good,jobs:[{...good.jobs[0],macroScan:true}]},{...good,jobs:[{...good.jobs[0],target:undefined}]},{...good,jobs:[{...good.jobs[0],run:{session:{typo:100}}}]}];
  for(const value of bad)assert.throws(()=>validateManifest(value));
 });
-test('Xmake Manifest v2 validates Native coverage and still reads legacy v1 without building',async()=>{
+test('Xmake Manifest v3 validates Native coverage and still reads legacy v1 without building',async()=>{
  const dir=await mkdtemp(path.join(tmpdir(),'ct-manifest-gcov-'));
- try{const good={...manifest(),schemaVersion:2};good.jobs=[{...good.jobs[0],coverage:{tool:'gcov',timeoutMs:30000}}];assert.doesNotThrow(()=>validateManifest(good));
+ try{const good={...manifest(),schemaVersion:3};good.jobs=[{...good.jobs[0],coverage:{tool:'gcov',timeoutMs:30000}}];assert.doesNotThrow(()=>validateManifest(good));
  for(const coverage of [true,null,{tool:''},{timeoutMs:0},{unexpected:true}])assert.throws(()=>validateManifest({...good,jobs:[{...good.jobs[0],coverage}]}),/coverage/);
- assert.throws(()=>validateManifest({...good,schemaVersion:1}),/Manifest v2/);
+ assert.throws(()=>validateManifest({...good,schemaVersion:1}),/Manifest v3/);
  const file=path.join(dir,'manifest.json');await writeFile(file,JSON.stringify(good));const loaded=await loadManifest(file,{provider:{async build(){throw new Error('must not build while loading');}}});
  assert.deepEqual(loaded.config.jobs[0].workflow.map(s=>s.kind),['artifactBuild','cTestRun','nativeCoverage']);
  }finally{await rm(dir,{recursive:true,force:true});}

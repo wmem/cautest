@@ -24,8 +24,8 @@ test('xspm 安装钩子在工具包内构建 JS，失败后可重新安装，宿
     const host = path.join(directory, 'host with spaces');
     const tool = path.join(host, 'tools/cautest');
     await mkdir(tool, {recursive: true});
-    await cp(kit, tool, {recursive: true, filter: file => !path.relative(kit, file).split(path.sep)
-      .some(part => ['.git', 'node_modules', 'dist', '.cautest', '.xmake', 'build', 'release'].includes(part))});
+    await cp(kit, tool, {recursive: true, filter: file => path.relative(kit, file).split(path.sep)[0] !== "build" && !path.relative(kit, file).split(path.sep)
+      .some(part => ['.git', 'node_modules', 'dist', '.cautest', '.xmake', 'release'].includes(part))});
     const script = path.join(directory, 'install.lua');
     await writeFile(script, `function main()
     local hook = import("xspm", {rootdir = ${JSON.stringify(tool)}, anonymous = true})

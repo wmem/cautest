@@ -14,7 +14,7 @@ import {kernelArtifactJob,driverArtifactJob} from "../../jobs/kernel-artifact.js
 import {environmentValue} from "../../jobs/kernel.js";
 import {flattenWorkflow} from "../../workflow/fragment.js";
 import {CautestError} from "../../model/error.js";
-import {hashFile,hashBytes,stableSerialize} from "../../cache/fingerprint.js";
+import {hashBytes,stableSerialize} from "../../cache/fingerprint.js";
 import type {LoadedConfig} from "../../config/load.js";
 import type {McuBoardAdapter,TestJobCommonInput,WorkflowFragment,WorkflowStep,StepExecutionContext,TestJob,UmlKernelEnvironment} from "../../config/schema/index.js";
 import {enableConfigSourceTracking,collectConfigSources} from "../../config/source-tracker.js";
@@ -30,13 +30,12 @@ async function factory(ref:ProviderReference,args:unknown,origin:string):Promise
   return await create(args);
  }catch(cause){throw new CautestError(`${origin}: provider ${ref.module}#${ref.export}: ${cause instanceof Error?cause.message:String(cause)}`,{code:"config_error",cause});}
 }
-function lazyBoard(resource:ManifestResource,manifest:XmakeManifest,signal:()=>AbortSignal|undefined,validateSources:()=>Promise<void>):McuBoardAdapter{
+function lazyBoard(resource:ManifestResource,manifest:XmakeManifest,signal:()=>AbortSignal|undefined):McuBoardAdapter{
  let adapter:McuBoardAdapter|undefined;
  const close=async()=>{const current=adapter;adapter=undefined;await current?.close?.();};
  const loaded=()=>{if(!adapter)throw new CautestError("Board was not initialized",{code:"provision_error"});return adapter;};
  return {
   async flash(artifact){
-   await validateSources();
    const created=await factory(resource.provider,{projectRoot:manifest.projectRoot,options:resource.options??{},origin:resource.origin,signal:signal()},resource.origin.file);
    if(typeof created!=="object"||created===null||!["flash","reset","openTransport"].every(k=>typeof (created as Record<string,unknown>)[k]==="function")){
     if(resource.ownership!=="borrowed"&&typeof created==="object"&&created!==null&&"close" in created&&typeof created.close==="function")await created.close();
@@ -44,7 +43,6 @@ function lazyBoard(resource:ManifestResource,manifest:XmakeManifest,signal:()=>A
    }
    adapter=created as McuBoardAdapter;
    if(signal()?.aborted){if(resource.ownership!=="borrowed")await close();signal()?.throwIfAborted();}
-   await validateSources();
    signal()?.throwIfAborted();
    await adapter.flash(artifact);
   },
@@ -60,9 +58,7 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
  try{value=JSON.parse(await readFile(resolved,"utf8"));}catch(cause){throw new CautestError(`Cannot read Xmake manifest ${resolved}`,{code:"config_error",cause});}
  validateManifest(value);const manifest=value;
  const sourceSet=new Set(manifest.sources);
- const sourceHashes=new Map<string,string>();
- for(const source of [...sourceSet].sort())sourceHashes.set(source,await hashFile(source));
- const provider=options.provider??new XmakeBuildProvider(manifest.xmake,manifest.buildContext,sourceHashes);
+ const provider=options.provider??new XmakeBuildProvider(manifest.xmake,manifest.buildContext);
  const jobs:TestJob[]=[];enableConfigSourceTracking();
  const snapshots=new Map<string,Promise<readonly string[]>>();
  const snapshot=async(ref:ProviderReference)=>{
@@ -70,9 +66,6 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
   if(!sources){sources=staticProviderSources(ref.module);snapshots.set(ref.module,sources);}
   for(const source of await sources)sourceSet.add(source);
   if(ref.inputs?.length)for(const source of await expandFilePatterns(ref.inputs.map(input=>path.relative(manifest.projectRoot,input)),{baseDir:manifest.projectRoot,label:`${ref.module}: provider.inputs`}))sourceSet.add(path.resolve(manifest.projectRoot,source));
- };
- const validateSources=async()=>{
-  for(const [source,digest] of sourceHashes)if(await hashFile(source)!==digest)throw new CautestError(`Definition changed during run: ${source}; re-run xmake ct`,{code:"build_error"});
  };
  const environmentCache=new Map<string,Promise<UmlKernelEnvironment>>();
  const environment=async(id:string):Promise<UmlKernelEnvironment>=>{
@@ -98,7 +91,7 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
     const board=manifest.boards.find(r=>r.id===declaration.board);if(!board)throw new Error(`Unknown board ${declaration.board}`);
     await snapshot(board.provider);
     let activeContext:StepExecutionContext|undefined;
-    job=mcuArtifactJob({...shared,boardName:declaration.id,artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})},board:{kind:"external",adapter:lazyBoard(board,manifest,()=>activeContext?.signal,validateSources),ownership:board.ownership??"owned"},
+    job=mcuArtifactJob({...shared,boardName:declaration.id,artifact:{target:declaration.target!,...(declaration.output===undefined?{}:{output:declaration.output})},board:{kind:"external",adapter:lazyBoard(board,manifest,()=>activeContext?.signal),ownership:board.ownership??"owned"},
      ...(declaration.reconnects===undefined?{}:{reconnects:declaration.reconnects}),...(declaration.recoverTimeouts===undefined?{}:{recoverTimeouts:declaration.recoverTimeouts})},{onProvision(context){activeContext=context;}});
     const lock=physicalResourceStep({name:declaration.id,resourceId:board.resourceId!,...(board.lockTimeoutMs===undefined?{}:{timeoutMs:board.lockTimeoutMs})});
     job=testJob({...job,workflow:[job.workflow[0]!,lock,...job.workflow.slice(1)]});
@@ -119,7 +112,6 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
   }catch(cause){throw new CautestError(`${declaration.origin.file}: jobs.${declaration.id}: ${cause instanceof Error?cause.message:String(cause)}`,{code:"config_error",cause});}
  }
  const config=testConfig({...manifest.project,jobs});
- for(const source of [...sourceSet].sort())if(!sourceHashes.has(source))sourceHashes.set(source,await hashFile(source));
- const hash=hashBytes(stableSerialize({manifest,sources:[...sourceHashes]}));
- return {config,path:resolved,dir:manifest.projectRoot,hash,sources:[...sourceHashes.keys()]};
+ const hash=hashBytes(stableSerialize({manifest}));
+ return {config,path:resolved,dir:manifest.projectRoot,hash,sources:[...sourceSet]};
 }

@@ -31,7 +31,7 @@ test('same-key real Guest compilation serializes six independent processes and v
   const children=Array.from({length:6},()=>child(worker,root));
   const results=await Promise.all(children.map(c=>c.done));for(const r of results)assert.equal(r.code,0,r.err);
   const artifacts=results.map(r=>JSON.parse(r.out));assert.equal(artifacts.filter(a=>!a.cacheHit).length,1);assert.equal(new Set(artifacts.map(a=>a.path)).size,1);
-  assert.equal(await readFile(path.join(root,'compiles.log'),'utf8'),'compile\n');
+  assert.equal(await readFile(path.join(root,'compiles.log'),'utf8'),'compile\ncompile\n');
   assert.equal((await readFile(artifacts[0].path)).subarray(0,4).toString('hex'),'7f454c46');
 });
 

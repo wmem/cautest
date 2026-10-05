@@ -109,12 +109,12 @@ No Lua source, function body, arbitrary expression or CLI plan JSON is executed
 as a manifest. User-specified provider modules are trusted local configuration,
 just like existing `.mjs` configuration files.
 
-A receipt keeps output roles, byte SHA-256, build context and CTP
-`protocolBuildId` separate. Unknown/missing/corrupt residual outputs trigger a
-real rebuild; failed builds cannot reuse old binaries. Shared target builds
-are deduplicated per invocation. A second Job with conflicting build env is
-rejected; use explicit independent targets/configurations for such Jobs.
-Persistent build receipts are env-keyed. Source changes during a run are errors.
+A receipt keeps output roles, paths, sizes, build context and CTP
+`protocolBuildId` separate. Each invocation calls the ordinary Xmake build;
+Xmake owns timestamp dependencies and incremental compilation. Missing outputs
+are rebuilt by Xmake; build errors block execution. Cautest does not read source
+or binary bytes to validate a cache. Shared target builds are deduplicated per
+invocation; conflicting declared build environments require isolated targets.
 Xmake configuration/output contexts must be isolated explicitly; Cautest does
 not invent inheritance from an application target, configure cross toolchains,
 or guess firmware/module outputs by suffix.
@@ -185,14 +185,14 @@ ctest.native {
 
 每轮 Job 使用专用 GCOV_PREFIX 目录，按原始对象路径匹配 gcno/gcda，不读取
 build 目录的历史计数。同名源码分别处理；共享库 notes 可被多个消费者只读
-引用。gcno 作为 `gcov-note-*` 输出进入 Receipt 的 SHA-256 校验，缺失或损坏
-时重新构建。收集使用 `runWhen = "always"`，测试 FAIL 后仍尝试生成报告，
+引用。gcno 作为 `gcov-note-*` 显式输出进入 Receipt；缺失时只移除对应对象，
+由 Xmake 重编译。不使用内容摘要检查 notes；损坏应显式重建。收集使用 `runWhen = "always"`，测试 FAIL 后仍尝试生成报告，
 保留失败状态；工具错误或缺少插桩 notes 返回 ERROR，构建失败不会伪造覆盖率。
 
 Coverage Artifact 的 `metadata.reports` 列出实际 `.gcov` 路径；Xmake 报告位于
 本轮结果目录的 `coverage/<Job ID>/reports/`，收集不会将 gcno/gcda 写回构建
 目录。配置加载、list 和 plan 不执行构建或收集，doctor 检查 gcov 是否可用。
-新声明使用 Xmake Manifest v2，读取方继续接受无 coverage 的 v1。
+新声明使用 Xmake Manifest v3，读取方继续接受无 coverage 的 v1。
 
 随包 Native 示例可在准备工具后执行：
 
@@ -256,8 +256,9 @@ The [MCU Host simulation](../../examples/xmake/mcu-simulated/xmake.lua) builds
 real C firmware code with Xmake, then runs the existing freestanding reference
 MCU/CTP transport with fragmented I/O. `cautest.mcu-simulated` generates an
 explicit Registry and embeds a 24-hex protocol identity (the reference MCU
-storage is 32 bytes including termination). The full input SHA-256 still
-invalidates compilation/linking; the output file SHA-256 remains independent.
+storage is 32 bytes including termination). This persistent target identity is
+independent of source bytes. Compilation/linking dependencies belong to Xmake;
+source rebuilds within the same target directory may retain the same identity.
 This is **not** a real MCU target, real startup/linker-script verification or SPI
 acceptance. Real firmware is an application-owned target with explicitly
 exported firmware output and embedded protocol identity.
@@ -304,8 +305,8 @@ xmake ct --json integration.kbuild-contract
 This example deliberately supports prepared **x86_64** Kernel trees, not UML.
 It exports `ko`, `symbols`, `order` and `kernel-identity` roles from the same
 phony target. All roles are validated by the receipt and a single invocation is
-shared between the workflow's references. Kernel configuration, release and
-Module.symvers are hashed before/after building. The contract test checks ELF,
+shared between the workflow's references. Kernel configuration and Module.symvers metadata, plus the release value,
+are checked before/after building. The contract test checks ELF,
 vermagic release and the expected exported symbol; **it never loads the module,
 executes a .ko, boots a Kernel or tests a Driver ABI**. This is not full ABI
 compatibility validation; final module loading also needs matching Kernel config,
@@ -342,14 +343,15 @@ appear in saved execution manifests and may appear in CLI descriptions. Cautest
 does not dump the complete inherited environment; user build/provider commands
 remain responsible for not printing their own secrets.
 
-### Provider dependency snapshots
+### Provider source provenance
 
 Board factories remain lazy: `list`, `plan` and `doctor` do not import/evaluate
 Board modules or call their factories. A parse-only Node subprocess discovers
 static ESM imports and re-exports (including cycles) before any build/provision.
-Source bytes are included in the configuration hash and checked again before
-constructing the Board and before flashing. Changed or missing inputs abort the
-run rather than deploying from a mixed definition.
+Source paths are retained as configuration provenance. The configuration ID
+describes the loaded declaration data; source bytes are not hashed or monitored
+again before constructing the Board or flashing. Finish configuration edits
+before starting a run. Build failures still block provisioning.
 
 Dynamic `import()`, CommonJS `require()`, native add-on dependencies and data read
 by a factory are not inferable from static ESM imports. Declare those inputs:
@@ -367,8 +369,9 @@ ctest.board {
 Input patterns are relative to the declaring Lua file and must remain inside the
 project root. Required patterns matching nothing fail configuration. The optional
 `provider.inputs` field also works for Environment and Workflow providers.
-A `.cjs`, `.node` or JSON file reached through a static import is hashed without
-being evaluated; its further dynamic dependencies must be declared explicitly.
+A `.cjs`, `.node` or JSON file reached through a static import is recorded as
+a source path without being evaluated or hashed; its further dynamic
+dependencies must be declared explicitly.
 The parse-only subprocess uses the running Node executable and its VM-module
 parser; no npm package is installed and no provider code is executed there.
 

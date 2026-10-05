@@ -21,7 +21,7 @@ export interface ManifestJob extends TestJobCommonInput {
 }
 export interface ManifestResource {readonly kind:"board"|"environment";readonly id:string;readonly provider:ProviderReference;readonly options?:Readonly<Record<string,unknown>>;readonly origin:Origin;readonly ownership?:"owned"|"borrowed";readonly resourceId?:string;readonly lockTimeoutMs?:number}
 export interface XmakeManifest {
- readonly schemaVersion:1|2;readonly kind:"cautest.xmake-manifest";readonly projectRoot:string;readonly xmake:string;readonly buildContext:BuildContext;
+ readonly schemaVersion:1|3;readonly kind:"cautest.xmake-manifest";readonly projectRoot:string;readonly xmake:string;readonly buildContext:BuildContext;
  readonly project:{readonly defaults?:TestConfigDefaultsInput;readonly profiles?:readonly TestProfileInput[]};
  readonly jobs:readonly ManifestJob[];readonly boards:readonly ManifestResource[];readonly environments:readonly ManifestResource[];readonly sources:readonly string[];
 }
@@ -61,7 +61,7 @@ export function validateManifest(value:unknown):asserts value is XmakeManifest{
   if(typeof job.id!=="string"||!job.id.length)fail(`${label}: id is required`);
   if(ids.has(job.id))fail(`Duplicate Job ID ${job.id}: ${ids.get(job.id)} and ${label}`);ids.set(job.id,label);
   if(job.run!==undefined)validateRun(job.run,`${label}.run`);
-  if(job.coverage!==undefined){if(v.schemaVersion===1)fail(`${label}: coverage requires Xmake Manifest v2`);try{validateNativeCoverage(job.coverage);}catch(e){fail(`${label}: ${e instanceof Error?e.message:String(e)}`);}}
+  if(job.coverage!==undefined){if(v.schemaVersion===1)fail(`${label}: coverage requires Xmake Manifest v3`);try{validateNativeCoverage(job.coverage);}catch(e){fail(`${label}: ${e instanceof Error?e.message:String(e)}`);}}
   if(job.buildTimeoutMs!==undefined&&(typeof job.buildTimeoutMs!=="number"||!Number.isFinite(job.buildTimeoutMs)||job.buildTimeoutMs<=0))fail(`${label}.buildTimeoutMs must be positive`);
   try{
    if(["native","mcu","kernel"].includes(first.kind))validateArtifactRef({target:job.target,...(job.output===undefined?{}:{output:job.output})});

@@ -29,7 +29,9 @@ KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox npm run test:driver:uml
 
 `doctor` 的 Host/Toolchain Probe 会在系统临时目录编译最小程序，不写入项目源码树；Kernel 污染检查只读 `.config`、`include/config/auto.conf` 和 `include/generated/autoconf.h`，不会自动清理源码。
 
-新增 Build 能力至少应验证输入变更会改变指纹、缓存命中不会跳过完整性校验、禁用缓存写入 Work 而非源码、并发发布是原子的。新增 Resource 应验证 ready、失败、owned/borrowed 和 Cleanup 后状态。新增 CTP3 Event 应同时验证任意分片、错误顺序和 C/JS 两侧。
+新增 Build 能力至少应验证源码/真实 Header 依赖的时间戳变化会重建、无变化仍调用宿主构建但不重编译、失败拒用旧产物、缺失输出重建、禁用缓存写入 Work 而非源码、并发构建与发布受锁保护。默认运行不能通过读取源码或产物内容计算摘要；发行包安装校验单独验证。新增 Resource 应验证 ready、失败、owned/borrowed 和 Cleanup 后状态。新增 CTP3 Event 应同时验证任意分片、错误顺序和 C/JS 两侧。
+
+真实 Xmake 的源码修改负例须跨过其秒级 mtime 粒度，避免编译结束后同一秒修改文件却运行上一场景的对象；验收脚本显式等待，不用摘要或强制全量构建掩盖依赖行为。
 
 真实硬件 MCU 不属于默认仓库门禁；项目 Adapter 负责 Flash、Reset、Transport 和物理环境稳定性，Cautest 公共测试使用 Host Simulation 与 External Adapter Contract 覆盖其边界。
 
@@ -77,3 +79,5 @@ KERNEL_SRC=/path/to/linux BUSYBOX_SRC=/path/to/busybox npm run test:driver:uml
 `test:xmake:uml`。后者只有真实 Kernel Test 与 Driver Guest CTP、日志、清理及缓存复跑均通过
 才成功；缺失前提的退出码 77 不是测试通过。默认套件中的 Agent 模拟器、人工 Kernel fixture
 和假 Make 只覆盖各自组件契约，不会满足真实 UML 或实板门禁。
+
+2026-10-05 的增量构建改造已在 Linux x86_64、Xmake 3.1.1、Node 24.15.0、GCC 13.3.0、Linux 6.8.12 与 BusyBox 1.38.0 上验证：默认测试 163/163、真实 Xmake 测试 36/36、编译器/链接/大目录矩阵 4/4，以及 Host headers 下的产品 Kbuild 1/1。真实 UML 冷/热各通过 5 个 C Case，12 项故障与恢复矩阵通过，旧 JS 入口的同样 5 个 Case 结果一致，并复用 Kernel/BusyBox 增量产物。原始日志与报告保存于当前工作区的 `.cautest/verification-20261005/`，不纳入发行包；实板 MCU 与其他宿主平台未验证。
