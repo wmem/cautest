@@ -1,6 +1,6 @@
 /** 由 versions.json 生成；请运行 `npm run versions:sync`，不要手工修改。 */
 export const CAUTEST_VERSIONS = Object.freeze({
-  release: "0.6.0",
+  release: "0.6.1",
   cApi: {"major":2,"minor":2},
   ctp: {"major":3,"minor":1},
   kernelAbi: {"major":3,"minor":0,"magic":"0xca7e57U"},
