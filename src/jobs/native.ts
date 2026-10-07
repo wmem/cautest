@@ -22,7 +22,7 @@ const nativeCaseTimeoutGraceMs = 250;
 const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c"];
 const kitInputs = [...kitSources, "include/cautest/version.h", "include/cautest/cautest.h", "include/cautest/ctp3.h", "platform/posix/posix_platform.h", "target/posix/posix_target.h", "templates/native-entry.c.tmpl", "templates/native-registry.c.tmpl"];
 const inputFields = new Set(["id", "level", "description", "tags", "enabled", "timeoutMs", "env", "policy", "tests", "sources", "headers", "suites", "artifactName", "build", "run", "coverage"]);
-const buildFields = new Set(["compiler", "includeDirs", "defines", "cflags", "ldflags", "workspaceSize", "generatedDir", "timeoutMs", "cache"]);
+const buildFields = new Set(["compiler", "linker", "includeDirs", "defines", "cflags", "ldflags", "workspaceSize", "generatedDir", "timeoutMs", "cache"]);
 const runFields = new Set(["include", "exclude", "suite", "case", "parameter", "caseTimeoutMs", "runTimeoutMs", "session", "suitePolicy", "expectedBuildId", "stepTimeoutMs"]);
 const coverageFields = new Set(["tool", "timeoutMs"]);
 
@@ -137,6 +137,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
   const unknown = Object.keys(input).filter((key) => !inputFields.has(key));
   if (unknown.length > 0) throw new CautestError(`Native C Test 包含未知字段: ${unknown.join(", ")}`, { code: "config_error" });
   rejectNested(input.build, buildFields, "Native build");
+  if (input.build?.linker !== undefined && (typeof input.build.linker !== "string" || input.build.linker.trim().length === 0)) throw new CautestError("Native build.linker 必须是非空命令", { code: "config_error" });
   rejectNested(input.run, runFields, "Native run");
   rejectNested(input.coverage, coverageFields, "Native coverage");
   if (input.coverage !== undefined) validateNativeCoverage(input.coverage);
@@ -150,7 +151,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
   const run = Object.freeze({ ...(input.run ?? {}) });
   const compile = defineStep({
     kind: "nativeCompile", name: artifactName, phase: "build", ...(build.timeoutMs === undefined ? {} : { timeoutMs: build.timeoutMs }),
-    details: { tests, sources, headers, compiler: build.compiler ?? "cc", artifactName },
+    details: { tests, sources, headers, compiler: build.compiler ?? "cc", ...(build.linker ? {linker: build.linker} : {}), artifactName },
     async execute(context) {
       const effectiveRun = effectiveWorkflowCTestRun(context, run, artifactName);
       const project = context.project.configDir;
@@ -163,14 +164,18 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
         ...expandedHeaders.map((header) => path.dirname(path.join(project, header))),
       ])].sort();
       const compiler = build.compiler ?? "cc";
+      const linker = build.linker ?? compiler;
       const environment = effectiveEnvironment(context);
       const [version, target] = await Promise.all([
         runCommand({ program: compiler, args: ["--version"], cwd: project, env: environment, signal: context.signal }),
         runCommand({ program: compiler, args: ["-dumpmachine"], cwd: project, env: environment, signal: context.signal }),
       ]);
       if (version.exitCode !== 0 || version.stdout.trim().length === 0) throw new CautestError(`无法识别 Compiler: ${compiler}`, { code: "tooling_error" });
+      const linkerVersion = linker === compiler ? version : await runCommand({ program: linker, args: ["--version"], cwd: project, env: environment, signal: context.signal });
+      if (linkerVersion.exitCode !== 0 || linkerVersion.stdout.trim().length === 0) throw new CautestError(`无法识别 Linker: ${linker}`, { code: "tooling_error" });
       const metadata = {
         schema: CAUTEST_CACHE_VERSIONS.nativeFingerprint, compiler: version.stdout.trim(), target: target.stdout.trim(), suites, includeDirs: build.includeDirs ?? [],
+        linker, linkerVersion: linkerVersion.stdout.trim(),
         defines: build.defines ?? {}, cflags: build.cflags ?? [], ldflags: build.ldflags ?? [], coverage: input.coverage !== undefined,
         workspaceSize: build.workspaceSize ?? 65_536, caseTimeoutMs: effectiveRun.caseTimeoutMs ?? 1_000,
         environment: declaredEnvironment(context),
@@ -194,7 +199,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
         await writeChanged(registry, registrySource(suites));
         await writeChanged(entry, entrySource(buildId, build.workspaceSize ?? 65_536, effectiveRun.caseTimeoutMs ?? 1_000));
         const flags = ["-std=c99", "-Wall", "-Wextra", `-I${path.join(kitRoot, "include")}`, `-I${path.join(kitRoot, "platform/posix")}`, `-I${path.join(kitRoot, "target/posix")}`, ...includeDirs.map(directory => `-I${directory}`), ...Object.entries(build.defines ?? {}).map(([name, value]) => defineArgument(name, value)), ...(input.coverage === undefined ? [] : ["--coverage", "-DCAUTEST_GCOV=1"]), ...(build.cflags ?? [])];
-        const hit = await compileC({compiler, sources: [...expandedTests, ...expandedSources].map(file => path.join(project, file)).concat([registry, entry], kitSources.map(file => path.join(kitRoot, file))),
+        const hit = await compileC({compiler, ...(build.linker ? {linker: build.linker} : {}), sources: [...expandedTests, ...expandedSources].map(file => path.join(project, file)).concat([registry, entry], kitSources.map(file => path.join(kitRoot, file))),
           directory: cacheDir, output: targetPath, cflags: flags, ldflags: build.ldflags ?? [], dependencies: expandedHeaders.map(file => path.join(project, file)),
           env: environment, signal: context.signal, onOutput: context.output, rebuild: !cacheEnabled});
         await chmod(targetPath, 0o755);

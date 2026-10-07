@@ -4,17 +4,19 @@
 
 ## Xmake Addon 命令
 
-本仓库提供 Addon `cautest`，安装后可以在消费工程中直接运行 `xmake ctest`，无需复制工具源码或在工程中 `includes()`。默认读取工程根目录 `ctest.lua`，`--config=<路径>` 可选择其他配置；相对路径按工程根目录定位，其他目录执行时使用 `-P <工程目录>`。
+本仓库提供 Addon `cautest`，安装后可以在消费工程中直接运行 `xmake ctest`，无需复制工具源码或在工程中 `includes()`。Addon 0.1.5 起优先读取工程根目录的原生 `cautest.config.mjs/js/cjs`；`--config=<路径>` 可选择配置。JS 路径直接调用 Cautest CLI，不转换 Lua manifest 或注入测试 target；项目可用 `set_values("cautest.prepare", "任务名")` 声明工具链导出任务。相对配置路径按工程根目录定位，其他目录执行时使用 `-P <工程目录>`。
 
 分发配方位于 [xmake-addons-repo](../xmake-addons-repo/README.md)，由工具自己的 [准备脚本](scripts/prepare-addon.lua)安装运行资源。现有工程内接入入口保持可用。MCU 固件的公开构建规则通过 includes("@addon/cautest/mcu") 使用，接入见 [Xmake 使用说明](docs/usage/xmake.md#真实-mcu-固件)。
 
 ```sh
 xmake ctest
-xmake ctest --config=ctest.lua
+xmake ctest --config=cautest.config.mjs
 xmake ctest -P /path/to/project --help
 ```
 
-新命令为 `ctest`，配置继续使用现有 `ctest.*` 声明。插件只在命令运行时为子进程注入工程接入文件，复用既有 `ct` 执行链路及退出码；内部构建和产物查询继承该接入环境。普通 Xmake 命令不因此自动读取 `ctest.lua`。安装时按 npm lock 编译 TS，运行时仅需 Node，不携带编译依赖。Native 测试需要消费工程自己的 `xmake.lua`，测试目标可在 `ctest.lua` 中声明。
+原生 JS 中的测试声明、依赖、筛选、执行和报告由 Cautest 管理；Native 构建复用 Make/depfile。Xmake 只负责安装工具及项目明确声明的准备任务。安装时按 npm lock 编译 TS，运行时仅需 Node，不携带编译依赖。直接 Node CLI 不要求 Xmake 工程；需要其导出的环境时先执行项目导出任务。
+
+尚未迁移的工程没有 JS 根配置时继续读取 `ctest.lua`，显式选择 `.lua` 时也沿用原 `ctest.*` 和 Native target 执行链路。两种入口不会合并测试清单；原有 MCU 工程可独立迁移。
 
 Addon `0.1.1` 在启动测试前将工程目录和入口文件统一为实际路径，避免 Xmake 保存的
 符号链接路径与编译器执行目录不一致，导致安装目录中的运行时源码被转换为错误的

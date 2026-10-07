@@ -1,6 +1,31 @@
 # Xmake Addon 接入
 
-消费工程声明插件后直接运行 `xmake ctest`，默认读取工程根目录的 ctest.lua。插件安装时在 Addon 目录编译 TypeScript；应用不需要 tools/cautest、Node 工程或 init 任务。
+消费工程声明插件后直接运行 `xmake ctest`。Addon 0.1.5 起优先读取工程根目录的 cautest.config.mjs/js/cjs；没有 JS 配置时，未迁移工程继续使用 ctest.lua。插件安装时在 Addon 目录编译 TypeScript；应用不需要 tools/cautest、Node 工程或 init 任务。
+
+## 原生 JS 管理测试
+
+测试通过 `nativeCTestJob()`、Factory 和普通 JS import 组织，写法见 [Native C](native-c.md) 和 [项目组织](project-organization.md)。该路径由原生 CLI 完成发现、计划、构建调度、运行及报告，不导出 Lua manifest，不通过 RCFILES 创建测试 target。Native C 由已有 Make/depfile 构建，编译器和链接驱动可以分别通过 build.compiler、build.linker 配置。
+
+项目需要 Xmake 导出工具链时，在根 xmake.lua 声明准备任务：
+
+```lua
+set_values("cautest.prepare", "test-toolchain")
+includes("test/xmake.lua")
+```
+
+任务名称由项目决定；插件在启动 JS CLI 前执行该任务，捕获准备输出，避免混入 `--json` 的 stdout。准备失败时不运行测试。任务只应导出环境数据，测试源码、依赖、Suite 和 Job 继续由 JS 维护。未声明任务时直接启动 CLI；直接 Node CLI 不会自动运行 Xmake 准备任务。
+
+```sh
+xmake ctest
+xmake ctest --list --json
+xmake ctest --config=cautest.config.mjs --case=example unit.example
+```
+
+插件保留原 Xmake 参数形状，例如 `--reporter=json,junit` 转为原生 CLI 的重复选项，`--test-profile` 转为 `--profile`，进程退出码直接返回。JS 配置中的源码路径仍相对于根 JS 配置文件，而不是片段文件。真实准备任务、嵌套执行、筛选与失败退出回归见 [原生插件测试](../../test/xmake-js-native.test.js)。
+
+## 原有 Lua 工程
+
+以下说明用于尚未迁移的 Lua 工程，显式 `.lua` 配置或不存在 JS 根配置时才使用这条执行链路。
 
 ```lua
 add_repositories("wmem-xmake-addon git@github.com:wmem/xmake-addons.git")

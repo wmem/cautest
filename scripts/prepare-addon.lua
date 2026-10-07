@@ -19,6 +19,7 @@ function main(output)
         "xmake.lua",
         "LICENSE",
         "package.json",
+        "cautest.js",
     }) do
         os.cp(path.join(root, name), runtime)
     end
