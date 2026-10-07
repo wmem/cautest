@@ -1,0 +1,26 @@
+START Job mcu.all
+START Step mcu.all/build/artifactBuild:firmware
+END Step mcu.all/artifactBuild:firmware SUCCESS 2071ms
+START Step mcu.all/provision/physicalResourceLock:mcu.all
+END Step mcu.all/physicalResourceLock:mcu.all SUCCESS 34ms
+START Step mcu.all/provision/mcuBoardStart:mcu.all
+Invalid coresight component, cidr=0x0
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+PASS: 1000000 Hz 烧录；读回校验=True；62792 字节；/share/project/common/mcu/code/gd32-template/build/mcu-test/board/flash-20261007-123439-821112607
+Invalid coresight component, cidr=0x0
+END Step mcu.all/mcuBoardStart:mcu.all SUCCESS 4286ms
+START Step mcu.all/run/mcuCTestRun:mcu.all
+END Step mcu.all/mcuCTestRun:mcu.all FAIL 100ms
+START Step mcu.all/collect/mcuLogs:mcu.all
+END Step mcu.all/mcuLogs:mcu.all SUCCESS 0ms
+END Job mcu.all FAIL 6631ms
+Run 20261007043436764-f593a529: FAIL (6633ms)
+FAIL mcu.all (6631ms)
+  PASS rtos_thread/thread
+  FAIL rtos_semaphore/semaphore
+    integer equality at src/project/template/tests/rtos/test_semaphore.c:13 expected={"type":"integer","value":"0"} actual={"type":"integer","value":"1"}
+  PASS rtos_mutex/mutex
+Cases: PASS 2, FAIL 1, ERROR 0, SKIP 0

@@ -3,8 +3,16 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { CAUTEST_VERSIONS, CautestError, EventRecorder, mcuCTestJob, SimulatedMcuBoard } from "../dist/config/index.js";
+import { CAUTEST_VERSIONS, CautestError, EventRecorder, mcuCTestJob, SimulatedMcuBoard, resolveCautestC } from "../dist/config/index.js";
 import { executeWorkflow } from "../dist/workflow/engine.js";
+
+test("真实 MCU Kit 只包含通用 C 源码，不依赖模拟板模型", () => {
+  const kit = resolveCautestC({ platform: "mcu" });
+  assert.equal(kit.platform, "mcu");
+  assert.deepEqual(kit.sources.map((source) => source.slice(kit.packageRoot.length + 1)),
+    ["core/cautest.c", "protocol/ctp3.c", "target/mcu/mcu.c"]);
+  assert.ok(Object.isFrozen(kit.sources));
+});
 
 test("Host Simulated MCU 完成 Firmware 构建、Board Reset 和 CTP3 Run", async () => {
   const root = path.resolve(new URL("..", import.meta.url).pathname);

@@ -1,34 +1,27 @@
-# Xmake adapter (Linux x86_64, Xmake 3.1.1)
+# Xmake Addon 接入
 
-Clone this repository into the application's `tools/cautest`, then run `npm ci`
-in that directory. npm's prepare builds the Node runtime; Xmake does not install
-anything. With dependencies already installed, use `npm run prepare`. Runtime
-execution after preparing needs Node >=20.6, not node_modules.
+消费工程声明插件后直接运行 `xmake ctest`，默认读取工程根目录的 ctest.lua。插件安装时在 Addon 目录编译 TypeScript；应用不需要 tools/cautest、Node 工程或 init 任务。
 
 ```lua
--- application's xmake.lua; Cautest does not set project/version/toolchains
-includes(os.files("tools/cautest/xmake.lua"))
+add_repositories("wmem-xmake-addon git@github.com:wmem/xmake-addons.git")
+add_addons("cautest 0.1.x")
 ```
 
 ```lua
--- application's ctest.lua: explicit root, deterministic sorted fragments
+-- ctest.lua：测试可以按目录分散声明。
 ctest.project {defaults = {resultDir = ".cautest/results"}}
 ctest.include {patterns = {"modules/**/test.lua"}}
 ```
 
-The entry automatically loads `ctest.lua` from the Xmake project root after
-registering the `ctest` API and Native rules and parsing the root `xmake.lua`.
-Product build rules and variables declared after the tool entry are therefore
-available to the test configuration. If the tool has not been installed,
-`os.files()` returns no entry and the test configuration is not loaded, so a
-project's `init` task can run first. No dependency installation happens while
-loading Cautest.
+`xmake ctest` 在子进程注入现有测试规则和配置 API；普通工程构建不自动读取 ctest.lua。Native 测试 target 可放在测试配置内。需要随普通构建使用的 MCU 固件 target 应放在工程自己的 xmake.lua 中，并显式 `includes("@addon/cautest/mcu")` 加载公开规则，见下文[真实 MCU 固件](#真实-mcu-固件)。
+
+直接源码接入仍可使用 includes("tools/cautest/xmake.lua") 和旧命令 xmake ct；本页命令默认采用 Addon 的 ctest。准备源码工具时在工具仓库执行 npm ci，工具不会在运行时自动安装依赖。
 
 Choose another Lua configuration with either spelling:
 
 ```sh
-xmake ct --config=tests/host.lua
-xmake ct -c "tests/host.lua" --list --json
+xmake ctest --config=tests/host.lua
+xmake ctest -c "tests/host.lua" --list --json
 ```
 
 Relative configuration paths are anchored to the selected project root,
@@ -80,15 +73,15 @@ the existing C Runtime. `run.suite` is a discovery filter; it is not a linker
 input. One target can have several Suites; a Job is not a Case or a Suite.
 
 ```sh
-xmake ct                         # run all enabled Jobs
-xmake ct --list --json
-xmake ct --plan unit.math
-xmake ct --doctor --level=unit
-xmake ct --describe --json
-xmake ct --level=unit,component --tag=host,math
-xmake ct --suite='math_*' --case=adds unit.math
-xmake ct --test-profile=ci --reporter=json,junit
-xmake ct --output-dir=out/test-results unit.math
+xmake ctest                         # run all enabled Jobs
+xmake ctest --list --json
+xmake ctest --plan unit.math
+xmake ctest --doctor --level=unit
+xmake ctest --describe --json
+xmake ctest --level=unit,component --tag=host,math
+xmake ctest --suite='math_*' --case=adds unit.math
+xmake ctest --test-profile=ci --reporter=json,junit
+xmake ctest --output-dir=out/test-results unit.math
 ```
 
 Job patterns and levels are OR; tags are AND; dimensions are AND. List/plan
@@ -198,7 +191,7 @@ Coverage Artifact 的 `metadata.reports` 列出实际 `.gcov` 路径；Xmake 报
 
 ```sh
 xmake f -y --coverage=y
-xmake ct --reporter=json,junit
+xmake ctest --reporter=json,junit
 ```
 
 真实回归入口为 [test/xmake-coverage.test.js](../../test/xmake-coverage.test.js)，
@@ -260,7 +253,9 @@ never executes Steps or invokes the build provider.
 
 Board factories use `ctest.board {id, provider={module,export}, options,
 resourceId, ownership}` and `ctest.mcu {id,target,board}`. Board modules are
-loaded lazily on flash, not on list/plan. Real hardware has not been validated.
+loaded lazily on flash, not on list/plan. Physical GD32 hardware has been validated through both the standalone CLI and
+an Xmake RT-Thread test firmware; see [real MCU integration](mcu-real.md) and
+the [RTOS acceptance record](../tests/mcu-rtthread-xmake-20261007.md).
 Kernel/Driver now have artifact-backed workflows and a shared declarative UML
 Environment factory; see [Kernel/Driver integration](xmake-kernel-driver.md).
 Their component contracts are tested, but real UML acceptance is still blocked
@@ -284,6 +279,45 @@ The implementation is verified on supplied Xmake 3.1.1 Linux x86_64. One pinned
 private accessor supplies the current Lua filename. Other versions/platforms,
 real MCU SPI and actual UML kernel/driver execution need their respective
 acceptance tests before being declared supported.
+
+## 真实 MCU 固件
+
+`cautest.mcu` 仅添加公共 core、CTP3 和 MCU 运行时，生成 Registry、24 位十六进制 Build ID 及 cautest_config.h。应用负责工具链、启动代码、链接脚本、RTOS、驱动和 C 入口；规则不添加 POSIX main、模拟板或 malloc 移植。普通构建需公开 include：
+
+```lua
+includes("@addon/cautest/mcu")
+target("mcu-test")
+set_kind("binary")
+set_default(false)
+-- 此处添加应用自己的芯片/RTOS 规则、源码和链接配置。
+add_rules("cautest.mcu")
+add_values("cautest.registry.suites", "rtos_thread", "rtos_semaphore")
+add_values("cautest.workspaceSize", 2048) -- 可选，默认 2048 字节
+add_files("tests/port/runtime.c", "tests/rtos/*.c")
+target_end()
+```
+
+生成头提供 CAUTEST_MCU_BUILD_ID 和 CAUTEST_MCU_WORKSPACE_SIZE，Registry 符号为 cautest_mcu_registry。C 入口使用这些值初始化 `cautest/mcu.h`，实现 read/write 并在线程中 poll，完整契约见[板端接入](mcu-real.md#板端只实现收发)。Suite 值是明确的 C 符号，不能写筛选通配符。生成目录在规则加载时固定，后续芯片规则切换平台和工具链不会改变编译路径；正常增量构建沿用原身份，不读取源码计算摘要。
+
+```lua
+-- ctest.lua：Board Provider 是应用脚本，下载方式由 MSP/平台提供。
+ctest.board {
+    id = "test-board", resourceId = "probe:实际序列号",
+    provider = {module = "tests/board.mjs", export = "create"},
+}
+ctest.mcu {id = "mcu.all", target = "mcu-test", board = "test-board"}
+```
+
+```sh
+xmake build mcu-test              # 仅编译，不连接硬件
+xmake ctest --list
+xmake ctest --plan mcu.all         # 不调用 Board 工厂
+xmake ctest mcu.all               # 构建、烧录、复位、协议执行及清理
+xmake ctest --suite='rtos_*' mcu.all
+xmake ctest --case=semaphore --reporter=json,junit mcu.all
+```
+
+Board 工厂在执行阶段返回 McuBoardAdapter。Build ID 从构建产物 Receipt 传给 Host，Boot ID 从本轮 reset 返回并由固件 HELLO 确认。普通应用 UART/Shell 能交互不代表存在 Cautest 服务；测试固件占用协议 UART 时应关闭同一路 Shell/打印。GD32 模板的独立 RT-Thread 固件、板配置继承和实测结果见[验证记录](../tests/mcu-rtthread-xmake-20261007.md)。
 
 ## MCU artifact adapter and physical locking
 
@@ -334,7 +368,7 @@ Prepare a Kernel build/headers directory yourself, then configure explicitly:
 
 ```sh
 xmake f -y --kernel_build=/absolute/prepared/kernel-build --demo_value=7
-xmake ct --json integration.kbuild-contract
+xmake ctest --json integration.kbuild-contract
 ```
 
 This example deliberately supports prepared **x86_64** Kernel trees, not UML.
@@ -351,8 +385,8 @@ The Kbuild-only regression uses the explicitly supplied `KERNEL_BUILD` and never
 loads host modules. Separately, the real UML acceptance has now built and booted
 the supplied Linux 6.6.157 with BusyBox 1.36.1, exercising both Kernel C Test and
 Driver read/write/ioctl/invalid-input cases. See the [Kernel/Driver guide](xmake-kernel-driver.md)
-for the distinct cold/hot and failure-matrix commands. MCU physical hardware is
-explicitly deferred; the MCU SPI fixture is a host-compiled behavioral model.
+for the distinct cold/hot and failure-matrix commands. The MCU SPI fixture is a host-compiled behavioral model; physical GD32 RTOS
+acceptance is recorded separately and does not validate SPI wiring or hardware.
 
 ## Explicit acceptance commands and provider dependencies
 

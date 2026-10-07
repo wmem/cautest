@@ -110,7 +110,11 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
     recursive: true,
     filter: (source) => source !== installedGuide,
   });
-  await cp(path.join(packageRoot, "examples"), path.join(root, "examples"), { recursive: true });
+  await cp(path.join(packageRoot, "examples"), path.join(root, "examples"), {
+    recursive: true,
+    // 示例运行后的固件、测试结果及 Python 缓存不属于分发内容。
+    filter: (source) => ![".cautest", "__pycache__"].includes(path.basename(source)),
+  });
   await mkdir(path.join(root, "assets"));
   await cp(path.join(packageRoot, "assets/cautest-c"), path.join(root, "assets/cautest-c"), { recursive: true });
   await cp(path.join(packageRoot, "assets/kernel-config"), path.join(root, "assets/kernel-config"), { recursive: true });

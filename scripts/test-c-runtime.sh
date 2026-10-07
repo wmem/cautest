@@ -25,6 +25,28 @@ $cc $strict -I"$project_dir/assets/cautest-c/include" \
   -o "$build_dir/ctp3-test"
 "$build_dir/ctp3-test"
 
+# 真实 MCU 公共轮询接口：分片、空闲、BYE、重初始化及收发错误。
+# shellcheck disable=SC2086
+$cc $strict -I"$project_dir/assets/cautest-c/include" \
+  "$project_dir/assets/cautest-c/core/cautest.c" \
+  "$project_dir/assets/cautest-c/protocol/ctp3.c" \
+  "$project_dir/assets/cautest-c/target/mcu/mcu.c" \
+  "$project_dir/test/c-runtime/test_mcu.c" -o "$build_dir/mcu-test"
+"$build_dir/mcu-test"
+
+# 接口及协议可在没有系统头文件的环境编译，不引入堆或 libc。
+for source in protocol/ctp3.c target/mcu/mcu.c; do
+  object="$build_dir/$(basename "$source" .c)-portable.o"
+  # shellcheck disable=SC2086
+  $cc $strict -ffreestanding -fno-builtin -nostdinc \
+    -I"$project_dir/assets/cautest-c/include" \
+    -c "$project_dir/assets/cautest-c/$source" -o "$object"
+  if nm -u "$object" | grep -E '\b(malloc|calloc|realloc|free|memcpy|memmove|memset|strlen)\b' >/dev/null; then
+    echo "MCU 公共接口存在 libc/heap 依赖: $source" >&2
+    exit 1
+  fi
+done
+
 # Common Core 必须保持 freestanding 且没有 libc 未解析依赖。
 # shellcheck disable=SC2086
 $cc $strict -ffreestanding -fno-builtin -nostdinc \

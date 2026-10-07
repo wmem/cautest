@@ -53,10 +53,12 @@ function write_changed(file, contents)
     os.mv(temporary, file)
 end
 function directory(target)
-    return path.absolute(path.join(target:autogendir(), "cautest"), os.projectdir())
+    return target:data("cautest.generated_directory")
+        or path.absolute(path.join(target:autogendir(), "cautest"), os.projectdir())
 end
 function generate(target, toolroot)
     local simulated = target:data("cautest.simulated") == true
+    local mcu = target:data("cautest.mcu") == true
     local suites = table.wrap(target:values("cautest.registry.suites"))
     assert(#suites > 0, target:name() .. ": cautest.registry.suites must contain explicit C symbols")
     local seen = {}
@@ -65,7 +67,7 @@ function generate(target, toolroot)
         seen[suite] = true
     end
     local dir = directory(target)
-    local workspace = target:values("cautest.workspaceSize") or 65536
+    local workspace = target:values("cautest.workspaceSize") or (mcu and 2048 or 65536)
     local timeout = target:values("cautest.caseTimeoutMs") or 1000
     assert(type(workspace)=="number" and workspace>0 and workspace==math.floor(workspace), "cautest.workspaceSize must be a positive integer")
     assert(type(timeout)=="number" and timeout>0 and timeout==math.floor(timeout), "cautest.caseTimeoutMs must be a positive integer")
@@ -81,12 +83,14 @@ function generate(target, toolroot)
     if simulated then target:add("defines", 'CAUTEST_MCU_BUILD_ID="' .. id .. '"') end
     local registry = {"#include <cautest/cautest.h>\n"}
     for _, suite in ipairs(suites) do table.insert(registry,"CAUTEST_SUITE_DECLARE(" .. suite .. ");\n") end
-    table.insert(registry,"\nCAUTEST_REGISTRY(" .. (simulated and "cautest_mcu_registry" or "cautest_generated_registry") .. ",\n")
+    table.insert(registry,"\nCAUTEST_REGISTRY(" .. ((simulated or mcu) and "cautest_mcu_registry" or "cautest_generated_registry") .. ",\n")
     local references = {}
     for _, suite in ipairs(suites) do table.insert(references,"    CAUTEST_SUITE_REF(" .. suite .. ")") end
     table.insert(registry,table.concat(references,",\n") .. ");\n")
     write_changed(path.join(dir,"registry.c"),table.concat(registry))
-    if not simulated then write_changed(path.join(dir,"entry.c"),string.format('#include "posix_target.h"\nextern const struct cautest_registry cautest_generated_registry;\nint main(void) {\n  const struct cautest_posix_target_config config = {"%s", %dUL, %dUL};\n  return cautest_posix_target_main(&cautest_generated_registry, &config);\n}\n',id,workspace,timeout)) end
+    if mcu then
+        write_changed(path.join(dir,"cautest_config.h"),string.format('#ifndef CAUTEST_GENERATED_CONFIG_H\n#define CAUTEST_GENERATED_CONFIG_H\n#define CAUTEST_MCU_BUILD_ID "%s"\n#define CAUTEST_MCU_WORKSPACE_SIZE %d\n#endif\n',id,workspace))
+    elseif not simulated then write_changed(path.join(dir,"entry.c"),string.format('#include "posix_target.h"\nextern const struct cautest_registry cautest_generated_registry;\nint main(void) {\n  const struct cautest_posix_target_config config = {"%s", %dUL, %dUL};\n  return cautest_posix_target_main(&cautest_generated_registry, &config);\n}\n',id,workspace,timeout)) end
 end
 function configure(target, toolroot, simulated, guest)
     target:data_set("cautest.simulated", simulated == true)

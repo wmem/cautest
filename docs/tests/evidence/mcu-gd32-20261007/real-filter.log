@@ -1,0 +1,22 @@
+START Job gd32.real
+START Step gd32.real/build/mcuFirmwareBuild:firmware
+END Step gd32.real/mcuFirmwareBuild:firmware SUCCESS 13ms
+START Step gd32.real/provision/mcuBoardStart:board
+Invalid coresight component, cidr=0x0
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+PASS: 1000000 Hz 烧录；读回校验=True；21592 字节；/share/project/common/mcu/code/xmake/cautest/examples/mcu-gd32/.cautest/board/flash-20261007-112441-104603320
+Invalid coresight component, cidr=0x0
+END Step gd32.real/mcuBoardStart:board SUCCESS 2472ms
+START Step gd32.real/run/mcuCTestRun:board
+END Step gd32.real/mcuCTestRun:board SUCCESS 64ms
+START Step gd32.real/collect/mcuLogs:board
+END Step gd32.real/mcuLogs:board SUCCESS 0ms
+END Job gd32.real SUCCESS 2677ms
+Run 20261007032440338-c0050b47: SUCCESS (2678ms)
+SUCCESS gd32.real (2677ms)
+  PASS board/clock_and_tick
+  PASS board/uart_enabled
+Cases: PASS 2, FAIL 0, ERROR 0, SKIP 0

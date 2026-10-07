@@ -6,7 +6,7 @@
 
 本仓库提供 Addon `cautest`，安装后可以在消费工程中直接运行 `xmake ctest`，无需复制工具源码或在工程中 `includes()`。默认读取工程根目录 `ctest.lua`，`--config=<路径>` 可选择其他配置；相对路径按工程根目录定位，其他目录执行时使用 `-P <工程目录>`。
 
-分发配方位于 [xmake-addons-repo](../xmake-addons-repo/README.md)，由工具自己的 [准备脚本](scripts/prepare-addon.lua)安装运行资源。现有工程内接入入口保持可用。以下说明只涉及新插件命令，公开规则和模块的 Addon 接入尚未迁移。
+分发配方位于 [xmake-addons-repo](../xmake-addons-repo/README.md)，由工具自己的 [准备脚本](scripts/prepare-addon.lua)安装运行资源。现有工程内接入入口保持可用。MCU 固件的公开构建规则通过 includes("@addon/cautest/mcu") 使用，接入见 [Xmake 使用说明](docs/usage/xmake.md#真实-mcu-固件)。
 
 ```sh
 xmake ctest
@@ -66,7 +66,7 @@ node tools/cautest/cautest.js --config ./cautest.config.mjs run --level unit
 
 这里使用的是已有 JS 配置入口；项目仍可 `import { testConfig } from "@cautest/config.js"`。运行时只需 Node，不依赖工具目录中的 `node_modules`。缺少 `dist` 时给出 npm 准备命令，不自动安装。
 
-Xmake 工程可以在自己的 `xmake.lua` 中加入 `includes(os.files("tools/cautest/xmake.lua"))`。工具存在时自动读取项目根目录的 `ctest.lua`，使用分散的 `ctest.*` 声明与 `xmake ct`；也可以用 `xmake ct --config=xxx.lua` 选择其他配置。工具尚未安装时不会读取测试配置，便于项目先运行初始化任务。Native、MCU SPI 软件行为模拟，以及 Linux 6.6.157 真实 UML 的 Kernel Test / Driver ABI 已执行验证；实板 MCU/SPI 按当前范围延期，模拟不代表物理硬件验收。详见 [Xmake 使用说明](docs/usage/xmake.md)和 [Kernel/Driver 接入说明](docs/usage/xmake-kernel-driver.md)。
+Xmake 工程可以在自己的 `xmake.lua` 中加入 `includes(os.files("tools/cautest/xmake.lua"))`。工具存在时自动读取项目根目录的 `ctest.lua`，使用分散的 `ctest.*` 声明与 `xmake ct`；也可以用 `xmake ct --config=xxx.lua` 选择其他配置。工具尚未安装时不会读取测试配置，便于项目先运行初始化任务。Native、MCU SPI 软件行为模拟，以及 Linux 6.6.157 真实 UML 的 Kernel Test / Driver ABI 已执行验证。另有通过直接 CLI、Make 构建和 SWD/USART0 验证的 [GD32 真实 MCU 示例](docs/usage/mcu-real.md)，公共 C 移植入口为 `cautest/mcu.h`；GD32 模板还使用独立 RT-Thread 固件通过 xmake ctest 验证线程、信号量与互斥锁，见 [RTOS 验收](docs/tests/mcu-rtthread-xmake-20261007.md)；实板 SPI 尚未验证。详见 [Xmake 使用说明](docs/usage/xmake.md)和 [Kernel/Driver 接入说明](docs/usage/xmake-kernel-driver.md)。
 
 使用 xspm 时，将 Cautest 声明在项目 `xspm.json` 的 `devDependencies` 中，固定包含
 [安装钩子](xspm.lua) 的提交。xspm 安装或升级该包时自动执行 `on_install`，在工具目录

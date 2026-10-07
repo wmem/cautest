@@ -1,0 +1,19 @@
+Invalid coresight component, cidr=0x0
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+PASS: 1000000 Hz 烧录；读回校验=True；21592 字节；/share/project/common/mcu/code/xmake/cautest/examples/mcu-gd32/.cautest/board/flash-20261007-112623-053403293
+Invalid coresight component, cidr=0x0
+Invalid coresight component, cidr=0x0
+{
+  "status": "PASS",
+  "firstBoot": "69af8150",
+  "secondBoot": "7aaadf5a",
+  "checks": [
+    "BYE/reconnect",
+    "reset/new boot identity",
+    "reject stale boot",
+    "run after rejection"
+  ]
+}

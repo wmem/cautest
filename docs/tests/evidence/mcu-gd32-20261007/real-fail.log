@@ -1,0 +1,28 @@
+START Job gd32.real
+START Step gd32.real/build/mcuFirmwareBuild:firmware
+END Step gd32.real/mcuFirmwareBuild:firmware SUCCESS 844ms
+START Step gd32.real/provision/mcuBoardStart:board
+Invalid coresight component, cidr=0x0
+[---|---|---|---|---|---|---|---|---|----]
+[=========1000000 Hz 失败: target was not halted as expected after calling flash algorithm routine (IPSR=3)
+Invalid coresight component, cidr=0x0
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+PASS: 100000 Hz 烧录；读回校验=True；21600 字节；/share/project/common/mcu/code/xmake/cautest/examples/mcu-gd32/.cautest/board/flash-20261007-112444-962305215
+Invalid coresight component, cidr=0x0
+END Step gd32.real/mcuBoardStart:board SUCCESS 8762ms
+START Step gd32.real/run/mcuCTestRun:board
+END Step gd32.real/mcuCTestRun:board FAIL 100ms
+START Step gd32.real/collect/mcuLogs:board
+END Step gd32.real/mcuLogs:board SUCCESS 0ms
+END Job gd32.real FAIL 9813ms
+Run 20261007032443250-d17e113b: FAIL (9814ms)
+FAIL gd32.real (9813ms)
+  FAIL runtime/assertions
+    integer equality at test/runtime_test.c:8 expected={"type":"integer","value":"0"} actual={"type":"integer","value":"1"}
+  SKIP runtime/skip_example
+  PASS board/clock_and_tick
+  PASS board/uart_enabled
+Cases: PASS 2, FAIL 1, ERROR 0, SKIP 1

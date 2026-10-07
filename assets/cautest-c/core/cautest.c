@@ -483,8 +483,8 @@ int cautest_log(struct cautest_context *context,
     struct cautest_event event;
 
     if (context == (struct cautest_context *)0 || context->runner == 0 ||
-        message == (const char *)0 || level < CAUTEST_LOG_LEVEL_TRACE ||
-        level > CAUTEST_LOG_LEVEL_ERROR)
+        message == (const char *)0 ||
+        (unsigned int)level > (unsigned int)CAUTEST_LOG_LEVEL_ERROR)
         return -1;
     cautest_event_initialize(&event);
     event.kind = CAUTEST_EVENT_LOG;
@@ -925,8 +925,7 @@ int cautest_run(const struct cautest_registry *registry,
     default_config.stop_policy = CAUTEST_STOP_CONTINUE;
     if (config == (const struct cautest_run_config *)0)
         config = &default_config;
-    if (config->stop_policy < CAUTEST_STOP_CONTINUE ||
-        config->stop_policy > CAUTEST_STOP_ON_ERROR ||
+    if ((unsigned int)config->stop_policy > (unsigned int)CAUTEST_STOP_ON_ERROR ||
         (workspace.capacity != 0UL && workspace.data == 0)) {
         result->status = CAUTEST_STATUS_ERROR;
         result->framework_error = CAUTEST_FRAMEWORK_ERROR_INVALID_ARGUMENT;
@@ -1022,8 +1021,7 @@ int cautest_execution_begin(
     internal->config.stop_policy = config ==
         (const struct cautest_run_config *)0 ? CAUTEST_STOP_CONTINUE :
         config->stop_policy;
-    if (internal->config.stop_policy < CAUTEST_STOP_CONTINUE ||
-        internal->config.stop_policy > CAUTEST_STOP_ON_ERROR ||
+    if ((unsigned int)internal->config.stop_policy > (unsigned int)CAUTEST_STOP_ON_ERROR ||
         (workspace.capacity != 0UL && workspace.data == 0)) {
         result->status = CAUTEST_STATUS_ERROR;
         result->framework_error = CAUTEST_FRAMEWORK_ERROR_INVALID_ARGUMENT;
@@ -1235,8 +1233,8 @@ int cautest_suite_execution_record_external_result(
     struct cautest_suite_execution_internal *internal =
         cautest_suite_execution_internal_of(suite_execution);
     if (internal == (struct cautest_suite_execution_internal *)0 ||
-        !internal->active || status < CAUTEST_STATUS_PASS ||
-        status > CAUTEST_STATUS_ERROR)
+        !internal->active ||
+        (unsigned int)status > (unsigned int)CAUTEST_STATUS_ERROR)
         return -1;
     cautest_add_case_result(internal->execution->runner.result, status);
     internal->status = cautest_status_merge(internal->status, status);

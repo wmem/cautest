@@ -1,4 +1,4 @@
-CAUTEST_C_VERSION := 0.5.0
+CAUTEST_C_VERSION := 0.6.0
 
 CC ?= cc
 AR ?= ar
@@ -18,20 +18,27 @@ CORE_OBJECT := $(BUILD_DIR)/core/cautest.o
 PROTOCOL_OBJECT := $(BUILD_DIR)/protocol/ctp3.o
 FREESTANDING_OBJECT := $(BUILD_DIR)/platform/freestanding/cautest_freestanding.o
 MCU_REFERENCE_OBJECT := $(BUILD_DIR)/target/mcu-reference/mcu_reference.o
+MCU_OBJECT := $(BUILD_DIR)/target/mcu/mcu.o
 
 CORE_LIBRARY := $(LIB_OUTPUT)/libcautest-core.a
 PROTOCOL_LIBRARY := $(LIB_OUTPUT)/libcautest-protocol.a
 FREESTANDING_LIBRARY := $(LIB_OUTPUT)/libcautest-freestanding.a
 MCU_REFERENCE_LIBRARY := $(LIB_OUTPUT)/libcautest-mcu-reference.a
-LIBRARIES := $(CORE_LIBRARY) $(PROTOCOL_LIBRARY) $(FREESTANDING_LIBRARY) $(MCU_REFERENCE_LIBRARY)
+MCU_LIBRARY := $(LIB_OUTPUT)/libcautest-mcu.a
+LIBRARIES := $(CORE_LIBRARY) $(PROTOCOL_LIBRARY) $(FREESTANDING_LIBRARY) $(MCU_REFERENCE_LIBRARY) $(MCU_LIBRARY)
 
-.PHONY: all core protocol freestanding mcu-reference install clean
+.PHONY: all core protocol freestanding mcu-reference mcu install clean
 
 all: $(LIBRARIES)
 core: $(CORE_LIBRARY)
 protocol: $(PROTOCOL_LIBRARY)
 freestanding: $(FREESTANDING_LIBRARY)
 mcu-reference: $(MCU_REFERENCE_LIBRARY)
+mcu: $(MCU_LIBRARY)
+
+$(MCU_OBJECT): target/mcu/mcu.c include/cautest/mcu.h include/cautest/ctp3.h include/cautest/cautest.h
+	@mkdir -p "$(@D)"
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(COMMON_FLAGS) $(FREESTANDING_FLAGS) -c "$<" -o "$@"
 
 $(CORE_OBJECT): core/cautest.c include/cautest/cautest.h include/cautest/version.h
 	@mkdir -p "$(@D)"
@@ -62,6 +69,10 @@ $(FREESTANDING_LIBRARY): $(FREESTANDING_OBJECT)
 	$(AR) rcs "$@" "$<"
 
 $(MCU_REFERENCE_LIBRARY): $(MCU_REFERENCE_OBJECT)
+	@mkdir -p "$(@D)"
+	$(AR) rcs "$@" "$<"
+
+$(MCU_LIBRARY): $(MCU_OBJECT)
 	@mkdir -p "$(@D)"
 	$(AR) rcs "$@" "$<"
 

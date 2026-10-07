@@ -9,6 +9,16 @@ rule("cautest.native")
     end)
 rule_end()
 
+-- 真实 MCU 公共运行时，不注入 POSIX main 或模拟板模型。
+rule("cautest.mcu")
+    on_load(function (target)
+        import("mcu", {rootdir = moduledir}).configure(target, toolroot)
+    end)
+    before_build(function (target)
+        import("mcu", {rootdir = moduledir}).generate(target, toolroot)
+    end)
+rule_end()
+
 -- GCC 覆盖率是构建选项；Job 的 coverage 声明负责本轮运行后的收集。
 rule("cautest.gcov")
     on_load(function (target)

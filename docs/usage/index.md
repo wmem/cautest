@@ -36,7 +36,7 @@ CAUTEST=./tools/cautest/cautest.js
 - 对 Driver 内部算法或源码做关联单元测试：阅读 [Linux Driver Unit](linux-driver-unit.md)；
 - 通过设备节点和可选 Probe 验证真实 Driver ABI：阅读 [Linux Driver ABI/Probe](linux-driver-abi.md)。
 
-如果测试 Firmware 的 C Test 生命周期但暂时不接真实硬件，阅读 [MCU 主机模拟](mcu-simulated.md)。如果需要启动服务并用 JavaScript 验证外部行为，阅读 [System Script](system-script.md)。只有需要把多个标准 Workflow 合并为一个 Job 时，才阅读 [Workflow 组合](workflow.md)。
+如果测试 Firmware 的 C Test 生命周期但暂时不接真实硬件，阅读 [MCU 主机模拟](mcu-simulated.md)；接入物理板及移植公共 C 接口，阅读[真实 MCU 接入](mcu-real.md)。如果需要启动服务并用 JavaScript 验证外部行为，阅读 [System Script](system-script.md)。只有需要把多个标准 Workflow 合并为一个 Job 时，才阅读 [Workflow 组合](workflow.md)。
 
 编写普通 C Case 只需看对应场景教程；需要参数化、Fixture、日志或状态控制时，再读[编写 C 测试](write-c-tests.md)。
 

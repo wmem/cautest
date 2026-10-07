@@ -14,4 +14,8 @@ Flash 后的 Build ID 和 Reset 返回的 Boot ID 必须与 HELLO 一致，其�
 
 owned Adapter 在 Cleanup 中关闭；borrowed Adapter 只附加、不代替项目管理生命周期。重试耗尽、身份不匹配、Transport 或协议错误属于基础设施错误，Firmware 中的 Assertion、FAIL、SKIP 和 ERROR 则进入标准 C Test 结果。
 
-测试作者从[使用主机模拟运行 MCU C 测试](../usage/mcu-simulated.md)开始；C 测试与 Registry 边界见 [C Test API](../specifications/c-test-api.md)，连接和恢复约束见 [CTP3](../specifications/ctp3.md)。精确配置由 `McuCTestJobInput`、`McuFirmwareInput`、`McuBoardAdapter` 和 `McuCtpTransport` 定义，见源码 `src/config/schema/mcu.ts` 或安装后的 `lib/config/schema/mcu.d.ts`。
+板端公共接口使用 `cautest/mcu.h`，只要求非阻塞接收和完整发送回调，复用 CTP3、静态 Registry 和 Workspace，不依赖芯片、RTOS、堆或 libc。真实 GD32 示例通过 Make 交叉编译、SWD 烧录及读回、USART0 运行，验证范围见[实板记录](../tests/mcu-gd32-20261007.md)。
+
+Xmake Addon 通过 `cautest.mcu` 提供公共运行时和 Registry，应用继续管理真实固件入口、RTOS、HAL 和 Board Provider。GD32 独立 RT-Thread 固件已经验证线程、信号量、互斥锁、筛选和 FAIL 退出码，见[RTOS 验收](../tests/mcu-rtthread-xmake-20261007.md)；不代表 SPI 或其他 MCU 已通过。
+
+测试作者从[使用主机模拟运行 MCU C 测试](../usage/mcu-simulated.md)或[真实 MCU 接入](../usage/mcu-real.md)开始；C 测试与 Registry 边界见 [C Test API](../specifications/c-test-api.md)，连接和恢复约束见 [CTP3](../specifications/ctp3.md)。精确配置由 `McuCTestJobInput`、`McuFirmwareInput`、`McuBoardAdapter` 和 `McuCtpTransport` 定义，见源码 `src/config/schema/mcu.ts` 或安装后的 `lib/config/schema/mcu.d.ts`。

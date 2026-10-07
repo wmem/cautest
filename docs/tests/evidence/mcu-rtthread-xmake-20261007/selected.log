@@ -1,0 +1,23 @@
+START Job mcu.all
+START Step mcu.all/build/artifactBuild:firmware
+END Step mcu.all/artifactBuild:firmware SUCCESS 1132ms
+START Step mcu.all/provision/physicalResourceLock:mcu.all
+END Step mcu.all/physicalResourceLock:mcu.all SUCCESS 38ms
+START Step mcu.all/provision/mcuBoardStart:mcu.all
+Invalid coresight component, cidr=0x0
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+[---|---|---|---|---|---|---|---|---|----]
+[========================================]
+PASS: 1000000 Hz 烧录；读回校验=True；62792 字节；/share/project/common/mcu/code/gd32-template/build/mcu-test/board/flash-20261007-123424-299814124
+Invalid coresight component, cidr=0x0
+END Step mcu.all/mcuBoardStart:mcu.all SUCCESS 3821ms
+START Step mcu.all/run/mcuCTestRun:mcu.all
+END Step mcu.all/mcuCTestRun:mcu.all SUCCESS 51ms
+START Step mcu.all/collect/mcuLogs:mcu.all
+END Step mcu.all/mcuLogs:mcu.all SUCCESS 0ms
+END Job mcu.all SUCCESS 5163ms
+Run 20261007043422078-baba9f4e: SUCCESS (5165ms)
+SUCCESS mcu.all (5163ms)
+  PASS rtos_semaphore/semaphore
+Cases: PASS 1, FAIL 0, ERROR 0, SKIP 0

@@ -1,0 +1,147 @@
+0000658 W Invalid coresight component, cidr=0x0 [rom_table]
+cmsh>cmsh>list
+clear                 - Clear the screen
+list                  - List all the argument function
+cmsh>list()
+clear(...)            - Clear the screen
+list(...)             - List all the call function
+cprint_obj_all_e(...) - cprint_obj_all_error_disable(void)
+cprint_obj_all_e(...) - cprint_obj_all_error_enable(void)
+cprint_obj_all_w(...) - cprint_obj_all_warn_disable(void)
+cprint_obj_all_w(...) - cprint_obj_all_warn_enable(void)
+cprint_obj_all_i(...) - cprint_obj_all_info_disable(void)
+cprint_obj_all_i(...) - cprint_obj_all_info_enable(void)
+cprint_obj_all_d(...) - cprint_obj_all_debug_disable(void)
+cprint_obj_all_d(...) - cprint_obj_all_debug_enable(void)
+cprint_obj_error(...) - cprint_obj_error_disable(const char* module)
+cprint_obj_error(...) - cprint_obj_error_enable(const char* module)
+cprint_obj_warn_(...) - cprint_obj_warn_disable(const char* module)
+cprint_obj_warn_(...) - cprint_obj_warn_enable(const char* module)
+cprint_obj_info_(...) - cprint_obj_info_disable(const char* module)
+cprint_obj_info_(...) - cprint_obj_info_enable(const char* module)
+cprint_obj_debug(...) - cprint_obj_debug_disable(const char* module)
+cprint_obj_debug(...) - cprint_obj_debug_enable(const char* module)
+cprint_obj_list(...)  - cprint_obj_list(void)
+cprint_all_error(...) - cprint_all_error_disable(void)
+cprint_all_error(...) - cprint_all_error_enable(void)
+cprint_all_warn_(...) - cprint_all_warn_disable(void)
+cprint_all_warn_(...) - cprint_all_warn_enable(void)
+cprint_all_info_(...) - cprint_all_info_disable(void)
+cprint_all_info_(...) - cprint_all_info_enable(void)
+cprint_all_debug(...) - cprint_all_debug_disable(void)
+cprint_all_debug(...) - cprint_all_debug_enable(void)
+cprint_error_dis(...) - cprint_error_disable(const char* module)
+cprint_error_ena(...) - cprint_error_enable(const char* module)
+cprint_warn_disa(...) - cprint_warn_disable(const char* module)
+cprint_warn_enab(...) - cprint_warn_enable(const char* module)
+cprint_info_disa(...) - cprint_info_disable(const char* module)
+cprint_info_enab(...) - cprint_info_enable(const char* module)
+cprint_debug_dis(...) - cprint_debug_disable(const char* module)
+cprint_debug_ena(...) - cprint_debug_enable(const char* module)
+cprint_all_and(...)   - cprint_all_and(void)
+cprint_all_or(...)    - cprint_all_or(void)
+cprint_and(...)       - cprint_and(const char* module)
+cprint_or(...)        - cprint_or(const char* module)
+cprint_list(...)      - cprint_list(void)
+cprint_level_str(...) - cprint_level_string(void)
+cprint_level_col(...) - cprint_level_color(void)
+cprint_name_disa(...) - cprint_name_disable(void)
+cprint_name_enab(...) - cprint_name_enable(void)
+cprint_time_disa(...) - cprint_time_disable(void)
+cprint_time_enab(...) - cprint_time_enable(void)
+cprint_level_dis(...) - cprint_level_disable(void)
+cprint_level_ena(...) - cprint_level_enable(void)
+cprint_g_disable(...) - cprint_g_disable(void)
+cprint_g_enable(...)  - cprint_g_enable(void)
+	0, 0x00000000
+cmsh>cprint_list()
+--------------------------------------------------
+name                error  warn  info  debug  mode
+--------------------------------------------------
+common           : [   on    on    on   off    or]
+	0, 0x00000000
+cmsh>cprint_list()
+--------------------------------------------------
+name                error  warn  info  debug  mode
+--------------------------------------------------
+common           : [   on    on    on   off    or]
+	0, 0x00000000
+cmsh>cprint_list()
+--------------------------------------------------
+name                error  warn  info  debug  mode
+--------------------------------------------------
+common           : [   on    on    on   off    or]
+	0, 0x00000000
+cmsh>cprint_lisx t()
+--------------------------------------------------
+name                error  warn  info  debug  mode
+--------------------------------------------------
+common           : [   on    on    on   off    or]
+	0, 0x00000000
+cmsh>[2Kcmsh>cprint_list()
+--------------------------------------------------
+name                error  warn  info  debug  mode
+--------------------------------------------------
+common           : [   on    on    on   off    or]
+	0, 0x00000000
+cmsh>lis
+list(...)             - List all the call function
+list                  - List all the argument function
+cmsh>list
+clear                 - Clear the screen
+list                  - List all the argument function
+cmsh>list()
+clear(...)            - Clear the screen
+list(...)             - List all the call function
+cprint_obj_all_e(...) - cprint_obj_all_error_disable(void)
+cprint_obj_all_e(...) - cprint_obj_all_error_enable(void)
+cprint_obj_all_w(...) - cprint_obj_all_warn_disable(void)
+cprint_obj_all_w(...) - cprint_obj_all_warn_enable(void)
+cprint_obj_all_i(...) - cprint_obj_all_info_disable(void)
+cprint_obj_all_i(...) - cprint_obj_all_info_enable(void)
+cprint_obj_all_d(...) - cprint_obj_all_debug_disable(void)
+cprint_obj_all_d(...) - cprint_obj_all_debug_enable(void)
+cprint_obj_error(...) - cprint_obj_error_disable(const char* module)
+cprint_obj_error(...) - cprint_obj_error_enable(const char* module)
+cprint_obj_warn_(...) - cprint_obj_warn_disable(const char* module)
+cprint_obj_warn_(...) - cprint_obj_warn_enable(const char* module)
+cprint_obj_info_(...) - cprint_obj_info_disable(const char* module)
+cprint_obj_info_(...) - cprint_obj_info_enable(const char* module)
+cprint_obj_debug(...) - cprint_obj_debug_disable(const char* module)
+cprint_obj_debug(...) - cprint_obj_debug_enable(const char* module)
+cprint_obj_list(...)  - cprint_obj_list(void)
+cprint_all_error(...) - cprint_all_error_disable(void)
+cprint_all_error(...) - cprint_all_error_enable(void)
+cprint_all_warn_(...) - cprint_all_warn_disable(void)
+cprint_all_warn_(...) - cprint_all_warn_enable(void)
+cprint_all_info_(...) - cprint_all_info_disable(void)
+cprint_all_info_(...) - cprint_all_info_enable(void)
+cprint_all_debug(...) - cprint_all_debug_disable(void)
+cprint_all_debug(...) - cprint_all_debug_enable(void)
+cprint_error_dis(...) - cprint_error_disable(const char* module)
+cprint_error_ena(...) - cprint_error_enable(const char* module)
+cprint_warn_disa(...) - cprint_warn_disable(const char* module)
+cprint_warn_enab(...) - cprint_warn_enable(const char* module)
+cprint_info_disa(...) - cprint_info_disable(const char* module)
+cprint_info_enab(...) - cprint_info_enable(const char* module)
+cprint_debug_dis(...) - cprint_debug_disable(const char* module)
+cprint_debug_ena(...) - cprint_debug_enable(const char* module)
+cprint_all_and(...)   - cprint_all_and(void)
+cprint_all_or(...)    - cprint_all_or(void)
+cprint_and(...)       - cprint_and(const char* module)
+cprint_or(...)        - cprint_or(const char* module)
+cprint_list(...)      - cprint_list(void)
+cprint_level_str(...) - cprint_level_string(void)
+cprint_level_col(...) - cprint_level_color(void)
+cprint_name_disa(...) - cprint_name_disable(void)
+cprint_name_enab(...) - cprint_name_enable(void)
+cprint_time_disa(...) - cprint_time_disable(void)
+cprint_time_enab(...) - cprint_time_enable(void)
+cprint_level_dis(...) - cprint_level_disable(void)
+cprint_level_ena(...) - cprint_level_enable(void)
+cprint_g_disable(...) - cprint_g_disable(void)
+cprint_g_enable(...)  - cprint_g_enable(void)
+	0, 0x00000000
+cmsh>
+PASS: {"status": "PASS", "scope": "startup-serial-basic-shell", "repeat": 3, "reset": true, "hal_selftest": "未编入，不在本轮验收范围"}
+报告: /share/project/common/mcu/code/gd32-template/build/board-20261007-123607-819349614

@@ -1,0 +1,101 @@
+{
+  "all": {
+    "runId": null,
+    "status": "SUCCESS",
+    "cases": [
+      {
+        "name": "thread",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      },
+      {
+        "name": "semaphore",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      },
+      {
+        "name": "mutex",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      }
+    ]
+  },
+  "selected": {
+    "runId": null,
+    "status": "SUCCESS",
+    "cases": [
+      {
+        "name": "semaphore",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      }
+    ]
+  },
+  "failure": {
+    "runId": null,
+    "status": "FAIL",
+    "cases": [
+      {
+        "name": "thread",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      },
+      {
+        "name": "semaphore",
+        "status": "FAIL",
+        "assertions": [
+          {
+            "status": "FAIL",
+            "file": "src/project/template/tests/rtos/test_semaphore.c",
+            "line": 13,
+            "expression": "integer equality",
+            "expected": {
+              "type": "integer",
+              "value": "0"
+            },
+            "actual": {
+              "type": "integer",
+              "value": "1"
+            }
+          }
+        ],
+        "diagnostics": []
+      },
+      {
+        "name": "mutex",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      }
+    ]
+  },
+  "release": {
+    "runId": null,
+    "status": "SUCCESS",
+    "cases": [
+      {
+        "name": "thread",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      },
+      {
+        "name": "semaphore",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      },
+      {
+        "name": "mutex",
+        "status": "PASS",
+        "assertions": [],
+        "diagnostics": []
+      }
+    ]
+  }
+}

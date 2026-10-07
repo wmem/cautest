@@ -75,8 +75,11 @@
 | --- | --- |
 | Case、Suite、Fixture、Assertion、日志 | `assets/cautest-c/include/cautest/cautest.h` |
 | CTP3 协议常量和 Frame | `assets/cautest-c/include/cautest/ctp3.h` |
+| MCU 收发回调、静态 Runtime 配置和轮询接口 | `assets/cautest-c/include/cautest/mcu.h` |
 | Kernel Test Runtime | `assets/cautest-c/target/linux-kernel/include/cautest/kernel_runtime.h` |
 | Driver Test-only Probe | `assets/cautest-c/platform/linux-kernel/include/cautest/probe.h` |
 | UML Guest Probe Client | `assets/cautest-c/agent/uml-guest-agent/probe_client.h` |
 
 常用 C 写法先读[编写 C 测试](write-c-tests.md)，只有实现 Platform Adapter 或协议接入时才需要继续阅读底层 Header。
+
+MCU 接入、静态内存、RTOS 测试线程及板端/主机职责见[真实 MCU 接入](mcu-real.md)。

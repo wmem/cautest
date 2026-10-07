@@ -1,0 +1,228 @@
+{
+  "date": "2026-10-07",
+  "cautestBaseCommit": "6f2fdaa",
+  "mspCommit": "073fa12af80c4a641ea85fcf0a6a243a13bd4977",
+  "board": "GD32F427VET6",
+  "probe": "CA6BCA57C554B615",
+  "serial": "/dev/ttyUSB0,115200,8N1",
+  "results": {
+    "pass": {
+      "schemaVersion": 1,
+      "runId": "20261007032412464-09701670",
+      "status": "SUCCESS",
+      "startedAt": "2026-10-07T03:24:12.465Z",
+      "endedAt": "2026-10-07T03:24:15.450Z",
+      "durationMs": 2984.7229079999997,
+      "counts": {
+        "jobs": {
+          "total": 1,
+          "success": 1,
+          "fail": 0,
+          "error": 0,
+          "skip": 0
+        },
+        "cases": {
+          "total": 4,
+          "pass": 3,
+          "fail": 0,
+          "error": 0,
+          "skip": 1
+        },
+        "failureRecords": 0
+      },
+      "failedJobs": [],
+      "failuresRef": "failures.jsonl",
+      "resultRef": "result.json"
+    },
+    "filter": {
+      "schemaVersion": 1,
+      "runId": "20261007032440338-c0050b47",
+      "status": "SUCCESS",
+      "startedAt": "2026-10-07T03:24:40.339Z",
+      "endedAt": "2026-10-07T03:24:43.017Z",
+      "durationMs": 2678.1773789999997,
+      "counts": {
+        "jobs": {
+          "total": 1,
+          "success": 1,
+          "fail": 0,
+          "error": 0,
+          "skip": 0
+        },
+        "cases": {
+          "total": 2,
+          "pass": 2,
+          "fail": 0,
+          "error": 0,
+          "skip": 0
+        },
+        "failureRecords": 0
+      },
+      "failedJobs": [],
+      "failuresRef": "failures.jsonl",
+      "resultRef": "result.json"
+    },
+    "fail": {
+      "schemaVersion": 1,
+      "runId": "20261007032443250-d17e113b",
+      "status": "FAIL",
+      "startedAt": "2026-10-07T03:24:43.251Z",
+      "endedAt": "2026-10-07T03:24:53.066Z",
+      "durationMs": 9814.241097999999,
+      "counts": {
+        "jobs": {
+          "total": 1,
+          "success": 0,
+          "fail": 1,
+          "error": 0,
+          "skip": 0
+        },
+        "cases": {
+          "total": 4,
+          "pass": 2,
+          "fail": 1,
+          "error": 0,
+          "skip": 1
+        },
+        "failureRecords": 1
+      },
+      "failedJobs": [
+        {
+          "jobId": "gd32.real",
+          "status": "FAIL",
+          "detailRef": "jobs/gd32.real/job.json"
+        }
+      ],
+      "failuresRef": "failures.jsonl",
+      "resultRef": "result.json"
+    }
+  },
+  "flash": [
+    {
+      "status": "PASS",
+      "chip": "gd32f427ve",
+      "probe": "CA6BCA57C554B615",
+      "elf_sha256": "950445a578b5b89484d58625793875506490de65799a4f55ea8751ec0c134d33",
+      "attempts": [
+        {
+          "frequency": 1000000,
+          "status": "PASS",
+          "verified": true,
+          "bytes": 21592
+        }
+      ]
+    },
+    {
+      "status": "PASS",
+      "chip": "gd32f427ve",
+      "probe": "CA6BCA57C554B615",
+      "elf_sha256": "950445a578b5b89484d58625793875506490de65799a4f55ea8751ec0c134d33",
+      "attempts": [
+        {
+          "frequency": 1000000,
+          "status": "PASS",
+          "verified": true,
+          "bytes": 21592
+        }
+      ]
+    },
+    {
+      "status": "PASS",
+      "chip": "gd32f427ve",
+      "probe": "CA6BCA57C554B615",
+      "elf_sha256": "3d52bc5e92e4591589bebf94d1e16dbc2ddca6156bc4efe7845c242cbe46c60c",
+      "attempts": [
+        {
+          "frequency": 1000000,
+          "status": "FAIL",
+          "error": "target was not halted as expected after calling flash algorithm routine (IPSR=3)"
+        },
+        {
+          "frequency": 100000,
+          "status": "PASS",
+          "verified": true,
+          "bytes": 21600
+        }
+      ]
+    },
+    {
+      "status": "PASS",
+      "chip": "gd32f427ve",
+      "probe": "CA6BCA57C554B615",
+      "elf_sha256": "5812dc2270a1c4adc72d3a7e5088a207b846c479ed3c76951f478f5e3f9967e7",
+      "attempts": [
+        {
+          "frequency": 1000000,
+          "status": "FAIL",
+          "error": "target was not halted as expected after calling flash algorithm routine (IPSR=3)"
+        },
+        {
+          "frequency": 100000,
+          "status": "PASS",
+          "verified": true,
+          "bytes": 21592
+        }
+      ]
+    },
+    {
+      "status": "PASS",
+      "chip": "gd32f427ve",
+      "probe": "CA6BCA57C554B615",
+      "elf_sha256": "5812dc2270a1c4adc72d3a7e5088a207b846c479ed3c76951f478f5e3f9967e7",
+      "attempts": [
+        {
+          "frequency": 1000000,
+          "status": "PASS",
+          "verified": true,
+          "bytes": 21592
+        }
+      ]
+    },
+    {
+      "status": "PASS",
+      "chip": "gd32f427ve",
+      "probe": "CA6BCA57C554B615",
+      "elf_sha256": "5812dc2270a1c4adc72d3a7e5088a207b846c479ed3c76951f478f5e3f9967e7",
+      "attempts": [
+        {
+          "frequency": 1000000,
+          "status": "PASS",
+          "verified": true,
+          "bytes": 21592
+        }
+      ]
+    }
+  ],
+  "restore": [
+    {
+      "status": "PASS",
+      "chip": "gd32f427ve",
+      "probe": "CA6BCA57C554B615",
+      "elf_sha256": "e1539f435bac5a6027268d83d110ac5c3f3b285bae8eac83e581df6aa3d0ce1b",
+      "attempts": [
+        {
+          "frequency": 1000000,
+          "status": "FAIL",
+          "error": "target was not halted as expected after calling flash algorithm routine (IPSR=3)"
+        },
+        {
+          "frequency": 100000,
+          "status": "PASS",
+          "verified": true,
+          "bytes": 69320
+        }
+      ]
+    }
+  ],
+  "lifecycle": {
+    "status": "PASS",
+    "firstBoot": "69af8150",
+    "secondBoot": "7aaadf5a",
+    "checks": [
+      "BYE/reconnect",
+      "reset/new boot identity",
+      "reject stale boot",
+      "run after rejection"
+    ]
+  }
+}

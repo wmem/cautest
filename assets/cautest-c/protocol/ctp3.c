@@ -1237,7 +1237,7 @@ int ctp3_server_log_target(struct ctp3_server *server,
                            const char *message)
 {
     if (server == (struct ctp3_server *)0 || message == (const char *)0 ||
-        level < CAUTEST_LOG_LEVEL_TRACE || level > CAUTEST_LOG_LEVEL_ERROR)
+        (unsigned int)level > (unsigned int)CAUTEST_LOG_LEVEL_ERROR)
         return -1;
     return emit_log(server, 0UL, "TARGET", 0UL, 0UL, 0UL, level, message);
 }

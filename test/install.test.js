@@ -63,6 +63,12 @@ test("安装器生成仅含运行 JS 和公开声明的自包含便携目录", a
   await exec("make", ["-C", consumer]);
   await exec(path.join(consumer, "consumer"), []);
 
+  await writeFile(path.join(consumer, "mcu.c"), `#include <cautest/mcu.h>\nint main(void) { return cautest_mcu_init(0, 0) == -1 ? 0 : 1; }\n`);
+  await exec("cc", ["-std=c99", "-Wall", "-Wextra", "-Werror", `-I${cPrefix}/include`,
+    path.join(consumer, "mcu.c"), `-L${cPrefix}/lib`, "-lcautest-mcu", "-lcautest-protocol", "-lcautest-core",
+    "-o", path.join(consumer, "mcu")]);
+  await exec(path.join(consumer, "mcu"), []);
+
   async function visit(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
       const location = path.join(directory, entry.name);

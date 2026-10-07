@@ -9,6 +9,7 @@ const platformMap = Object.freeze({
   posix: ["platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c"],
   "linux-kernel": ["target/linux-kernel/runtime.c", "kernel/cautest-kernel"],
   freestanding: ["platform/freestanding/cautest_freestanding.c", "target/mcu-reference/mcu_reference.c"],
+  mcu: ["target/mcu/mcu.c"],
 });
 
 export type CautestCPlatform = keyof typeof platformMap;

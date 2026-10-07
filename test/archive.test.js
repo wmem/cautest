@@ -38,6 +38,9 @@ test("便携包可解压、校验并直接运行", async (t) => {
   assert.ok(entries.includes("cautest/docs/usage/index.md"));
   assert.ok(entries.includes("cautest/lib/config/index.d.ts"));
   assert.ok(!entries.some((entry) => entry.endsWith(".map")));
+  assert.ok(!entries.some((entry) => /\/(?:\.cautest|__pycache__)\//u.test(entry)));
+  assert.ok(entries.includes("cautest/assets/cautest-c/include/cautest/mcu.h"));
+  assert.ok(entries.includes("cautest/examples/mcu-gd32/port/board.c"));
   assert.ok(!entries.includes("cautest/docs/index.md"));
   assert.ok(!entries.some((entry) => entry.startsWith("cautest/usage/")));
   assert.ok(entries.every((entry) => entry === "cautest/" || entry.startsWith("cautest/")));
