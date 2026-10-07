@@ -1,58 +1,33 @@
 import("core.base.option")
 import("core.project.project")
 
--- JS 工程直接交给原生 CLI；尚未迁移的 Lua 工程继续使用原执行入口。
+local function physical_directory(directory)
+    local previous = os.cd(directory)
+    local physical = os.curdir()
+    os.cd(previous)
+    return physical
+end
+
 function main()
-    local root = os.projectdir()
-    local config = option.get("config")
-    if not config then
-        for _, name in ipairs({ "cautest.config.mjs", "cautest.config.js", "cautest.config.cjs" }) do
-            if os.isfile(path.join(root, name)) then
-                config = name
-                break
-            end
-        end
-    end
-    if not config or path.extension(config) == ".lua" then
-        return import("legacy", { rootdir = os.scriptdir() }).main()
-    end
-    config = path.absolute(config, root)
-    assert(os.isfile(config), "测试配置不存在：" .. config)
-    project.load_targets()
-    local prepare = project.get("target.values.cautest.prepare")
-    if prepare then
-        assert(type(prepare) == "string", "cautest.prepare 必须是一个任务名")
-        -- 准备任务输出不混入 CLI 的 JSON stdout；失败直接终止。
-        os.iorunv(
-            os.programfile(),
-            { prepare, "-P", root, "-F", project.rootfile() },
-            { curdir = root }
-        )
-    end
-    local entry = path.join(os.scriptdir(), "runtime/cautest.js")
-    assert(os.isfile(entry), "插件缺少原生 CLI，请通过新版分发配方重新准备")
-    local command = "run"
-    local count = 0
-    for _, name in ipairs({ "list", "plan", "doctor", "describe" }) do
-        if option.get(name) then
-            command = name
-            count = count + 1
-        end
-    end
-    assert(count <= 1, "list/plan/doctor/describe 只能选择一个")
-    local args = { entry, "--config", config, command }
-    local mappings = { ["test-profile"] = "profile" }
-    local repeated = {
-        level = true,
-        tag = true,
-        suite = true,
-        case = true,
-        parameter = true,
-        include = true,
-        exclude = true,
-        reporter = true,
-    }
-    for _, name in ipairs({
+    local directory = os.scriptdir()
+    local entry = path.join(directory, "runtime/xmake.lua")
+    assert(
+        os.isfile(entry),
+        "插件尚未准备：请通过索引仓库安装，或先执行 scripts/prepare-addon.lua"
+    )
+    assert(
+        os.isfile(project.rootfile()),
+        "Cautest 需要工程 xmake.lua；请在工程目录执行或使用 -P 指定工程"
+    )
+    -- Xmake 会按 projectdir 计算外部源码的相对路径；它必须与实际 cwd 一致。
+    -- 保留启动目录的配置选择，只统一工程目录和入口文件的符号链接表示。
+    local projectdir = physical_directory(os.projectdir())
+    local projectfile =
+        path.join(physical_directory(path.directory(project.rootfile())), path.filename(project.rootfile()))
+    local args = { "ct", "-P", projectdir, "-F", projectfile }
+    -- 原样保留既有参数及退出码，复用成熟的 Lua 配置解析和 Node 执行链路。
+    for _, key in ipairs({
+        "config",
         "level",
         "tag",
         "suite",
@@ -66,23 +41,40 @@ function main()
         "case-timeout",
         "run-timeout",
         "suite-policy",
+        "node",
+        "confirm",
     }) do
-        local value = option.get(name)
+        local value = option.get(key)
         if value then
-            local values = repeated[name] and value:split(",", { plain = true }) or { value }
-            for _, item in ipairs(values) do
-                table.insert(args, "--" .. (mappings[name] or name))
-                table.insert(args, item)
-            end
+            table.insert(args, "--" .. key .. "=" .. value)
         end
     end
-    for _, name in ipairs({ "json", "fail-fast", "verbose" }) do
-        if option.get(name) then
-            table.insert(args, "--" .. name)
+    for _, key in ipairs({
+        "list",
+        "plan",
+        "doctor",
+        "describe",
+        "json",
+        "fail-fast",
+        "verbose",
+        "diagnosis",
+        "quiet",
+        "yes",
+        "root",
+    }) do
+        if option.get(key) then
+            table.insert(args, "--" .. key)
         end
     end
     table.join2(args, option.get("jobs") or {})
-    -- 不导出 Lua manifest，不注入 RCFILES，不生成测试 target。
-    local code = os.execv(option.get("node") or "node", args, { curdir = root, try = true })
+    local rcfiles = { path.join(directory, "bridge.lua") }
+    if os.getenv("XMAKE_RCFILES") then
+        table.join2(rcfiles, path.splitenv(os.getenv("XMAKE_RCFILES")))
+    end
+    local code = os.execv(os.programfile(), args, {
+        curdir = os.workingdir(),
+        try = true,
+        envs = { XMAKE_RCFILES = path.joinenv(rcfiles), CAUTEST_ADDON_ENTRY = entry },
+    })
     os.exit(code or 2)
 end

@@ -15,25 +15,6 @@ async function fixture(t) {
   return root;
 }
 
-test('Native 独立链接驱动：编译与链接分别调用，重运行不执行工具，链接失败移除旧产物', async t => {
-  const root = await fixture(t), calls = path.join(root, 'calls');
-  const source = path.join(root, 'main.c'), output = path.join(root, 'program');
-  const cc = path.join(root, 'compiler'), ld = path.join(root, 'linker');
-  await writeFile(source, 'int main(void) { return 0; }\n');
-  for (const [file, name] of [[cc, 'compile'], [ld, 'link']]) {
-    await writeFile(file, `#!/usr/bin/env node\nconst fs=require('node:fs');\nconst {spawnSync}=require('node:child_process');\nfs.appendFileSync(${JSON.stringify(calls)}, '${name}\\n');\nconst r=spawnSync('cc',process.argv.slice(2),{stdio:'inherit'});\nprocess.exit(r.status ?? 2);\n`);
-    await chmod(file, 0o755);
-  }
-  const input = {compiler: cc, linker: ld, sources: [source], directory: path.join(root, 'objects'), output, env: process.env, signal: new AbortController().signal};
-  assert.equal(await compileC(input), false);
-  assert.equal(await readFile(calls, 'utf8'), 'compile\nlink\n');
-  assert.equal(await compileC(input), true);
-  assert.equal(await readFile(calls, 'utf8'), 'compile\nlink\n');
-  await writeFile(ld, '#!/bin/sh\nexit 7\n');
-  await assert.rejects(compileC({...input, relink: true}), /C 构建失败/);
-  await assert.rejects(stat(output), {code: 'ENOENT'});
-});
-
 test('真实 Make/depfile：空白及特殊路径、隐式头文件依赖、无变化增量、失败拒用旧产物', async t => {
   const root = await fixture(t), include = path.join(root, 'include'), directory = path.join(root, 'objects');
   await mkdir(include);

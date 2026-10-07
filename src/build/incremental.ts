@@ -13,7 +13,7 @@ function command(args: readonly string[]): string { return args.map(shell).join(
 
 /** 编译器生成真实头文件依赖，Make 负责时间戳与增量；Cautest 不扫描 include 目录。 */
 export async function compileC(input: {
-  compiler: string; linker?: string; sources: readonly string[]; directory: string; output: string;
+  compiler: string; sources: readonly string[]; directory: string; output: string;
   cflags?: readonly string[]; ldflags?: readonly string[]; dependencies?: readonly string[];
   env: NodeJS.ProcessEnv; signal: AbortSignal;
   onOutput?: (channel: "stdout" | "stderr", text: string) => void;
@@ -25,7 +25,7 @@ export async function compileC(input: {
   const objects = input.sources.map((_, index) => `source_${index}.o`);
   const flags = input.cflags ?? [];
   const lines = [".DELETE_ON_ERROR:", ".PHONY: all force-link", "force-link:", `all: ${makePath(output)}`];
-  lines.push(`${makePath(output)}: ${objects.join(" ")} Makefile $(CAUTEST_RELINK)`, `\t${command([input.linker ?? input.compiler, ...flags, ...objects, ...(input.ldflags ?? []), "-o", output])}`);
+  lines.push(`${makePath(output)}: ${objects.join(" ")} Makefile $(CAUTEST_RELINK)`, `\t${command([input.compiler, ...flags, ...objects, ...(input.ldflags ?? []), "-o", output])}`);
   for (const [index, source] of input.sources.entries()) {
     const object = objects[index]!;
     lines.push(`${object}: ${makePath(path.resolve(source))} Makefile ${(input.dependencies ?? []).map(file => makePath(path.resolve(file))).join(" ")}`,

@@ -4,12 +4,6 @@
 
 尚未发布的变化应先记在文档顶部的“未发布”章节；正式发布时再将其改为带日期的版本章节。以下 `0.2.0` 是开始维护记录时对现有仓库状态建立的开发基线，不代表仓库已经存在对应的正式发布或 Git tag。
 
-## 0.7.0 — 2026-10-07
-
-- Addon 0.1.5 增加原生 JS 配置路径，优先读取 cautest.config.mjs/js/cjs，直接调用 CLI；可通过根工程 cautest.prepare 指定环境导出任务。该路径不注入 Lua 测试 target，不生成转换 manifest。没有 JS 配置或显式选择 Lua 的已有工程保持原行为。
-- Native build.linker 可独立指定链接驱动，省略时仍使用 compiler。Doctor 检查 Make 和所选链接程序；构建参数及链接驱动版本进入缓存身份，Native fingerprint 升至 3。C API、CTP 和结果 Schema 不变。
-- 源码门禁和 cmlib 原生迁移验证见 [验收记录](tests/native-js-cmlib-20261007.md)。
-
 ## 0.5.0 — 2026-10-05
 
 - 新增通用 Run Collector：所有选中 Job 完成后汇总本轮结果，FAIL、ERROR、fail-fast 和取消后仍尝试收集；超时和收集错误进入 JSON、失败索引及 JUnit，成功收集保留原测试状态。

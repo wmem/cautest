@@ -83,10 +83,6 @@ async function hostChecks(jobs: readonly TestJob[], configDir: string, defaults:
     if (["nativeCompile", "driverGuestCTestBuild", "umlGuestProgramBuild", "mcuFirmwareBuild"].includes(step.kind)) {
       const compiler = String(details.compiler ?? "cc");
       tools.set(`compiler:${compiler}`, { program: compiler, job, step, label: "C Compiler" });
-      if (step.kind === "nativeCompile") {
-        tools.set("make", { program: "make", job, step, label: "Make" });
-        if (typeof details.linker === "string") tools.set(`linker:${details.linker}`, { program: details.linker, job, step, label: "C Linker" });
-      }
       if ((step.kind === "driverGuestCTestBuild" || step.kind === "umlGuestProgramBuild") && details.static !== false) staticCompilers.set(compiler, { compiler, job, step });
     }
     if ((step.kind === "nativeCoverage" || step.kind === "kernelCoverage") && typeof details.tool === "string") tools.set(`gcov:${details.tool}`, { program: details.tool, job, step, label: "GCOV" });

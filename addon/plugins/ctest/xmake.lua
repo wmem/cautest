@@ -4,14 +4,14 @@ set_category("plugin")
 on_run("main")
 set_menu({
     usage = "xmake ctest [options] [Job IDs ...]",
-    description = "运行 Cautest 测试，优先读取原生 cautest.config.mjs",
+    description = "运行 Cautest 测试，默认读取工程根目录 ctest.lua",
     options = {
         {
             "c",
             "config",
             "kv",
             nil,
-            "Test configuration file, relative to the project root (default: cautest.config.mjs).",
+            "Test configuration file, relative to the project root (default: ctest.lua).",
         },
         { nil, "list", "k", nil, "List jobs without building or deploying." },
         { nil, "plan", "k", nil, "Show workflows without executing steps." },

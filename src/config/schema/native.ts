@@ -15,9 +15,6 @@ export interface NativeCBuildInput {
   /** C Compiler 命令。@defaultValue "cc" */
   readonly compiler?: string;
 
-  /** 链接驱动程序；省略时使用 compiler。 */
-  readonly linker?: string;
-
   /** 显式 Include 目录；`headers` 的父目录会在此基础上自动追加。 */
   readonly includeDirs?: readonly DirectoryPath[];
 

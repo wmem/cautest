@@ -1,5 +1,5 @@
 {
-  "release": "0.7.0",
+  "release": "0.6.1",
   "cApi": {
     "major": 2,
     "minor": 2
@@ -32,7 +32,7 @@
     "kernelContext": 2
   },
   "caches": {
-    "nativeFingerprint": 3,
+    "nativeFingerprint": 2,
     "nativeManifest": 3,
     "kernelFingerprint": 6,
     "busyboxFingerprint": 5,
