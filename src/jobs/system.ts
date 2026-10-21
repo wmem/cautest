@@ -62,5 +62,5 @@ export function scriptSystemTestJob(input: ScriptSystemTestJobInput): TestJob {
     }
     return { outcome: cases.some((item) => item.status === "ERROR") ? "FAIL" : "SUCCESS", testResults: [Object.freeze({ name, cases: Object.freeze(cases) })] };
   } });
-  return testJob({ id: input.id, level: input.level ?? "system", tags: input.tags ?? ["system", "script"], workflow: [step], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
+  return testJob({ id: input.id, level: input.level ?? "system", tags: input.tags ?? ["system", "script"], workflow: [step], ...(input.collections === undefined ? {} : {collections: input.collections}), ...(input.testEnvironment === undefined ? {} : {testEnvironment: input.testEnvironment}), ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }

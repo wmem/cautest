@@ -68,7 +68,7 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
     },
   });
   const { start, run, collect } = umlRuntimeSteps({ name, environment, endpoint: input.guest.endpoint ?? guestName, label: "Driver Guest C Test", ...(input.run === undefined ? {} : {run: input.run}), allowEmpty: input.policy?.allowEmpty === true });
-  return testJob({ id: input.id, level: input.level ?? "integration", tags: input.tags ?? ["integration", "driver", "uml"], workflow: [kernelBuild, busyboxBuild, ...probe, ...modules, guest, rootfs, start, run, collect], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
+  return testJob({ id: input.id, level: input.level ?? "integration", tags: input.tags ?? ["integration", "driver", "uml"], workflow: [kernelBuild, busyboxBuild, ...probe, ...modules, guest, rootfs, start, run, collect], ...(input.collections === undefined ? {} : {collections: input.collections}), ...(input.testEnvironment === undefined ? {} : {testEnvironment: input.testEnvironment}), ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }
 
 /** 绑定 Driver Job 公共 UML Environment。 */

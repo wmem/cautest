@@ -24,6 +24,8 @@ export interface ExecutedStep {
 export interface ExecutedWorkflow {
   readonly jobId: string;
   readonly level: TestJob["level"];
+  readonly testEnvironment?: string;
+  readonly collections?: readonly string[];
   readonly status: WorkflowStatus;
   readonly startedAt: string;
   readonly endedAt: string;
@@ -221,6 +223,8 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
   return Object.freeze({
     jobId: job.id,
     level: job.level,
+    ...(job.testEnvironment === undefined ? {} : { testEnvironment: job.testEnvironment }),
+    ...(job.collections === undefined ? {} : { collections: job.collections }),
     status,
     startedAt: startedAt.toISOString(),
     endedAt: endedAt.toISOString(),

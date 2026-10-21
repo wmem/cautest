@@ -155,7 +155,7 @@ interp_add_scopeapis({values = {{"cautest_initialize", function (interp)
     end
     api.project = function (input)
         local file = source()
-        if not fields(input, {"defaults", "profiles", "collectors"}, file .. ": ctest.project") then return end
+        if not fields(input, {"defaults", "profiles", "collectors", "selection"}, file .. ": ctest.project") then return end
         if not check(not state.projectSource, "ctest.project may only be declared once") then return end
         state.projectSource = file
         state.project = table.clone(input)
@@ -252,6 +252,8 @@ task("ct")
             {nil, "describe", "k", nil, "Show sources and configuration hash."},
             {nil, "json", "k", nil, "Machine-readable stdout."},
             {nil, "level", "kv", nil, "Comma-separated levels (OR); repeated options are last-wins."},
+            {nil, "collection", "kv", nil, "Project execution collections (OR), separate from C Suite."},
+            {nil, "environment", "kv", nil, "Execution environments (OR), * selects all."},
             {nil, "tag", "kv", nil, "Comma-separated required tags (AND)."},
             {nil, "suite", "kv", nil, "Comma-separated runtime suite patterns."},
             {nil, "case", "kv", nil, "Comma-separated runtime case patterns."},

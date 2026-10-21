@@ -19,6 +19,8 @@ set_menu({
         { nil, "describe", "k", nil, "Show sources and configuration hash." },
         { nil, "json", "k", nil, "Machine-readable stdout." },
         { nil, "level", "kv", nil, "Comma-separated levels (OR); repeated options are last-wins." },
+        { nil, "collection", "kv", nil, "Project execution collections (OR)." },
+        { nil, "environment", "kv", nil, "Execution environments (OR), * selects all." },
         { nil, "tag", "kv", nil, "Comma-separated required tags (AND)." },
         { nil, "suite", "kv", nil, "Comma-separated runtime suite patterns." },
         { nil, "case", "kv", nil, "Comma-separated runtime case patterns." },

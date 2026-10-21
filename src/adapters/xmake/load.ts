@@ -21,7 +21,7 @@ import type {McuBoardAdapter,TestJobCommonInput,WorkflowFragment,WorkflowStep,St
 import {enableConfigSourceTracking,collectConfigSources} from "../../config/source-tracker.js";
 
 function common(job:ManifestJob):TestJobCommonInput{
- const keys=["id","level","description","tags","enabled","timeoutMs","env","policy"] as const;
+ const keys=["id","level","description","tags","collections","testEnvironment","enabled","timeoutMs","env","policy"] as const;
  return Object.fromEntries(keys.filter(k=>job[k]!==undefined).map(k=>[k,job[k]])) as unknown as TestJobCommonInput;
 }
 async function factory(ref:ProviderReference,args:unknown,origin:string):Promise<unknown>{
@@ -109,6 +109,7 @@ export async function loadManifest(file:string,options:{readonly provider?:Build
    }else{
     job=driverArtifactJob({...shared,environment:await environment(declaration.environment!),drivers:declaration.drivers!,guest:declaration.guest!});
    }
+   if(declaration.locks?.length)job=testJob({...job,workflow:[...Array.from(new Set(declaration.locks)).map((resourceId,index)=>physicalResourceStep({name:`prepare-${index+1}`,resourceId,phase:"prepare",timeoutMs:declaration.timeoutMs??1800000})),...job.workflow]});
    setJobOrigin(job,{source:declaration.origin.file,configPath:`jobs.${declaration.id} [declaration ${declaration.origin.declaration}; includes: ${declaration.origin.includeChain.join(" -> ")}]`});jobs.push(job);
   }catch(cause){throw new CautestError(`${declaration.origin.file}: jobs.${declaration.id}: ${cause instanceof Error?cause.message:String(cause)}`,{code:"config_error",cause});}
  }

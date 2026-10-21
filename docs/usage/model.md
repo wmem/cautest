@@ -57,6 +57,25 @@ Level 固定为：
 
 一个 Job 可以包含多个测试源码、产品源码和 Suite。何时合并或拆分见[组织典型项目](project-organization.md)。
 
+## 项目集合与执行环境
+
+`TestJobCommonInput.collections` 声明项目执行集合，`testEnvironment` 声明本执行实例的逻辑条件；两者不改变 C Test 的 `--suite`。同一语义测试在不同环境中需要分别登记执行实例，稳定 ID 区分实例，共用断言即可。
+
+项目可通过 `selection` 定义集合继承及默认环境，例如：
+
+```js
+selection: {
+  defaultEnvironments: ["host"],
+  collections: {quick: [], smoke: [], regression: ["quick", "smoke"], release: ["regression"], all: ["*"]},
+}
+```
+
+集合声明直接归属；父集合递归包含子集合，循环、未知集合及错误登记会报配置错误。`["*"]` 包含当前范围的全部测试，执行时仍排除 disabled。`--collection` 和 `--environment` 各自取 OR，与 ID/level/tag 条件取 AND；Tag 的既有 AND 语义不变。无显式 ID/环境时应用 `defaultEnvironments`，单独指定 level 或 collection 不解除默认环境；显式 ID/Glob 或环境后才扩大范围。未设置 selection 的工程保持原来的默认行为。`list/plan` 应用同一选择，不执行 Workflow，也不获取资源锁。
+
+Xmake 使用逗号列表，例如 `xmake ctest --collection=quick,smoke --environment=host,board-debug`。JS CLI 可重复这两个选项，也支持逗号列表；共享 `selectJobs()` API 接收数组和可选 policy，不替调用者拆分字符串。环境和直接集合会保留在计划及实际 Job 报告中。
+
+Xmake Job 可声明 `locks = {"workspace:project"}`，在构建前的 prepare 阶段获取，重复资源去重，直到 Job 清理结束才释放。不同逻辑环境应对同一设备使用相同物理 resourceId；多个锁按一致顺序声明，防止循环等待。自定义工作流也可使用 `physicalResourceStep({phase: "prepare", ...})`，默认仍为 provision。
+
 ## Workflow 是严格有序的执行计划
 
 所有标准 Job 最终都会展开为普通 Step，Phase 顺序固定为：

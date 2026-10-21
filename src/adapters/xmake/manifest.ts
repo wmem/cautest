@@ -2,7 +2,7 @@ import path from "node:path";
 import { CAUTEST_VERSIONS } from "../../config/versions.js";
 import { CautestError } from "../../model/error.js";
 import { validateArtifactRef, validateBuildContext, type BuildContext } from "../../artifacts/index.js";
-import type { CTestRunInput, TestConfigDefaultsInput, TestProfileInput, TestJobCommonInput } from "../../config/schema/common.js";
+import type { CTestRunInput, TestConfigDefaultsInput, TestSelectionPolicy, TestProfileInput, TestJobCommonInput } from "../../config/schema/common.js";
 import type { NativeCoverageInput } from "../../config/schema/native.js";
 import { validateNativeCoverage } from "../../jobs/native-coverage.js";
 export const XMAKE_MANIFEST_VERSION=CAUTEST_VERSIONS.schemas.xmakeManifest;
@@ -10,6 +10,7 @@ export interface ProviderReference {readonly module:string;readonly export:strin
 export interface ManifestCollector {readonly id:string;readonly provider:ProviderReference;readonly options?:Readonly<Record<string,unknown>>;readonly timeoutMs?:number;readonly origin:Origin}
 export interface Origin {readonly file:string;readonly declaration:number;readonly includeChain:readonly string[]}
 export interface ManifestJob extends TestJobCommonInput {
+ readonly locks?:readonly string[];
  readonly kind:"native"|"mcu"|"kernel"|"driver"|"workflow";
  readonly origin:Origin;
  readonly target?:string;readonly output?:string;readonly run?:CTestRunInput;readonly buildTimeoutMs?:number;
@@ -23,7 +24,7 @@ export interface ManifestJob extends TestJobCommonInput {
 export interface ManifestResource {readonly kind:"board"|"environment";readonly id:string;readonly provider:ProviderReference;readonly options?:Readonly<Record<string,unknown>>;readonly origin:Origin;readonly ownership?:"owned"|"borrowed";readonly resourceId?:string;readonly lockTimeoutMs?:number}
 export interface XmakeManifest {
  readonly schemaVersion:1|3|4;readonly kind:"cautest.xmake-manifest";readonly projectRoot:string;readonly xmake:string;readonly buildContext:BuildContext;
- readonly project:{readonly defaults?:TestConfigDefaultsInput;readonly profiles?:readonly TestProfileInput[];readonly collectors?:readonly ManifestCollector[]};
+ readonly project:{readonly selection?:TestSelectionPolicy;readonly defaults?:TestConfigDefaultsInput;readonly profiles?:readonly TestProfileInput[];readonly collectors?:readonly ManifestCollector[]};
  readonly jobs:readonly ManifestJob[];readonly boards:readonly ManifestResource[];readonly environments:readonly ManifestResource[];readonly sources:readonly string[];
 }
 export function record(value:unknown,fields:readonly string[]|undefined,label:string):Record<string,unknown>{
@@ -50,7 +51,7 @@ export function validateManifest(value:unknown):asserts value is XmakeManifest{
  absolute(v.projectRoot,"projectRoot");absolute(v.xmake,"xmake");
  try{validateBuildContext(v.buildContext);}catch(e){fail(`Invalid buildContext: ${e instanceof Error?e.message:String(e)}`);}
  if(v.buildContext.projectRoot!==v.projectRoot)fail("buildContext projectRoot mismatch");
- const project=record(v.project,["defaults","profiles","collectors"],"project");
+ const project=record(v.project,["defaults","profiles","collectors","selection"],"project");
  if(project.collectors!==undefined){
   if(v.schemaVersion!==4)fail("Run collectors require Xmake Manifest v4");
   if(!Array.isArray(project.collectors))fail("project.collectors must be an array");
@@ -66,13 +67,14 @@ export function validateManifest(value:unknown):asserts value is XmakeManifest{
  }
  strings(v.sources,"sources");for(const file of v.sources)absolute(file,"source");
  if(!Array.isArray(v.jobs))fail("jobs must be an array");
- const common=["kind","origin","id","level","description","tags","enabled","timeoutMs","env","policy","run","buildTimeoutMs"];
+ const common=["kind","origin","id","level","description","tags","collections","testEnvironment","locks","enabled","timeoutMs","env","policy","run","buildTimeoutMs"];
  const kinds:Record<string,readonly string[]>={native:["target","output","coverage"],mcu:["target","output","board","reconnects","recoverTimeouts"],kernel:["target","output","environment"],driver:["drivers","guest","environment"],workflow:["provider","options","artifacts"]};
  const ids=new Map<string,string>();
  for(const raw of v.jobs){
   const first=record(raw,undefined,"job");origin(first.origin);const label=`${first.origin.file}: jobs.${String(first.id)}`;
   if(typeof first.kind!=="string"||kinds[first.kind]===undefined)fail(`${label}: unknown job kind`);
   const job=record(raw,[...common,...kinds[first.kind]!],label);
+  if(job.locks!==undefined)strings(job.locks,`${label}.locks`);
   if(typeof job.id!=="string"||!job.id.length)fail(`${label}: id is required`);
   if(ids.has(job.id))fail(`Duplicate Job ID ${job.id}: ${ids.get(job.id)} and ${label}`);ids.set(job.id,label);
   if(job.run!==undefined)validateRun(job.run,`${label}.run`);

@@ -4,6 +4,7 @@ import path from "node:path";
 import { CAUTEST_RESULT_SCHEMA_VERSION } from "../config/versions.js";
 import type { TestConfig, TestJob } from "../config/schema/common.js";
 import { testJob } from "../config/define.js";
+import { selectJobs } from "../config/select.js";
 import { defineStep } from "../workflow/step.js";
 import { runCommand } from "../runtime/process.js";
 import { EventRecorder, type WorkflowEvent } from "../workflow/events.js";
@@ -51,7 +52,7 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
   const events = new EventRecorder({ file: path.join(resultDir, "events.jsonl") });
   const jobs: ExecutedWorkflow[] = [];
   events.emit("RUN_START", { runId: id });
-  for (const job of options.jobs ?? config.jobs.filter((candidate) => candidate.enabled)) {
+  for (const job of options.jobs ?? selectJobs(config.jobs, config.selection === undefined ? {} : {policy: config.selection})) {
     options.onJob?.({ type: "START", jobId: job.id });
     const result = await executeWorkflow(job, {
       ...options,

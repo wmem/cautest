@@ -29,6 +29,8 @@ function main()
     for _, key in ipairs({
         "config",
         "level",
+        "collection",
+        "environment",
         "tag",
         "suite",
         "case",

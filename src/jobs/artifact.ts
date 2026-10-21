@@ -33,6 +33,6 @@ export function nativeArtifactJob(input: NativeArtifactJobInput): TestJob {
 }
 export function mcuArtifactJob(input: ArtifactJobInput & Omit<McuCTestJobInput, "firmware">, options: {readonly onProvision?:(context:StepExecutionContext)=>void} = {}): TestJob {
   const name = input.firmwareName ?? "firmware";
-  const common: TestJobCommonInput = {id:input.id,...(input.description===undefined?{}:{description:input.description}),...(input.enabled===undefined?{}:{enabled:input.enabled}),...(input.timeoutMs===undefined?{}:{timeoutMs:input.timeoutMs}),...(input.env===undefined?{}:{env:input.env}),...(input.policy===undefined?{}:{policy:input.policy})};
+  const common: TestJobCommonInput = {id:input.id,...(input.collections === undefined ? {} : {collections: input.collections}), ...(input.testEnvironment === undefined ? {} : {testEnvironment: input.testEnvironment}), ...(input.description===undefined?{}:{description:input.description}),...(input.enabled===undefined?{}:{enabled:input.enabled}),...(input.timeoutMs===undefined?{}:{timeoutMs:input.timeoutMs}),...(input.env===undefined?{}:{env:input.env}),...(input.policy===undefined?{}:{policy:input.policy})};
   return testJob({...common,level:input.level??"component",tags:input.tags??["component","mcu"],workflow:[build(input,name),...mcuRuntimeSteps(input,{...options,artifact:(ctx)=>getArtifact(ctx,name)})]});
 }

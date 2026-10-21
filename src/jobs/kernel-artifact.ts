@@ -35,8 +35,8 @@ function requireUml(environment: Readonly<UmlKernelEnvironmentInput>): void {
   if ((environment.kernel.arch ?? "um") !== "um" || environment.kernel.crossCompile) throw new CautestError("Artifact UML jobs currently support native x86_64 ARCH=um only; host/SSH and cross-architecture require explicit providers", {code: "config_error"});
 }
 function common(input: UmlArtifactJobInput): TestJobCommonInput {
-  const {id, description, enabled, timeoutMs, env, policy} = input;
-  return {id, ...(description === undefined ? {} : {description}), ...(enabled === undefined ? {} : {enabled}),
+  const {id, description, enabled, timeoutMs, env, policy, collections, testEnvironment} = input;
+  return {id, ...(collections === undefined ? {} : {collections}), ...(testEnvironment === undefined ? {} : {testEnvironment}), ...(description === undefined ? {} : {description}), ...(enabled === undefined ? {} : {enabled}),
     ...(timeoutMs === undefined ? {} : {timeoutMs}), ...(env === undefined ? {} : {env}), ...(policy === undefined ? {} : {policy})};
 }
 function identityStep(environment: Readonly<UmlKernelEnvironmentInput>, name: string): WorkflowStep {

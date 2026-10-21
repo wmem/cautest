@@ -201,7 +201,7 @@ export function kernelCTestJob(input: KernelCTestJobInput): TestJob {
       return { diagnostics: [{ code: "kernel_coverage_collected", message: `${reports.length} reports: ${report}` }] };
     },
   })];
-  return testJob({ id: input.id, level: input.level ?? "unit", tags: input.tags ?? [input.level ?? "unit", "kernel", "uml"], workflow: [kernel, busybox, runtime, ...extras, testModule, ...guestPrograms, rootfs, start, run, ...coverage, collect], ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
+  return testJob({ id: input.id, level: input.level ?? "unit", tags: input.tags ?? [input.level ?? "unit", "kernel", "uml"], workflow: [kernel, busybox, runtime, ...extras, testModule, ...guestPrograms, rootfs, start, run, ...coverage, collect], ...(input.collections === undefined ? {} : {collections: input.collections}), ...(input.testEnvironment === undefined ? {} : {testEnvironment: input.testEnvironment}), ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }
 
 /** 绑定 UML Environment 和公共 Module 默认项。 */

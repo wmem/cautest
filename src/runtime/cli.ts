@@ -36,6 +36,8 @@ interface ParsedArguments {
   readonly cleanWork: boolean;
   readonly help: boolean;
   readonly profile?: string;
+  readonly collections: readonly string[];
+  readonly environments: readonly string[];
   readonly levels: readonly string[];
   readonly tags: readonly string[];
   readonly failFast: boolean;
@@ -75,6 +77,8 @@ const usage = `用法: cautest [全局选项] <命令> [Job ID...]
   --verbose            实时转发 Step 输出到 stderr
   --profile <名称>     应用 Profile 的 Reporter 和环境变量
   --level <层级>       按 unit/component/integration/system 筛选
+  --collection <集合>  项目执行集合（OR），区别于原生 C Suite
+  --environment <环境> 执行条件（OR）；* 为全部环境
   --tag <标签>         按标签筛选；可重复
   --fail-fast          第一个失败 Job 后停止
   --reporter <名称>    console/json/junit/html，可逗号分隔或重复
@@ -115,6 +119,8 @@ function parseArguments(args: readonly string[]): ParsedArguments {
   let cleanWork = false;
   let help = false;
   let profile: string | undefined;
+  const collections: string[] = [];
+  const environments: string[] = [];
   const levels: string[] = [];
   const tags: string[] = [];
   let failFast = false;
@@ -144,10 +150,12 @@ function parseArguments(args: readonly string[]): ParsedArguments {
       index += 1;
     } else if (argument === "--json") json = true;
     else if (argument === "--verbose") verbose = true;
-    else if (["--profile", "--level", "--tag", "--reporter", "--output-dir", "--include", "--exclude", "--suite", "--case", "--parameter", "--step", "--case-timeout", "--run-timeout", "--suite-policy", "--target", "--socket", "--device", "--baud", "--build-id"].includes(argument ?? "")) {
+    else if (["--collection", "--environment", "--profile", "--level", "--tag", "--reporter", "--output-dir", "--include", "--exclude", "--suite", "--case", "--parameter", "--step", "--case-timeout", "--run-timeout", "--suite-policy", "--target", "--socket", "--device", "--baud", "--build-id"].includes(argument ?? "")) {
       const value = args[index + 1];
       if (value === undefined) throw new CautestError(`${argument} 缺少值`, { code: "config_error" });
       if (argument === "--profile") profile = value;
+      else if (argument === "--collection") collections.push(...value.split(","));
+      else if (argument === "--environment") environments.push(...value.split(","));
       else if (argument === "--level") levels.push(value);
       else if (argument === "--tag") tags.push(value);
       else if (argument === "--reporter") reporters.push(...value.split(",").filter((item) => item.length > 0));
@@ -193,6 +201,8 @@ function parseArguments(args: readonly string[]): ParsedArguments {
     cleanWork,
     help,
     ...(profile === undefined ? {} : { profile }),
+    collections: Object.freeze(collections),
+    environments: Object.freeze(environments),
     levels: Object.freeze(levels),
     tags: Object.freeze(tags),
     failFast,
@@ -227,7 +237,7 @@ async function versionText(): Promise<string> {
 
 
 function hasExplicitJobSelection(parsed: ParsedArguments): boolean {
-  return parsed.selectors.length > 0 || parsed.levels.length > 0 || parsed.tags.length > 0;
+  return parsed.selectors.length > 0 || parsed.collections.length > 0 || parsed.environments.length > 0 || parsed.levels.length > 0 || parsed.tags.length > 0;
 }
 
 function json(value: unknown): string {
@@ -350,7 +360,7 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams, options:
     streams.stdout.write(json({ preset }));
     return 0;
   }
-  const jobs = selectJobs(loaded.config.jobs, { selectors: parsed.selectors, levels: parsed.levels, tags: parsed.tags, includeDisabled: parsed.command !== "run" });
+  const jobs = selectJobs(loaded.config.jobs, { selectors: parsed.selectors, levels: parsed.levels, tags: parsed.tags, collections: parsed.collections, environments: parsed.environments, ...(loaded.config.selection === undefined ? {} : { policy: loaded.config.selection }), includeDisabled: parsed.command !== "run" });
   const selectedIds = new Set(jobs.map((job) => job.id));
   const planned = planConfig(loaded.config).filter((job) => selectedIds.has(job.id));
   if (jobs.length === 0 && parsed.command !== "clean" && parsed.command !== "describe" && (parsed.command !== "list" || hasExplicitJobSelection(parsed))) {

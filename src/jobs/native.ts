@@ -21,7 +21,7 @@ const kitRoot = fileURLToPath(new URL("../../assets/cautest-c", import.meta.url)
 const nativeCaseTimeoutGraceMs = 250;
 const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/posix/cautest_posix_platform.c", "target/posix/cautest_posix_target.c"];
 const kitInputs = [...kitSources, "include/cautest/version.h", "include/cautest/cautest.h", "include/cautest/ctp3.h", "platform/posix/posix_platform.h", "target/posix/posix_target.h", "templates/native-entry.c.tmpl", "templates/native-registry.c.tmpl"];
-const inputFields = new Set(["id", "level", "description", "tags", "enabled", "timeoutMs", "env", "policy", "tests", "sources", "headers", "suites", "artifactName", "build", "run", "coverage"]);
+const inputFields = new Set(["id", "level", "description", "tags", "collections", "testEnvironment", "enabled", "timeoutMs", "env", "policy", "tests", "sources", "headers", "suites", "artifactName", "build", "run", "coverage"]);
 const buildFields = new Set(["compiler", "includeDirs", "defines", "cflags", "ldflags", "workspaceSize", "generatedDir", "timeoutMs", "cache"]);
 const runFields = new Set(["include", "exclude", "suite", "case", "parameter", "caseTimeoutMs", "runTimeoutMs", "session", "suitePolicy", "expectedBuildId", "stepTimeoutMs"]);
 const coverageFields = new Set(["tool", "timeoutMs"]);
@@ -221,7 +221,7 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
     level: input.level ?? "unit",
     tags: input.tags ?? [input.level ?? "unit"],
     workflow: [compile, execute, ...coverage],
-    ...(input.description === undefined ? {} : { description: input.description }),
+    ...(input.collections === undefined ? {} : {collections: input.collections}), ...(input.testEnvironment === undefined ? {} : {testEnvironment: input.testEnvironment}), ...(input.description === undefined ? {} : { description: input.description }),
     ...(input.enabled === undefined ? {} : { enabled: input.enabled }),
     ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }),
     ...(input.env === undefined ? {} : { env: input.env }),

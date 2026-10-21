@@ -70,6 +70,11 @@ export interface TestJobCommonInput {
   /** 用于 `--tag` 过滤的标签。 */
   readonly tags?: readonly string[];
 
+  /** 项目执行目的集合，区别于 C Test Suite。 */
+  readonly collections?: readonly string[];
+  /** 执行条件的逻辑标识；不是环境变量或 kernel environment。 */
+  readonly testEnvironment?: string;
+
   /** 是否参与执行。@defaultValue true */
   readonly enabled?: boolean;
 
@@ -302,6 +307,8 @@ export interface TestJob {
   readonly level: TestLevel;
   readonly description: string;
   readonly tags: readonly string[];
+  readonly collections?: readonly string[];
+  readonly testEnvironment?: string;
   readonly enabled: boolean;
   readonly timeoutMs?: number;
   readonly env: EnvironmentVariables;
@@ -359,6 +366,14 @@ export interface TestConfigInput {
   readonly profiles?: readonly TestProfileInput[];
   /** 所有选中 Job 完成后执行；失败和取消后仍尝试收集本轮结果。 */
   readonly collectors?: readonly RunCollector[];
+  readonly selection?: TestSelectionPolicy;
+}
+
+export interface TestSelectionPolicy {
+  /** 没有显式 Job ID/环境时使用；level/collection 不解除这个默认值。 */
+  readonly defaultEnvironments?: readonly string[];
+  /** 集合到所包含子集合的映射；["*"] 表示所有已启用测试。 */
+  readonly collections?: Readonly<Record<string, readonly string[]>>;
 }
 
 /** 运行结束收集器收到的本轮快照和独立超时信号。 */
@@ -394,6 +409,7 @@ export interface TestConfig {
   readonly defaults: Readonly<ResolvedTestConfigDefaults>;
   readonly profiles: readonly Readonly<Required<TestProfileInput>>[];
   readonly collectors: readonly RunCollector[];
+  readonly selection?: TestSelectionPolicy;
 }
 
 /** 一个输入 Schema 明确、每次只产生一个 Test Job 的构造函数。 */

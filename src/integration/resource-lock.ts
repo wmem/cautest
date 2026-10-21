@@ -35,8 +35,8 @@ export async function acquirePhysicalResource(options:{readonly resourceId:strin
  if(options.signal.aborted){await lock.release();options.signal.throwIfAborted();}
  return lock;
 }
-export function physicalResourceStep(options:{readonly name:string;readonly resourceId:string;readonly timeoutMs?:number;readonly onAcquired?:(context:StepExecutionContext)=>void}):WorkflowStep{
- return defineStep({kind:"physicalResourceLock",name:options.name,phase:"provision",details:{resourceId:options.resourceId,tool:"flock"},...(options.timeoutMs===undefined?{}:{timeoutMs:options.timeoutMs+1000}),async execute(context){
+export function physicalResourceStep(options:{readonly name:string;readonly resourceId:string;readonly phase?:"prepare"|"provision";readonly timeoutMs?:number;readonly onAcquired?:(context:StepExecutionContext)=>void}):WorkflowStep{
+ return defineStep({kind:"physicalResourceLock",name:options.name,phase:options.phase??"provision",details:{resourceId:options.resourceId,tool:"flock"},...(options.timeoutMs===undefined?{}:{timeoutMs:options.timeoutMs+1000}),async execute(context){
   const lock=await acquirePhysicalResource({resourceId:options.resourceId,signal:context.signal,...(options.timeoutMs===undefined?{}:{timeoutMs:options.timeoutMs})});
   context.defer(async()=>{try{await lock.release();}finally{context.resources.close("physical-lock",options.name);}},`release-physical-lock:${options.name}`);
   context.resources.publish({kind:"physical-lock",name:options.name,metadata:{resourceId:options.resourceId,lockFile:lock.file}});options.onAcquired?.(context);

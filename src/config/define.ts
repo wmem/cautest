@@ -12,6 +12,7 @@ import type {
   TestJobPolicyInput,
   TestLevel,
   TestProfileInput,
+  TestSelectionPolicy,
 } from "./schema/common.js";
 import { CautestError } from "../model/error.js";
 import { normalizeWorkflow } from "../workflow/step.js";
@@ -21,8 +22,8 @@ import { isRunCollector } from "./collector.js";
 const TEST_JOB = Symbol.for("@cautest/config/test-job");
 const TEST_CONFIG = Symbol.for("@cautest/config/test-config");
 const levels: readonly TestLevel[] = ["unit", "component", "integration", "system"];
-const jobFields = new Set(["id", "level", "description", "tags", "enabled", "timeoutMs", "env", "policy", "workflow"]);
-const configFields = new Set(["jobs", "defaults", "profiles", "collectors"]);
+const jobFields = new Set(["id", "level", "description", "tags", "enabled", "timeoutMs", "env", "policy", "workflow", "collections", "testEnvironment"]);
+const configFields = new Set(["jobs", "defaults", "profiles", "collectors", "selection"]);
 const defaultFields = new Set(["resultDir", "cacheDir", "generatedDir", "workDir", "stepTimeoutMs", "jobTimeoutMs"]);
 const profileFields = new Set(["id", "reporters", "env"]);
 
@@ -91,12 +92,15 @@ export function testJob(input: TestJobInput): TestJob {
   if (input.description !== undefined && typeof input.description !== "string") throw new CautestError("description 必须是字符串", { code: "config_error" });
   if (input.enabled !== undefined && typeof input.enabled !== "boolean") throw new CautestError("enabled 必须是 boolean", { code: "config_error" });
   if (input.timeoutMs !== undefined) positive(input.timeoutMs, "Job timeoutMs");
+  if (input.testEnvironment !== undefined) safeIdentity(input.testEnvironment, "testEnvironment");
   return Object.freeze({
     [TEST_JOB]: true,
     id: input.id,
     level: input.level,
     description: input.description ?? "",
     tags: strings(input.tags, "tags"),
+    ...(input.collections === undefined ? {} : { collections: strings(input.collections, "collections") }),
+    ...(input.testEnvironment === undefined ? {} : { testEnvironment: input.testEnvironment }),
     enabled: input.enabled ?? true,
     ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }),
     env: environment(input.env, "Job env"),
@@ -196,13 +200,43 @@ export function testConfig(input: TestConfigInput): TestConfig {
     jobsById.set(job.id, job);
     return job;
   });
+  const selection = normalizeSelectionPolicy(input.selection, jobs);
   return Object.freeze({
     [TEST_CONFIG]: true,
     jobs: Object.freeze(jobs),
     defaults: normalizeDefaults(input.defaults),
     profiles: normalizeProfiles(input.profiles),
     collectors: Object.freeze(collectors),
+    ...(selection === undefined ? {} : { selection }),
   }) as InternalTestConfig;
+}
+
+export function normalizeSelectionPolicy(value: TestSelectionPolicy | undefined, jobs: readonly TestJob[]): TestSelectionPolicy | undefined {
+  if (value === undefined) return undefined;
+  object(value, "selection");
+  rejectUnknown(value, new Set(["defaultEnvironments", "collections"]), "selection");
+  const defaults = strings(value.defaultEnvironments, "selection.defaultEnvironments");
+  const graph = value.collections ?? {};
+  object(graph, "selection.collections");
+  const collections: Record<string, readonly string[]> = {};
+  for (const [name, children] of Object.entries(graph)) {
+    safeIdentity(name, "collection");
+    collections[name] = strings(children, `collection.${name}`);
+  }
+  const visit = (name: string, active: Set<string>): void => {
+    if (name === "*") return;
+    if (!Object.hasOwn(collections, name)) throw new CautestError(`未知 collection: ${name}`, { code: "config_error" });
+    if (active.has(name)) throw new CautestError(`collection 继承循环: ${name}`, { code: "config_error" });
+    for (const child of collections[name]!) visit(child, new Set([...active, name]));
+  };
+  for (const name of Object.keys(collections)) visit(name, new Set());
+  for (const job of jobs) for (const name of job.collections ?? []) {
+    if (!Object.hasOwn(collections, name)) throw new CautestError(`${job.id}: 未登记 collection ${name}`, { code: "config_error" });
+  }
+  for (const name of defaults) {
+    if (name !== "*" && !jobs.some(job => job.testEnvironment === name)) throw new CautestError(`默认环境不存在: ${name}`, { code: "config_error" });
+  }
+  return Object.freeze({ defaultEnvironments: defaults, collections: Object.freeze(collections) });
 }
 
 export function isTestConfig(value: unknown): value is TestConfig {

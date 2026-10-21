@@ -73,12 +73,13 @@ the existing C Runtime. `run.suite` is a discovery filter; it is not a linker
 input. One target can have several Suites; a Job is not a Case or a Suite.
 
 ```sh
-xmake ctest                         # run all enabled Jobs
+xmake ctest                         # defaults follow ctest.project.selection; otherwise all enabled Jobs
 xmake ctest --list --json
 xmake ctest --plan unit.math
 xmake ctest --doctor --level=unit
 xmake ctest --describe --json
 xmake ctest --level=unit,component --tag=host,math
+xmake ctest --collection=quick,smoke --environment=host,board-debug
 xmake ctest --suite='math_*' --case=adds unit.math
 xmake ctest --test-profile=ci --reporter=json,junit
 xmake ctest --output-dir=out/test-results unit.math
@@ -482,3 +483,5 @@ provider = {
 原生扩展必须匹配实际运行它的 Node/N-API、宿主架构及动态库；不应盲目复制另一架构或另一发行版的 node_modules。
 
 同工程的 Cautest 构建会话会串行化“构建—查询—Receipt 发布”；不同工程可并行使用 GCC/debug 与 Clang/release。一个会话仍只允许一个固定的 Xmake 配置，不能在测试期间并行执行任意 `xmake f`。验证已注入“编译完成后、Receipt 查询前切换配置”的真实 Xmake 竞态：旧会话必须在 CTP 前失败，新会话重新读取配置后才能运行。这个失败保护不等于支持同一工程同时使用两个可变全局配置。
+
+项目执行集合与逻辑环境声明见[测试组织模型](model.md#项目集合与执行环境)。原生 `--suite` 仍选择 C Test Suite，不用于项目执行集合。

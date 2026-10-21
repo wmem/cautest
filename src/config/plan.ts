@@ -18,6 +18,8 @@ export interface PlannedJob {
   readonly level: TestJob["level"];
   readonly description: string;
   readonly tags: readonly string[];
+  readonly collections?: readonly string[];
+  readonly testEnvironment?: string;
   readonly enabled: boolean;
   readonly origin?: TestJobOrigin;
   readonly workflow: readonly PlannedStep[];
@@ -53,6 +55,8 @@ export function planConfig(config: TestConfig, selectors: readonly string[] = []
       level: job.level,
       description: job.description,
       tags: job.tags,
+      ...(job.collections === undefined ? {} : { collections: job.collections }),
+      ...(job.testEnvironment === undefined ? {} : { testEnvironment: job.testEnvironment }),
       enabled: job.enabled,
       ...(origin === undefined ? {} : { origin }),
       workflow: Object.freeze(job.workflow.map(plannedStep)),

@@ -17,13 +17,17 @@ function arrays(state)
         json.mark_as_array(state[name])
         for _, item in ipairs(state[name]) do
             json.mark_as_array(item.origin.includeChain)
-            for _, key in ipairs({"tags", "drivers"}) do if item[key] then json.mark_as_array(item[key]) end end
+            for _, key in ipairs({"tags", "drivers", "collections", "locks"}) do if item[key] then json.mark_as_array(item[key]) end end
             if item.run then
                 for _, key in ipairs({"suite", "case", "parameter", "include", "exclude"}) do
                     if type(item.run[key]) == "table" then json.mark_as_array(item.run[key]) end
                 end
             end
         end
+    end
+    if state.project.selection then
+        if state.project.selection.defaultEnvironments then json.mark_as_array(state.project.selection.defaultEnvironments) end
+        for _, children in pairs(state.project.selection.collections or {}) do json.mark_as_array(children) end
     end
     if state.project.profiles then json.mark_as_array(state.project.profiles) end
     if state.project.collectors then
@@ -83,7 +87,7 @@ function run(state, toolroot)
     assert(directoryCode == 0, "Cannot create Xmake manifest directory: " .. directory)
     atomic(file, manifest, true)
     local args = {bridge, "--manifest", file, command}
-    for _, key in ipairs({"level", "tag", "suite", "case", "parameter", "include", "exclude"}) do
+    for _, key in ipairs({"level", "collection", "environment", "tag", "suite", "case", "parameter", "include", "exclude"}) do
         local value = option.get(key)
         if value then
             for _, item in ipairs(value:split(",", {plain = true, strict = true})) do

@@ -43,6 +43,16 @@ test('Xmake loader constructs existing workflows, preserves Lua provenance and d
  const {getJobOrigin}=await import('../dist/config/provenance.js');assert.match(getJobOrigin(loaded.config.jobs[0]).source,/ctest.lua$/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });
+test('显式共享资源锁在构建之前取得，发现阶段不取得锁',async()=>{
+ const dir=await mkdtemp(path.join(tmpdir(),'ct-build-lock-'));
+ try{const file=path.join(dir,'manifest.json');const value=manifest();value.jobs[0].locks=['worktree:test'];
+ await writeFile(file,JSON.stringify(value));
+ const loaded=await loadManifest(file,{provider:{async build(){throw Error('not during discovery');}}});
+ const steps=loaded.config.jobs[0].workflow;
+ assert.equal(steps[0].kind,'physicalResourceLock');assert.equal(steps[0].phase,'prepare');
+ assert.equal(steps[1].kind,'artifactBuild');
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
 test('MCU board factories stay lazy for list/plan and validate named resources',async()=>{
  const dir=await mkdtemp(path.join(tmpdir(),'ct-lazy-board-'));
  try{const module=path.join(dir,'board.mjs');await writeFile(module,'throw new Error("MUST_NOT_IMPORT_BOARD_WHILE_LISTING");');const file=path.join(dir,'manifest.json');const value=manifest();value.jobs=[{kind:'mcu',id:'component.spi',target:'fw',board:'board',origin}];value.boards=[{kind:'board',id:'board',resourceId:'fixture-probe',provider:{module,export:'create'},origin}];await writeFile(file,JSON.stringify(value));assert.equal((await loadManifest(file)).config.jobs[0].id,'component.spi');value.boards=[];await writeFile(file,JSON.stringify(value));await assert.rejects(loadManifest(file),/Unknown board/);

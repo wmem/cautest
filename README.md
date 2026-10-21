@@ -6,7 +6,7 @@
 
 本仓库提供 Addon `cautest`，当前工具与 Addon 发布版本均为 `0.6.1`（C API 2.2）。安装后可以在消费工程中直接运行 `xmake ctest`，无需复制工具源码或在工程中 `includes()`。默认读取工程根目录 `ctest.lua`，`--config=<路径>` 可选择其他配置；相对路径按工程根目录定位，其他目录执行时使用 `-P <工程目录>`。
 
-分发配方位于 [xmake-addons-repo](../xmake-addons-repo/README.md)，由工具自己的 [准备脚本](scripts/prepare-addon.lua)安装运行资源。现有工程内接入入口保持可用。MCU 固件的公开构建规则通过 includes("@addon/cautest/mcu") 使用，接入见 [Xmake 使用说明](docs/usage/xmake.md#真实-mcu-固件)。
+分发配方位于 [xmake-addons](../xmake-addons/README.md)，由工具自己的 [准备脚本](scripts/prepare-addon.lua)安装运行资源。现有工程内接入入口保持可用。MCU 固件的公开构建规则通过 includes("@addon/cautest/mcu") 使用，接入见 [Xmake 使用说明](docs/usage/xmake.md#真实-mcu-固件)。
 
 ```sh
 xmake ctest
@@ -31,7 +31,7 @@ xmake lua scripts/prepare-addon.lua /tmp/cautest-addon-stage
 xmake addon --install /tmp/cautest-addon-stage
 ```
 
-准备脚本拒绝覆盖已有输出目录。验证统一由索引仓库的 [插件集成测试](../xmake-addons-repo/tests/test_addons.py)覆盖，原有工具测试仍可独立执行。
+准备脚本拒绝覆盖已有输出目录。验证统一由索引仓库的 [插件集成测试](../xmake-addons/tests/test_addons.py)覆盖，原有工具测试仍可独立执行。
 
 Cautest 是面向 Native C、Linux Kernel/Driver、MCU 和系统脚本的工程测试工具。它用 JavaScript 配置统一不同目标环境的构建、运行、筛选和结果收集，并把所有测试组织为可由 `plan` 检查的 `TestJob → Workflow → Result`。
 
