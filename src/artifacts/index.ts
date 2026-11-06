@@ -22,6 +22,8 @@ export interface ArtifactReceipt {
   readonly target: string;
   readonly context: BuildContext;
   readonly protocolBuildId?: string;
+  /** Optional original source files used for test documentation, never artifact identity. */
+  readonly sourceFiles?: readonly string[];
   readonly outputs: readonly ArtifactOutput[];
 }
 export interface BuildProvider {
@@ -53,13 +55,14 @@ export function assertCompatibleContext(expected: BuildContext, actual: BuildCon
 /** 校验产物角色、构建上下文和文件存在性；不读取二进制内容。 */
 export async function resolveArtifact(value: unknown, ref: ArtifactRef, expected?: BuildContext, protocolRequired = true): Promise<ResolvedArtifact> {
   validateArtifactRef(ref);
-  const v = object(value, ["schemaVersion", "kind", "target", "context", "protocolBuildId", "outputs"], "ArtifactReceipt");
+  const v = object(value, ["schemaVersion", "kind", "target", "context", "protocolBuildId", "outputs", "sourceFiles"], "ArtifactReceipt");
   if (v.schemaVersion !== ARTIFACT_RECEIPT_VERSION || v.kind !== "cautest.artifact-receipt") fail("Unsupported ArtifactReceipt schema/kind");
   if (v.target !== ref.target) fail(`Receipt target mismatch: ${String(v.target)} != ${ref.target}`);
   validateBuildContext(v.context);
   if (expected !== undefined) assertCompatibleContext(expected, v.context);
   if (v.protocolBuildId !== undefined && (typeof v.protocolBuildId !== "string" || !/^[A-Za-z0-9._-]{1,128}$/u.test(v.protocolBuildId))) fail("Invalid protocolBuildId");
   if (protocolRequired && v.protocolBuildId === undefined) fail("CTP Artifact requires protocolBuildId; a file hash is NOT a HELLO identity");
+  if (v.sourceFiles !== undefined && (!Array.isArray(v.sourceFiles) || v.sourceFiles.some(file => typeof file !== "string" || !path.isAbsolute(file)))) fail("Artifact sourceFiles must be absolute paths");
   if (!Array.isArray(v.outputs) || v.outputs.length === 0) fail("Receipt outputs must be a nonempty array");
   const roles = new Set<string>();
   for (const candidate of v.outputs) {

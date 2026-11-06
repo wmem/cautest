@@ -23,6 +23,8 @@ export interface ExecutedStep {
 
 export interface ExecutedWorkflow {
   readonly jobId: string;
+  readonly resultMode?: "cases" | "steps";
+  readonly description: string;
   readonly level: TestJob["level"];
   readonly testEnvironment?: string;
   readonly collections?: readonly string[];
@@ -45,9 +47,10 @@ export interface WorkflowExecutionOptions {
   readonly project?: Partial<WorkflowProjectContext>;
   readonly events?: EventRecorder;
   readonly heartbeatMs?: number;
+  readonly onEvent?: (event: import("./events.js").WorkflowEvent) => void;
   readonly cTestRun?: CTestRunOverrides;
   readonly onOutput?: (event: { readonly jobId: string; readonly step: WorkflowStep; readonly channel: "stdout" | "stderr"; readonly text: string }) => void;
-  readonly onStep?: (event: { readonly type: "START" | "HEARTBEAT" | "END"; readonly jobId: string; readonly step: WorkflowStep; readonly status?: StepStatus; readonly durationMs?: number; readonly diagnostics?: readonly unknown[] }) => void;
+  readonly onStep?: (event: { readonly type: "START" | "HEARTBEAT" | "END"; readonly jobId: string; readonly step: WorkflowStep; readonly status?: StepStatus; readonly durationMs?: number; readonly diagnostics?: readonly unknown[]; readonly error?: SerializedError }) => void;
 }
 
 const phaseError = Object.freeze({
@@ -97,13 +100,15 @@ function shouldRun(step: WorkflowStep, infrastructureFailed: boolean, testFailed
   return !failed;
 }
 
-function aggregate(steps: readonly ExecutedStep[], groups: readonly TestSuiteResult[], cleanup: readonly CleanupOutcome[], allowEmpty: boolean): WorkflowStatus {
-  if (steps.some((step) => step.status === "ERROR") || cleanup.some((entry) => entry.status === "ERROR")) return "ERROR";
+function aggregate(steps: readonly ExecutedStep[], groups: readonly TestSuiteResult[], cleanup: readonly CleanupOutcome[], policy: TestJob["policy"], errors: readonly SerializedError[]): WorkflowStatus {
+  if (errors.length || steps.some((step) => step.status === "ERROR") || cleanup.some((entry) => entry.status === "ERROR")) return "ERROR";
   const cases = groups.flatMap((group) => group.cases);
   if (cases.some((item) => item.status === "ERROR")) return "ERROR";
   if (steps.some((step) => step.status === "FAIL") || cases.some((item) => item.status === "FAIL")) return "FAIL";
   if (cases.some((item) => item.status === "PASS")) return "SUCCESS";
-  if (cases.length > 0 || allowEmpty) return "SKIP";
+  if (cases.length > 0) return "SKIP";
+  if (policy.resultMode === "steps") return steps.some(step => step.status === "SUCCESS") ? "SUCCESS" : "SKIP";
+  if (policy.allowEmpty) return "SKIP";
   return "ERROR";
 }
 
@@ -124,7 +129,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
     generatedDir: path.resolve(configDir, options.project?.generatedDir ?? ".cautest/generated"),
     workDir: path.resolve(configDir, options.project?.workDir ?? ".cautest/work"),
   });
-  const events = options.events ?? new EventRecorder();
+  const events = options.events ?? new EventRecorder({ onEvent: options.onEvent });
   const artifacts = new ArtifactStore({ onPublish: (artifact) => { events.emit("ARTIFACT_PUBLISHED", { jobId: job.id, artifact: `${artifact.kind}:${artifact.name}` }); } });
   const resources = new ResourceStore(job.id, {
     onPublish: (resource) => { events.emit("RESOURCE_PUBLISHED", { jobId: job.id, resource: `${resource.kind}:${resource.name}`, state: resource.state }); },
@@ -134,7 +139,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
   const results = new ResultRecorder();
   const cleanupStack = new CleanupStack();
   const jobTimeout = job.timeoutMs ?? options.defaultJobTimeoutMs ?? Number.POSITIVE_INFINITY;
-  events.emit("JOB_START", { jobId: job.id });
+  events.emit("JOB_START", { jobId: job.id, resultMode: job.policy.resultMode, totalSteps: job.workflow.length });
 
   const execute = async (jobSignal: AbortSignal): Promise<void> => {
     for (const [index, step] of job.workflow.entries()) {
@@ -171,7 +176,12 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
           timeoutMs,
           step.phase === "collect" ? undefined : jobSignal,
         ) as StepExecutionResult | void;
-        for (const group of result?.testResults ?? []) results.addGroup(group);
+        const testResults = (result?.testResults ?? []).map(group => Object.freeze({ ...group,
+          description: group.description ?? "", cases: Object.freeze(group.cases.map(item => Object.freeze({
+            ...item, description: item.description ?? "", expectedBehavior: item.expectedBehavior ?? "",
+          }))),
+        }));
+        for (const group of testResults) results.addGroup(group);
         const status = result?.outcome === "ERROR" ? "ERROR" : result?.outcome === "FAIL" ? "FAIL" : "SUCCESS";
         const error = status === "ERROR"
           ? serializeError(result?.error ?? new CautestError(`Step ${id} 返回 ERROR`, { code: phaseError[step.phase] }), phaseError[step.phase])
@@ -186,12 +196,12 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
           status,
           durationMs: performance.now() - stepStarted,
           diagnostics: Object.freeze([...(result?.diagnostics ?? [])]),
-          testResults: Object.freeze([...(result?.testResults ?? [])]),
+          testResults: Object.freeze(testResults),
           ...(error === undefined ? {} : { error }),
         });
         steps.push(record);
         events.emit("STEP_END", { jobId: job.id, stepId: id, status, durationMs: record.durationMs });
-        options.onStep?.({ type: "END", jobId: job.id, step, status, durationMs: record.durationMs, diagnostics: record.diagnostics });
+        options.onStep?.({ type: "END", jobId: job.id, step, status, durationMs: record.durationMs, diagnostics: record.diagnostics, ...(error === undefined ? {} : {error}) });
       } catch (cause) {
         infrastructureFailed = true;
         const error = serializeError(cause, phaseError[step.phase]);
@@ -199,7 +209,7 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
         const record = Object.freeze({ id, kind: step.kind, name: step.name, phase: step.phase, status: "ERROR" as const, durationMs: performance.now() - stepStarted, diagnostics: Object.freeze([]), testResults: Object.freeze([]), error });
         steps.push(record);
         events.emit("STEP_END", { jobId: job.id, stepId: id, status: "ERROR", durationMs: record.durationMs });
-        options.onStep?.({ type: "END", jobId: job.id, step, status: "ERROR", durationMs: record.durationMs, diagnostics: [] });
+        options.onStep?.({ type: "END", jobId: job.id, step, status: "ERROR", durationMs: record.durationMs, diagnostics: [], error });
       } finally {
         if (heartbeat !== undefined) clearInterval(heartbeat);
       }
@@ -213,15 +223,18 @@ export async function executeWorkflow(job: TestJob, options: WorkflowExecutionOp
     infrastructureFailed = true;
     errors.push(serializeError(cause, "timeout_error"));
   }
+  events.emit("JOB_CLEANUP_START", {jobId: job.id});
   const cleanup = await cleanupStack.run();
   for (const entry of cleanup) if (entry.error !== undefined) errors.push(entry.error);
   for (const resource of resources.list()) if (resource.state === "ready") resources.close(resource.kind, resource.name);
   const groups = results.list();
-  const status = aggregate(steps, groups, cleanup, job.policy.allowEmpty);
+  const status = aggregate(steps, groups, cleanup, job.policy, errors);
   const endedAt = new Date();
   events.emit("JOB_END", { jobId: job.id, status });
   return Object.freeze({
     jobId: job.id,
+    resultMode: job.policy.resultMode,
+    description: job.description ?? "",
     level: job.level,
     ...(job.testEnvironment === undefined ? {} : { testEnvironment: job.testEnvironment }),
     ...(job.collections === undefined ? {} : { collections: job.collections }),

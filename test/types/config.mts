@@ -29,6 +29,9 @@ interface FixtureInput extends TestJobCommonInput {
 }
 
 const run = defineStep({ kind: "typeFixture", phase: "run", execute() {} });
+testJob({id: "system.generic", level: "system", policy: {resultMode: "steps"}, workflow: [run]});
+// @ts-expect-error resultMode 只有 cases 和 steps 两种。
+testJob({id: "system.invalid", level: "system", policy: {resultMode: "automatic"}, workflow: [run]});
 const fixture: TestJobFactory<FixtureInput> = (input) => testJob({
   id: input.id,
   level: input.level,

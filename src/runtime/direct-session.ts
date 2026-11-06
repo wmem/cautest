@@ -9,12 +9,12 @@ import { CautestError } from "../model/error.js";
 import { runCTestSession, type TargetLog } from "../protocol/session.js";
 import { ProcessTransport, StreamTransport, type CtpTransport } from "../protocol/transport.js";
 import { workflowSessionEventSink, workflowSessionResult } from "../protocol/workflow-session.js";
-import { executeRun, type ExecutedRun } from "../result/run.js";
+import { executeRun, type ExecutedRun, type RunExecutionOptions } from "../result/run.js";
 import { defineStep } from "../workflow/step.js";
 
 export type DirectSessionMode = "process" | "attach" | "serial";
 
-export interface DirectSessionOptions {
+export interface DirectSessionOptions extends Pick<RunExecutionOptions, "onEvent" | "onJob" | "onStep" | "onOutput" | "heartbeatMs"> {
   readonly mode: DirectSessionMode;
   readonly target?: string;
   readonly socket?: string;
@@ -122,7 +122,7 @@ export async function executeDirectSession(options: DirectSessionOptions): Promi
         transport,
         ...options.run,
         signal: context.signal,
-        onEvent: workflowSessionEventSink(context.events, context.job.id),
+        onEvent: workflowSessionEventSink(context.events, context.job.id, options.mode),
         async onLog(log: TargetLog) {
           targetLogLine += 1;
           await appendFile(targetLog, `${JSON.stringify(log)}\n`);
@@ -136,6 +136,11 @@ export async function executeDirectSession(options: DirectSessionOptions): Promi
   const job = testJob({ id: "direct.session", level: "system", tags: ["direct", "ctp3", options.mode], workflow: [step] });
   const config = testConfig({ jobs: [job], defaults: { resultDir: options.resultRoot } });
   return await executeRun(config, {
+    ...(options.onEvent === undefined ? {} : {onEvent: options.onEvent}),
+    ...(options.onJob === undefined ? {} : {onJob: options.onJob}),
+    ...(options.onStep === undefined ? {} : {onStep: options.onStep}),
+    ...(options.onOutput === undefined ? {} : {onOutput: options.onOutput}),
+    ...(options.heartbeatMs === undefined ? {} : {heartbeatMs: options.heartbeatMs}),
     configDir: process.cwd(),
     resultDir: options.resultRoot,
     jobs: [job],

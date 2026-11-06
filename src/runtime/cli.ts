@@ -8,13 +8,14 @@ import { CAUTEST_CLI_SCHEMA_VERSION } from "../config/versions.js";
 import { doctorJobs } from "../doctor/index.js";
 import { CautestError } from "../model/error.js";
 import { selectJobs } from "../config/select.js";
-import { executeRun, writeRunDirectory } from "../result/run.js";
+import { executeRun, writeRunDirectory, type ExecutedRun } from "../result/run.js";
 import { formatConsoleReport, writeReports } from "../reporters/index.js";
+import { TerminalProgress } from "./progress.js";
 import { executeDirectSession, type DirectSessionMode } from "./direct-session.js";
 
 interface CliStreams {
   readonly stdout: { write(text: string): unknown };
-  readonly stderr: { write(text: string): unknown };
+  readonly stderr: { write(text: string): unknown; readonly isTTY?: boolean; readonly columns?: number };
 }
 
 export interface CliRunOptions {
@@ -260,6 +261,17 @@ function cliRunSummary(run: { readonly id: string; readonly status: string }, re
   });
 }
 
+function printRunResult(run: ExecutedRun, parsed: ParsedArguments, streams: CliStreams, resultDir: string,
+  reportFiles: readonly string[], plannedJobs: number, interrupted: boolean, configHash?: string): void {
+  if (parsed.json) {
+    streams.stdout.write(json(cliRunSummary(run, resultDir, configHash)));
+    line(streams, "stderr", `测试报告目录：${resultDir}`);
+    return;
+  }
+  // One write keeps the final block together; verbose affects live logs, not this summary.
+  streams.stdout.write(`\n${formatConsoleReport(run, {compact: true, plannedJobs, interrupted, resultDir, reportFiles})}`);
+}
+
 function managedPath(configDir: string, configured: string): string {
   const root = path.resolve(configDir);
   const target = path.resolve(root, configured);
@@ -326,7 +338,10 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams, options:
     if (mode === undefined || !["process", "attach", "serial"].includes(mode) || parsed.selectors.length !== 1) throw new CautestError("session 要求一个模式: process/attach/serial", { code: "config_error" });
     const resultRoot = path.resolve(process.cwd(), parsed.outputDir ?? ".cautest/results");
     const selectedReporters = reporters(parsed, undefined);
+    const progress = new TerminalProgress(streams.stderr, [{id: "direct.session", description: ""}], parsed.verbose);
     const run = await executeDirectSession({
+      ...progress.callbacks,
+      heartbeatMs: 30_000,
       mode,
       resultRoot,
       ...(parsed.target === undefined ? {} : { target: path.resolve(parsed.target) }),
@@ -345,11 +360,10 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams, options:
         ...(parsed.buildId === undefined ? {} : { expectedBuildId: parsed.buildId }),
       },
       ...(options.signal === undefined ? {} : { signal: options.signal }),
-    });
+    }).finally(() => progress.close());
     const resultDir = await writeRunDirectory(run, resultRoot);
-    await writeReports(run, resultDir, selectedReporters);
-    if (parsed.json) streams.stdout.write(json(cliRunSummary(run, resultDir)));
-    else streams.stdout.write(formatConsoleReport(run));
+    const reportFiles = await writeReports(run, resultDir, selectedReporters);
+    printRunResult(run, parsed, streams, resultDir, reportFiles, 1, options.signal?.aborted === true);
     if (options.signal?.aborted === true) return 130;
     return run.status === "ERROR" ? 2 : run.status === "FAIL" ? 1 : 0;
   }
@@ -425,6 +439,7 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams, options:
   const selectedReporters = reporters(parsed, profile?.reporters);
   const cTestRun = cTestOverrides(parsed, runJobs);
   const heartbeatMs = Number.parseInt(process.env.CAUTEST_HEARTBEAT_MS ?? "30000", 10);
+  const progress = new TerminalProgress(streams.stderr, runJobs, parsed.verbose);
   const run = await executeRun(loaded.config, {
     runId,
     configDir: loaded.dir,
@@ -436,26 +451,11 @@ async function runCommand(parsed: ParsedArguments, streams: CliStreams, options:
     ...(cTestRun === undefined ? {} : { cTestRun }),
     ...(options.signal === undefined ? {} : { signal: options.signal }),
     ...(Number.isFinite(heartbeatMs) && heartbeatMs > 0 ? { heartbeatMs } : {}),
-    onJob(event) {
-      if (event.type === "START") line(streams, "stderr", `START Job ${event.jobId}`);
-      else line(streams, "stderr", `END Job ${event.jobId} ${event.status} ${Math.round(event.durationMs ?? 0)}ms`);
-    },
-    onOutput(event) { if (parsed.verbose) streams.stderr.write(event.text); },
-    onStep(event) {
-      if (event.type === "START") {
-        line(streams, "stderr", `START Step ${event.jobId}/${event.step.phase}/${event.step.kind}:${event.step.name}`);
-      } else if (event.type === "HEARTBEAT") {
-        line(streams, "stderr", `HEARTBEAT Step ${event.jobId}/${event.step.kind}:${event.step.name} ${Math.round(event.durationMs ?? 0)}ms`);
-      } else {
-        const cache = event.diagnostics?.find((item) => typeof item === "object" && item !== null && "code" in item && (item.code === "cache_hit" || item.code === "cache_miss")) as { code: string } | undefined;
-        line(streams, "stderr", `END Step ${event.jobId}/${event.step.kind}:${event.step.name} ${event.status} ${Math.round(event.durationMs ?? 0)}ms${cache === undefined ? "" : ` ${cache.code === "cache_hit" ? "CACHE HIT" : "CACHE MISS"}`}`);
-      }
-    },
-  });
+    ...progress.callbacks,
+  }).finally(() => progress.close());
   const resultDir = await writeRunDirectory(run, resultRoot);
-  await writeReports(run, resultDir, selectedReporters);
-  if (parsed.json) streams.stdout.write(json(cliRunSummary(run, resultDir, loaded.hash)));
-  else streams.stdout.write(formatConsoleReport(run));
+  const reportFiles = await writeReports(run, resultDir, selectedReporters);
+  printRunResult(run, parsed, streams, resultDir, reportFiles, runJobs.length, options.signal?.aborted === true, loaded.hash);
   if (options.signal?.aborted === true) return 130;
   return run.status === "ERROR" ? 2 : run.status === "FAIL" ? 1 : 0;
 }

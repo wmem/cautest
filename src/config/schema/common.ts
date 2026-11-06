@@ -43,6 +43,8 @@ export type EnvironmentVariables = Readonly<Record<string, string>>;
 
 /** Test Job 的执行和结果策略。 */
 export interface TestJobPolicyInput {
+  /** cases 保留空测试校验；steps 允许通用任务按步骤结果完成。@defaultValue "cases" */
+  readonly resultMode?: "cases" | "steps";
   /** Case 产生 FAIL 后是否停止后续普通 Run Step。@defaultValue false */
   readonly stopOnTestFailure?: boolean;
 
@@ -229,6 +231,11 @@ export interface TestAssertionResult {
 /** 单个 Test Case 的最终结果。 */
 export interface TestCaseResult {
   readonly name: string;
+  /** 从 @purpose 提取；执行结果中缺省为空字符串。 */
+  readonly description?: string;
+  /** 作者声明的预期行为，区别于运行时断言值。 */
+  readonly expectedBehavior?: string;
+  readonly source?: { readonly file: string; readonly line: number };
   readonly status: "PASS" | "FAIL" | "ERROR" | "SKIP";
   readonly assertions: readonly TestAssertionResult[];
   readonly diagnostics: readonly unknown[];
@@ -242,6 +249,8 @@ export interface TestCaseResult {
 /** Test Suite 的结构化结果。 */
 export interface TestSuiteResult {
   readonly name: string;
+  readonly description?: string;
+  readonly source?: { readonly file: string; readonly line: number };
   readonly cases: readonly TestCaseResult[];
 }
 

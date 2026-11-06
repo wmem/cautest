@@ -318,6 +318,7 @@ export class CTestSession {
   async run(catalog: readonly TestDescriptor[], selection: readonly TestDescriptor[]): Promise<CTestExecutionResult> {
     if (this.#state !== "READY") throw new CautestError(`执行状态无效: ${this.#state}`, { code: "protocol_error" });
     const units = planCTestExecutions(catalog, selection, this.#options);
+    await this.#emit("CASE_SELECTION", { total: selection.length });
     const byId = new Map(catalog.map((item) => [`${item.suiteId}/${item.caseId}/${item.paramId}`, item]));
     const cases: MutableCase[] = [];
     const groupDiagnostics: Array<Readonly<Record<string, unknown>>> = [];

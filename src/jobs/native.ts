@@ -16,6 +16,7 @@ import { declaredEnvironment, effectiveEnvironment } from "../runtime/environmen
 import { runCommand } from "../runtime/process.js";
 import { defineStep } from "../workflow/step.js";
 import { coverageFiles, nativeCoverageStep, validateNativeCoverage } from "./native-coverage.js";
+import { readCTestInformation } from "../result/test-info.js";
 
 const kitRoot = fileURLToPath(new URL("../../assets/cautest-c", import.meta.url));
 const nativeCaseTimeoutGraceMs = 250;
@@ -82,7 +83,7 @@ function validateConfiguredCacheRoot(project: string, configured: string | undef
 }
 
 /** Runtime shared by the legacy compiler helper and artifact-driven providers. */
-export interface NativeRuntimeArtifact { readonly path: string; readonly buildId: string; readonly coverage?: boolean }
+export interface NativeRuntimeArtifact { readonly path: string; readonly buildId: string; readonly coverage?: boolean; readonly sourceFiles?: readonly string[] }
 export function nativeRuntimeStep(options: {
   readonly name: string;
   readonly run?: CTestRunInput;
@@ -99,6 +100,7 @@ export function nativeRuntimeStep(options: {
       const effectiveRun = effectiveWorkflowCTestRun(context, run, artifactName);
       const artifact = options.artifact(context);
       if (artifact === undefined) throw new CautestError(`Native Artifact 不存在: ${artifactName}`, { code: "build_error" });
+      const info = await readCTestInformation(artifact.sourceFiles ?? [], context.project.configDir);
       const coverageRaw = path.join(context.project.resultDir, "coverage", artifactName, "raw");
       if (artifact.coverage) await mkdir(coverageRaw, { recursive: true });
       const logDir = path.join(context.project.resultDir, context.job.id);
@@ -119,14 +121,14 @@ export function nativeRuntimeStep(options: {
         expectedBuildId: artifact.buildId,
         run: hostRun,
         signal: context.signal,
-        onEvent: workflowSessionEventSink(context.events, context.job.id),
+        onEvent: workflowSessionEventSink(context.events, context.job.id, artifactName, info),
         onLog(log) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },
         async onComplete(output) { await Promise.all([writeFile(stdoutFile, output.stdout), writeFile(stderrFile, output.stderr), writeFile(targetFile, `${targetLogs.join("\n")}${targetLogs.length === 0 ? "" : "\n"}`)]); },
       });
       context.artifacts.publish({ kind: "log", name: `${artifactName}-stdout`, path: stdoutFile });
       context.artifacts.publish({ kind: "log", name: `${artifactName}-stderr`, path: stderrFile });
       context.artifacts.publish({ kind: "log", name: `${artifactName}-target`, path: targetFile });
-      return workflowSessionResult(session, { label: "Native C Test", allowEmpty: options.allowEmpty === true });
+      return workflowSessionResult(session, { label: "Native C Test", allowEmpty: options.allowEmpty === true, info });
     },
   });
 }
@@ -207,7 +209,10 @@ export function nativeCTestJob(input: NativeCTestJobInput): TestJob {
     },
   });
   const execute = nativeRuntimeStep({ name: artifactName, run, allowEmpty: input.policy?.allowEmpty === true, coveragePrefixStrip: 100,
-    artifact: (context) => context.state.get(`native:${artifactName}`) as NativeArtifact | undefined });
+    artifact: (context) => {
+      const artifact = context.state.get(`native:${artifactName}`) as NativeArtifact | undefined;
+      return artifact === undefined ? undefined : { ...artifact, sourceFiles: artifact.sources };
+    } });
   const coverage = input.coverage === undefined ? [] : [nativeCoverageStep({
     name: artifactName, coverage: input.coverage, rawLayout: "flat",
     async notes(context) {

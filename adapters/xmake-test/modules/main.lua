@@ -128,7 +128,21 @@ function artifact(_state, _toolroot)
     end
     assert(#outputs > 0, "Target has no outputs; declare add_values(\"cautest.outputs\", \"role=path\")")
     local protocol = target:data("cautest.protocolBuildId") or target:values("cautest.protocolBuildId")
+    local sourcefiles, visited, seen = {}, {}, {}
+    local function collect_sources(current)
+        if visited[current:name()] then return end
+        visited[current:name()] = true
+        for _, file in ipairs(table.join(current:sourcefiles() or {}, table.wrap(current:values("cautest.testSources")))) do
+            local absolute = path.absolute(file, os.projectdir())
+            if not seen[absolute] then table.insert(sourcefiles, absolute); seen[absolute] = true end
+        end
+        for _, dependency in ipairs(current:orderdeps()) do
+            if dependency:kind() == "static" or dependency:kind() == "shared" or dependency:kind() == "object" then collect_sources(dependency) end
+        end
+    end
+    collect_sources(target)
+    table.sort(sourcefiles)
     local result = {schemaVersion = 1, kind = "cautest.artifact-description", target = target:name(), context = context.get(),
-        outputs = json.mark_as_array(outputs), protocolBuildId = protocol}
+        outputs = json.mark_as_array(outputs), protocolBuildId = protocol, sourceFiles = json.mark_as_array(sourcefiles)}
     atomic(path.absolute(option.get("output-file"), os.projectdir()), result)
 end

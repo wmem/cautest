@@ -34,7 +34,9 @@ test("tools/cautest checkout works after relocation without node_modules and run
   for (const entry of ["cautest.js", "package.json", "dist", "assets"]) {
     await cp(path.join(root, entry), path.join(checkout, entry), { recursive: true });
   }
-  await cp(path.join(root, "examples/c-lib"), project, { recursive: true });
+  await cp(path.join(root, "examples/c-lib"), project, { recursive: true,
+    filter: source => path.basename(source) !== ".cautest",
+  });
   await assert.rejects(access(path.join(checkout, "node_modules")), { code: "ENOENT" });
   const executable = path.join(checkout, "cautest.js");
   const config = path.join(project, "cautest.config.mjs");

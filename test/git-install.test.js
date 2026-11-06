@@ -14,7 +14,9 @@ async function createGitSnapshot() {
   const repository = path.join(temporary, "repository");
   await mkdir(repository);
   for (const entry of ["cautest.js", "xmake.lua", "adapters", "assets", "docs", "examples", "scripts", "src", "LICENSE", "package.json", "package-lock.json", "README.md", "tsconfig.json", "versions.json"]) {
-    await cp(path.join(projectRoot, entry), path.join(repository, entry), { recursive: true });
+    await cp(path.join(projectRoot, entry), path.join(repository, entry), { recursive: true,
+      filter: source => ![".cautest", ".xmake", "__pycache__"].includes(path.basename(source)),
+    });
   }
   await exec("git", ["init", "-b", "main"], { cwd: repository });
   await exec("git", ["config", "user.name", "Cautest Test"], { cwd: repository });

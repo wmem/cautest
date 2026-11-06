@@ -11,6 +11,7 @@ import { testJob } from "../config/define.js";
 import { CautestError } from "../model/error.js";
 import { runCtpSession } from "../protocol/native-session.js";
 import { effectiveWorkflowCTestRun, workflowSessionEventSink, workflowSessionResult } from "../protocol/workflow-session.js";
+import { readCTestInformation } from "../result/test-info.js";
 import { SimulatedMcuBoard } from "../integration/mcu-simulated.js";
 import { declaredEnvironment, effectiveEnvironment } from "../runtime/environment.js";
 import { runCommand } from "../runtime/process.js";
@@ -18,7 +19,7 @@ import { defineStep } from "../workflow/step.js";
 
 const kitRoot = fileURLToPath(new URL("../../assets/cautest-c", import.meta.url));
 const kitSources = ["core/cautest.c", "protocol/ctp3.c", "platform/freestanding/cautest_freestanding.c", "target/mcu-reference/mcu_reference.c", "target/mcu-reference/mcu_sim_target.c"];
-export interface FirmwareArtifact { readonly path: string; readonly buildId: string }
+export interface FirmwareArtifact { readonly path: string; readonly buildId: string; readonly sourceFiles?: readonly string[] }
 interface BoardState { readonly kind: "simulated" | "external"; readonly bootId: string; readonly adapter: McuBoardAdapter }
 
 async function boardSession(options: {
@@ -82,7 +83,7 @@ async function firmware(input: McuCTestJobInput, context: Parameters<Parameters<
         dependencies: headers.map(file => path.join(context.project.configDir, file)), env: environment, signal: context.signal, onOutput: context.output});
       await chmod(output, 0o755);
       await writeChanged(publication, JSON.stringify(await fileState(output)));
-      return Object.freeze({ path: output, buildId });
+      return Object.freeze({ path: output, buildId, sourceFiles: sources.map(source => path.resolve(context.project.configDir, source)) });
     };
     return process.platform === "linux" ? await withBuildLock(output, context.signal, buildTarget) : await buildTarget();
   }
@@ -126,6 +127,7 @@ export function mcuRuntimeSteps(input: Omit<McuCTestJobInput, "firmware">, optio
       const artifact = options.artifact(context);
       const state = context.state.get(`board:${boardName}`) as BoardState | undefined;
       if (artifact === undefined || state === undefined) throw new CautestError("Firmware/Board 未准备", { code: "provision_error" });
+      const info = await readCTestInformation(artifact.sourceFiles ?? [], context.project.configDir);
       const logDir = path.join(context.project.resultDir, "mcu", boardName);
       const targetFile = path.join(logDir, `${boardName}.target.log`);
       const stdoutFile = path.join(logDir, `${boardName}.stdout.log`);
@@ -134,7 +136,7 @@ export function mcuRuntimeSteps(input: Omit<McuCTestJobInput, "firmware">, optio
       const effectiveRun = effectiveWorkflowCTestRun(context, input.run ?? {}, boardName);
       await mkdir(logDir, { recursive: true });
       const callbacks = {
-        onEvent: workflowSessionEventSink(context.events, context.job.id),
+        onEvent: workflowSessionEventSink(context.events, context.job.id, boardName, info),
         onLog(log: Parameters<NonNullable<Parameters<typeof runCtpSession>[0]["onLog"]>>[0]) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },
       };
       try {
@@ -142,7 +144,7 @@ export function mcuRuntimeSteps(input: Omit<McuCTestJobInput, "firmware">, optio
           ? { ...(input.serial?.options ?? {}), cwd: path.resolve(context.project.configDir, input.serial?.cwd ?? "."), env: effectiveEnvironment(context, input.serial?.env) }
           : input.serial?.options;
         const session = await boardSession({ state, artifact, run: effectiveRun, ...(serialOptions === undefined ? {} : { serial: serialOptions }), reconnects: input.reconnects ?? 0, recoverTimeouts: input.recoverTimeouts ?? false, context, callbacks });
-        return workflowSessionResult(session, { label: "MCU C Test", allowEmpty: input.policy?.allowEmpty === true });
+        return workflowSessionResult(session, { label: "MCU C Test", allowEmpty: input.policy?.allowEmpty === true, info });
       } finally {
         if (state.kind === "simulated" && state.adapter instanceof SimulatedMcuBoard) {
           await Promise.all([

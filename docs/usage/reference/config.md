@@ -28,6 +28,12 @@
 
 所有标准 Job 的 `id`、`level`、`tags`、`enabled`、`timeoutMs`、`env` 和 `policy` 都来自 `TestJobCommonInput`。
 
+`policy.resultMode` 默认为 `"cases"`：没有任何用例结果时返回 ERROR，显式 `allowEmpty: true` 时返回 SKIP。
+不产生 Case 的通用任务可设置 `policy: {resultMode: "steps"}`。步骤正常执行完成后返回 SUCCESS，
+步骤返回 FAIL 时保留 FAIL，异常、超时或清理失败返回 ERROR；全部步骤未执行时返回 SKIP。
+如果步骤实际返回了用例结果，其 FAIL/ERROR/SKIP 语义仍保留。无需为通用任务伪造 Suite 或 Case。
+Lua 的 `ctest.workflow` 同样接受 `policy = {resultMode = "steps"}`。
+
 ## 标准 Job Factory
 
 | 场景函数 | 主要 Interface | 声明文件 |

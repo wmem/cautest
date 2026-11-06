@@ -32,7 +32,7 @@ export interface RunExecutionOptions extends Omit<WorkflowExecutionOptions, "pro
   readonly configHash?: string;
   readonly configPath?: string;
   readonly resultDir?: string;
-  readonly onJob?: (event: { readonly type: "START" | "END"; readonly jobId: string; readonly status?: WorkflowStatus; readonly durationMs?: number }) => void;
+  readonly onJob?: (event: { readonly type: "START" | "END"; readonly jobId: string; readonly status?: WorkflowStatus; readonly durationMs?: number; readonly result?: ExecutedWorkflow }) => void;
 }
 
 function aggregateRun(jobs: readonly ExecutedWorkflow[]): WorkflowStatus {
@@ -49,7 +49,7 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
   const id = options.runId ?? randomUUID();
   const configDir = path.resolve(options.configDir ?? process.cwd());
   const resultDir = path.resolve(configDir, options.resultDir ?? config.defaults.resultDir, id);
-  const events = new EventRecorder({ file: path.join(resultDir, "events.jsonl") });
+  const events = new EventRecorder({ file: path.join(resultDir, "events.jsonl"), onEvent: options.onEvent });
   const jobs: ExecutedWorkflow[] = [];
   events.emit("RUN_START", { runId: id });
   for (const job of options.jobs ?? selectJobs(config.jobs, config.selection === undefined ? {} : {policy: config.selection})) {
@@ -68,7 +68,7 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
       },
     });
     jobs.push(result);
-    options.onJob?.({ type: "END", jobId: job.id, status: result.status, durationMs: result.durationMs });
+    options.onJob?.({ type: "END", jobId: job.id, status: result.status, durationMs: result.durationMs, result });
     if (options.signal?.aborted === true) break;
     if (options.failFast === true && (result.status === "FAIL" || result.status === "ERROR")) break;
   }
@@ -91,7 +91,7 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
     const current = snapshot();
     // 先保存本轮快照，收集器可以读取实际 artifact、gcov 和 summary。
     await writeRunDirectory(current, path.dirname(resultDir));
-    const job = testJob({ id: collector.id, level: "system", policy: { allowEmpty: true }, workflow: [
+    const job = testJob({ id: collector.id, level: "system", policy: { resultMode: "steps" }, workflow: [
       defineStep({ kind: "runCollect", name: collector.id, phase: "collect", runWhen: "always",
         timeoutMs: collector.timeoutMs ?? config.defaults.stepTimeoutMs, details: collector.details ?? {},
         async execute(context) { await collector.collect({ run: current, resultDir, signal: context.signal, output: context.output,
@@ -105,8 +105,7 @@ export async function executeRun(config: TestConfig, options: RunExecutionOption
       project: { configDir, resultDir, cacheDir: path.resolve(configDir, config.defaults.cacheDir),
         generatedDir: path.resolve(configDir, config.defaults.generatedDir), workDir: path.resolve(configDir, config.defaults.workDir, id, "collectors", collector.id) },
     });
-    // 收集器没有测试 Case；所有步骤成功即为收集成功。
-    collectors.push(Object.freeze({ ...result, status: result.status === "SKIP" ? "SUCCESS" : result.status }));
+    collectors.push(result);
   }
   events.emit("RUN_END", { runId: id, status: snapshot().status });
   const run = snapshot();
@@ -135,9 +134,14 @@ function failures(run: ExecutedRun): readonly FailureRecord[] {
   const records: Omit<FailureRecord, "sequence">[] = [];
   for (const job of [...run.jobs, ...(run.collectors ?? [])]) {
     const directory = run.jobs.includes(job) ? "jobs" : "collectors";
-    for (const [index, step] of job.steps.entries()) if (step.status === "ERROR") records.push({
-      kind: "step", status: "ERROR", jobId: job.jobId, stepId: step.id, message: step.error?.message ?? "Step Error", ...(step.error?.code === undefined ? {} : { code: step.error.code }), diagnostic: step.diagnostics[0], detailRef: `${directory}/${job.jobId}/job.json#/steps/${index}`,
-    });
+    for (const [index, step] of job.steps.entries()) {
+      if (step.status !== "ERROR" && step.status !== "FAIL") continue;
+      if (step.status === "FAIL" && step.testResults.some(group => group.cases.some(item => item.status === "FAIL" || item.status === "ERROR"))) continue;
+      const diagnostic = step.diagnostics.find(value => typeof value === "object" && value !== null && "message" in value) as {message?: unknown} | undefined;
+      records.push({kind: "step", status: step.status, jobId: job.jobId, stepId: step.id,
+        message: step.error?.message ?? (typeof diagnostic?.message === "string" ? diagnostic.message : `Step ${step.name} ${step.status}`),
+        ...(step.error?.code === undefined ? {} : {code: step.error.code}), diagnostic: step.diagnostics[0], detailRef: `${directory}/${job.jobId}/job.json#/steps/${index}`});
+    }
     for (const [index, cleanup] of job.cleanup.entries()) if (cleanup.status === "ERROR") records.push({
       kind: "cleanup", status: "ERROR", jobId: job.jobId, message: cleanup.error?.message ?? "Cleanup Error", ...(cleanup.error?.code === undefined ? {} : { code: cleanup.error.code }), detailRef: `${directory}/${job.jobId}/job.json#/cleanup/${index}`,
     });

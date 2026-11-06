@@ -120,6 +120,7 @@ export function kernelArtifactJob(input: KernelArtifactJobInput): TestJob {
     (context.state.get(moduleNamesKey) as string[]).push("cautest_kernel"); return {};
   }});
   const {start, run, collect} = umlRuntimeSteps({name, environment, endpoint: "kernel", label: "Kernel C Test", transportDetail: true,
+    sourceFiles: context => getArtifact(context, "test-module").receipt.sourceFiles ?? [],
     ...(input.run === undefined ? {} : {run: input.run}), allowEmpty: input.policy?.allowEmpty === true});
   return testJob({...common(input), level: input.level ?? "unit", tags: input.tags ?? ["unit", "kernel", "uml"],
     workflow: [env.kernel, env.busybox, identityStep(environment, name), runtime, registerRuntime, ...moduleSteps(input, provider, input.artifact, "test-module"), rootfsStep(input, environment, name), start, run, collect]});
@@ -141,6 +142,7 @@ export function driverArtifactJob(input: DriverArtifactJobInput): TestJob {
     return {diagnostics: [{code: "driver_guest_verified", message: program.path}]};
   }});
   const {start, run, collect} = umlRuntimeSteps({name, environment, endpoint: guestName, label: "Driver Guest C Test",
+    sourceFiles: context => getArtifact(context, guestName).receipt.sourceFiles ?? [],
     ...(input.run === undefined ? {} : {run: input.run}), allowEmpty: input.policy?.allowEmpty === true});
   return testJob({...common(input), level: input.level ?? "integration", tags: input.tags ?? ["integration", "driver", "uml"],
     workflow: [env.kernel, env.busybox, identityStep(environment, name), ...input.drivers.flatMap((ref, index) => moduleSteps(input, provider, ref, `driver-${index + 1}`)), guest, validateGuest, rootfsStep(input, environment, name, guestName), start, run, collect]});

@@ -1,4 +1,4 @@
-CAUTEST_C_VERSION := 0.8.0
+CAUTEST_C_VERSION := 0.9.0
 
 CC ?= cc
 AR ?= ar

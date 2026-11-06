@@ -61,7 +61,8 @@ test("Session 生成 Case 结果并将 Target Log 外置", async () => {
   assert.equal(logs[0].message, "diagnostic");
   assert.equal(events.find((event) => event.type === "TARGET_LOG").message, undefined);
   assert.equal(events.find((event) => event.type === "TARGET_LOG").logRef, "target.log:1");
-  assert.deepEqual(events.map((event) => event.type), ["EXEC_START", "SUITE_START", "CASE_START", "TARGET_LOG", "CASE_END", "SUITE_END", "EXEC_END"]);
+  assert.deepEqual(events.map((event) => event.type), ["CASE_SELECTION", "EXEC_START", "SUITE_START", "CASE_START", "TARGET_LOG", "CASE_END", "SUITE_END", "EXEC_END"]);
+  assert.equal(events[0].total, result.selection.length);
   assert(transport.commands.includes("AT+CASE=1,0,0,0"));
 });
 

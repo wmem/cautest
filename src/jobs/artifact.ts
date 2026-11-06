@@ -24,7 +24,7 @@ export function nativeArtifactJob(input: NativeArtifactJobInput): TestJob {
   const name = input.id;
   return testJob({...common,level:input.level??"unit",tags:input.tags??[input.level??"unit"],workflow:[build(input,name),
     nativeRuntimeStep({name,...(run===undefined?{}:{run}),allowEmpty:input.policy?.allowEmpty===true,
-      artifact:(ctx)=>({...getArtifact(ctx,name),coverage:coverage!==undefined})}),
+      artifact:(ctx)=>{const artifact=getArtifact(ctx,name);return {...artifact,sourceFiles:artifact.receipt.sourceFiles??[],coverage:coverage!==undefined};}}),
     ...(coverage===undefined?[]:[nativeCoverageStep({name,coverage,async notes(ctx){
       let artifact;
       try { artifact=getArtifact(ctx,name); } catch { return undefined; }
@@ -34,5 +34,5 @@ export function nativeArtifactJob(input: NativeArtifactJobInput): TestJob {
 export function mcuArtifactJob(input: ArtifactJobInput & Omit<McuCTestJobInput, "firmware">, options: {readonly onProvision?:(context:StepExecutionContext)=>void} = {}): TestJob {
   const name = input.firmwareName ?? "firmware";
   const common: TestJobCommonInput = {id:input.id,...(input.collections === undefined ? {} : {collections: input.collections}), ...(input.testEnvironment === undefined ? {} : {testEnvironment: input.testEnvironment}), ...(input.description===undefined?{}:{description:input.description}),...(input.enabled===undefined?{}:{enabled:input.enabled}),...(input.timeoutMs===undefined?{}:{timeoutMs:input.timeoutMs}),...(input.env===undefined?{}:{env:input.env}),...(input.policy===undefined?{}:{policy:input.policy})};
-  return testJob({...common,level:input.level??"component",tags:input.tags??["component","mcu"],workflow:[build(input,name),...mcuRuntimeSteps(input,{...options,artifact:(ctx)=>getArtifact(ctx,name)})]});
+  return testJob({...common,level:input.level??"component",tags:input.tags??["component","mcu"],workflow:[build(input,name),...mcuRuntimeSteps(input,{...options,artifact:(ctx)=>{const artifact=getArtifact(ctx,name);return {...artifact,sourceFiles:artifact.receipt.sourceFiles??[]};}})]});
 }

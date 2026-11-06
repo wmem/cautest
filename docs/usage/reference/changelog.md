@@ -4,6 +4,14 @@
 
 尚未发布的变化应先记在文档顶部的“未发布”章节；正式发布时再将其改为带日期的版本章节。以下 `0.2.0` 是开始维护记录时对现有仓库状态建立的开发基线，不代表仓库已经存在对应的正式发布或 Git tag。
 
+## 0.9.0 — 2026-11-06
+
+- 终端以五行动态面板显示整体任务进度、用例或步骤进度、当前任务、阶段和耗时。正常过程不追加刷屏，错误立即保留并显示有界的最近输出；结束时统一输出简洁结论、计数、失败索引和报告位置。`--json` 的 stdout 契约保持不变。
+- 从测试 C 源码中的 `@purpose`、`@expected` 块注释提取 Suite/Case 说明与源码位置，随执行结果汇入 Job；缺失说明保存为空字符串，不推测目的。Job 的 `description` 贯通结果与报告，HTML、JUnit 和 Console 展示对应信息。
+- 新增 `policy.resultMode: "steps"`，允许无 Case 的通用 Job 按步骤判定 SUCCESS/FAIL/ERROR/SKIP，并显示步骤进度。默认 `"cases"` 保留空测试检查。步骤失败、超时和清理异常保留真实状态，通用任务不伪造 Case；JUnit 以带 `workflowStep=true` 的视图表达步骤。
+- Xmake 产物描述与 Receipt 增加可选 `sourceFiles`，用于关联说明；旧 Provider 未提供来源时仍可执行。补齐便携运行库和两类终端 Demo，并修复已运行示例影响隔离仓库验证的问题。
+- 工具与 Addon 同号发布为 0.9.0。C API 2.2、CTP 3.1、Kernel/Probe ABI、Schema 和 Cache 版本保持不变；新增元数据为兼容的可选字段，使用新配置需升级运行时。
+
 ## 0.8.0 — 2026-10-21
 
 - 新增项目级测试集合及执行环境：Job 的 `collections`、`testEnvironment` 与项目 `selection` 支持集合继承和默认环境；CLI 与 Xmake 入口增加 `--collection`、`--environment`，与既有 ID、level、tag 组合筛选。未声明新字段的配置保持原选择行为。

@@ -17,6 +17,7 @@ import type { KernelModuleArtifact } from "../kernel/module-build.js";
 import { CautestError } from "../model/error.js";
 import { runCtpSession } from "../protocol/native-session.js";
 import { workflowSessionEventSink } from "../protocol/workflow-session.js";
+import type { CTestInformation } from "../result/test-info.js";
 import { declaredEnvironment, effectiveEnvironment } from "../runtime/environment.js";
 import { runCommand } from "../runtime/process.js";
 import { UmlControlChannel, type UmlRuntimeResource } from "./control.js";
@@ -345,7 +346,7 @@ export async function startUml(name: string, image: UmlImageArtifact, environmen
   return resource;
 }
 
-export async function runUmlEndpoint(name: string, endpoint: string, image: UmlImageArtifact, run: CTestRunInput, context: StepExecutionContext): ReturnType<typeof runCtpSession> {
+export async function runUmlEndpoint(name: string, endpoint: string, image: UmlImageArtifact, run: CTestRunInput, context: StepExecutionContext, info?: CTestInformation): ReturnType<typeof runCtpSession> {
   const resource = context.state.get(`uml:${name}`) as UmlRuntimeResource | undefined;
   if (resource === undefined) throw new CautestError(`UML Resource 不存在: ${name}`, { code: "transport_error" });
   const target = image.endpoints.get(endpoint);
@@ -360,7 +361,7 @@ export async function runUmlEndpoint(name: string, endpoint: string, image: UmlI
       expectedBuildId: run.expectedBuildId ?? target.buildId,
       run,
       signal: context.signal,
-      onEvent: workflowSessionEventSink(context.events, context.job.id),
+      onEvent: workflowSessionEventSink(context.events, context.job.id, name, info),
       onLog(log) { targetLogs.push(`[${log.level}] ${log.scope}: ${log.message}`); return `${targetFile}:${targetLogs.length}`; },
     });
   } finally {

@@ -72,7 +72,7 @@ export class XmakeBuildProvider implements BuildProvider {
       await command(["build","-y",ref.target]);
       context.signal.throwIfAborted();
       await command(["cautest-artifact",`--target=${ref.target}`,`--output-file=${description}`]);
-      const raw=object(JSON.parse(await readFile(description,"utf8")),["schemaVersion","kind","target","context","protocolBuildId","outputs"],"Artifact description");
+      const raw=object(JSON.parse(await readFile(description,"utf8")),["schemaVersion","kind","target","context","protocolBuildId","outputs","sourceFiles"],"Artifact description");
       if(raw.schemaVersion!==1||raw.kind!=="cautest.artifact-description"||raw.target!==ref.target)throw new CautestError("Invalid Xmake artifact description",{code:"build_error"});
       validateBuildContext(raw.context);assertCompatibleContext(this.#context,raw.context);
       this.#context=raw.context;
@@ -91,6 +91,7 @@ export class XmakeBuildProvider implements BuildProvider {
         outputs.push({role:item.role,path:item.path,size:info.size});
       }
       const receipt:ArtifactReceipt={schemaVersion:CAUTEST_VERSIONS.schemas.artifactReceipt,kind:"cautest.artifact-receipt",target:ref.target,context:this.#context,outputs,
+        ...(raw.sourceFiles===undefined?{}:{sourceFiles:raw.sourceFiles as readonly string[]}),
         ...(raw.protocolBuildId===undefined?{}:{protocolBuildId:raw.protocolBuildId as string})};
       await resolveArtifact(receipt,ref,this.#context,false);
       await atomic(path.join(directory,`receipt-${name}.json`),receipt);

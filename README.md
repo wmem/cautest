@@ -1,4 +1,4 @@
-# cautest 0.8.0
+# cautest 0.9.0
 
 面向 Native C、Linux Kernel/Driver、MCU 和系统脚本的测试工具，统一组织 TestJob、Workflow 和 Result。
 
@@ -10,7 +10,7 @@
 
 ```lua
 add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
-add_addons("cautest 0.8.0")
+add_addons("cautest 0.9.0")
 ```
 
 执行 xmake f -y 后，按[快速开始](docs/usage/quickstart.mdoc)准备配置并运行。

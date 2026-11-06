@@ -145,7 +145,7 @@ test("XT-001: common defaults remain shallow and explicit tags replace helper de
   assert.deepEqual(job.env, { REPLACE: "local" });
   assert.deepEqual(job.tags, ["local"]);
   assert.equal(job.enabled, true);
-  assert.deepEqual(job.policy, { stopOnTestFailure: false, allowEmpty: false });
+  assert.deepEqual(job.policy, { resultMode: "cases", stopOnTestFailure: false, allowEmpty: false });
   assert.deepEqual(nativeCTestJob({ id: "unit.default", tests: ["unused.c"] }).tags, ["unit"]);
   const native = nativeCTestJob({ id: "integration.native", level: "integration", tests: ["unused.c"] });
   assert.equal(native.level, "integration");

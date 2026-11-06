@@ -1,4 +1,5 @@
 import { umlRuntimeSteps } from "./uml-runtime.js";
+import { expandFilePatterns } from "../config/file-pattern.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { DriverAbiCTestJobFactoryInput, DriverAbiCTestJobInput, TestJob } from "../config/schema/index.js";
@@ -67,7 +68,8 @@ export function driverAbiCTestJob(input: DriverAbiCTestJobInput): TestJob {
       return { diagnostics: [{ code: image.cacheHit ? "cache_hit" : "cache_miss", message: image.rootfsPath }] };
     },
   });
-  const { start, run, collect } = umlRuntimeSteps({ name, environment, endpoint: input.guest.endpoint ?? guestName, label: "Driver Guest C Test", ...(input.run === undefined ? {} : {run: input.run}), allowEmpty: input.policy?.allowEmpty === true });
+  const { start, run, collect } = umlRuntimeSteps({ name, environment, endpoint: input.guest.endpoint ?? guestName, label: "Driver Guest C Test", ...(input.run === undefined ? {} : {run: input.run}), allowEmpty: input.policy?.allowEmpty === true,
+    sourceFiles: async context => await expandFilePatterns(input.guest.tests, {baseDir: context.project.configDir, label: `jobs.${input.id}.guest.tests`}) });
   return testJob({ id: input.id, level: input.level ?? "integration", tags: input.tags ?? ["integration", "driver", "uml"], workflow: [kernelBuild, busyboxBuild, ...probe, ...modules, guest, rootfs, start, run, collect], ...(input.collections === undefined ? {} : {collections: input.collections}), ...(input.testEnvironment === undefined ? {} : {testEnvironment: input.testEnvironment}), ...(input.description === undefined ? {} : { description: input.description }), ...(input.enabled === undefined ? {} : { enabled: input.enabled }), ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }), ...(input.env === undefined ? {} : { env: input.env }), ...(input.policy === undefined ? {} : { policy: input.policy }) });
 }
 

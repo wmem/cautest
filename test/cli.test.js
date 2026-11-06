@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { access, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { CAUTEST_RELEASE_VERSION } from "../dist/config/index.js";
+import { CAUTEST_RELEASE_VERSION, defineStep, testConfig, testJob } from "../dist/config/index.js";
 import { runCli } from "../dist/runtime/cli.js";
 
 const configModule = new URL("../dist/config/index.js", import.meta.url).href;
@@ -16,6 +16,34 @@ function streams() {
     streams: { stdout: { write(text) { stdout += text; } }, stderr: { write(text) { stderr += text; } } },
   };
 }
+
+test("final terminal output is one self-contained summary in normal and verbose mode", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "cautest-cli-summary-"));
+  try {
+    const config = testConfig({jobs: [testJob({id: "unit.failed", level: "unit", description: "do not repeat this description", workflow: [defineStep({kind: "fixture", phase: "run", execute() {
+      return {testResults: [{name: "api", cases: [{name: "failure", status: "FAIL", diagnostics: [], assertions: [{status: "FAIL", expression: "actual == expected", expected: {type: "integer", value: "1"}, actual: {type: "integer", value: "2"}}]}]}]};
+    }})]})]});
+    for (const verbose of [false, true]) {
+      const writes = []; let stderr = "";
+      const code = await runCli(["run", "--reporter", "html,junit", ...(verbose ? ["--verbose"] : [])], {
+        stdout: {write(text) {writes.push(text);}}, stderr: {isTTY: true, columns: 120, write(text) {stderr += text;}},
+      }, {loadedConfig: {config, dir: root, path: path.join(root, "config.mjs"), hash: "fixture", sources: []}});
+      assert.equal(code, 1);
+      assert.equal(writes.length, 1);
+      const summary = writes[0];
+      assert.match(summary, /^\n  结果  FAIL/u);
+      assert.match(summary, /任务  1\/1  成功 0  失败 1/u);
+      assert.match(summary, /失败  \[FAIL\] unit.failed \/ api\/failure/u);
+      assert.match(summary, /报告  report.html  ·  junit.xml/u);
+      assert.doesNotMatch(summary, /actual == expected|expected=|明细|do not repeat|Run /u);
+      assert.equal((stderr.match(/actual == expected/gu) ?? []).length, 1);
+      assert.doesNotMatch(stderr, /测试报告目录|Job 已执行/u);
+      const directory = /^  目录  (.+)$/mu.exec(summary)[1];
+      assert.match(await readFile(path.join(directory, "report.html"), "utf8"), /actual == expected/u);
+      assert.equal((summary.match(new RegExp(directory.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"), "gu")) ?? []).length, 1);
+    }
+  } finally { await rm(root, {recursive: true, force: true}); }
+});
 
 test("run --json 保持 stdout 结构化并实时写 stderr", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "cautest-cli-run-"));

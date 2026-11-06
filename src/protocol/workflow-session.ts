@@ -2,10 +2,14 @@ import type { CTestRunInput, StepExecutionContext, StepExecutionResult } from ".
 import { CautestError } from "../model/error.js";
 import type { EventRecorder } from "../workflow/events.js";
 import type { CTestSessionResult, SessionEvent } from "./session.js";
+import { CTestInformation } from "../result/test-info.js";
 
 /** 将 Target 语义事件写入当前 Run 的流式 EventRecorder。 */
-export function workflowSessionEventSink(events: EventRecorder, jobId: string): (event: SessionEvent) => Promise<void> {
-  return async ({ type, ...payload }) => { await events.emitTransient(type, { jobId, ...payload }); };
+export function workflowSessionEventSink(events: EventRecorder, jobId: string, step = "", info?: CTestInformation): (event: SessionEvent) => Promise<void> {
+  return async ({ type, ...payload }) => {
+    const description = type === "CASE_START" ? info?.case(String(payload.suite), String(payload.case)) : undefined;
+    await events.emitTransient(type, { jobId, step, ...payload, ...(description === undefined ? {} : description) });
+  };
 }
 
 /** 合并本次 CLI Run 对指定 C Test Step 的临时覆盖。 */
@@ -17,7 +21,9 @@ export function effectiveWorkflowCTestRun(context: Pick<StepExecutionContext, "c
 }
 
 /** 在保留已取得 Case Result 的同时，把 Session 级错误提升为 Workflow ERROR。 */
-export function workflowSessionResult(result: CTestSessionResult, options: { readonly label: string; readonly allowEmpty: boolean }): StepExecutionResult {
+export function workflowSessionResult(result: CTestSessionResult, options: { readonly label: string; readonly allowEmpty: boolean; readonly info?: CTestInformation }): StepExecutionResult {
+  const info = options.info ?? new CTestInformation();
+  const groups = info.enrich(result.groups);
   const cases = result.groups.flatMap((suite) => suite.cases);
   const diagnostics = [
     {
@@ -31,19 +37,20 @@ export function workflowSessionResult(result: CTestSessionResult, options: { rea
     },
     ...result.groupDiagnostics,
     ...result.executionErrors,
+    ...info.diagnostics,
   ];
   if (result.executionErrors.length > 0) {
     return {
       outcome: "ERROR",
       error: new CautestError(`${options.label} Target 执行错误`, { code: "target_error", details: result.executionErrors }),
-      testResults: result.groups,
+      testResults: groups,
       diagnostics,
     };
   }
   if (cases.length === 0 && !options.allowEmpty) throw new CautestError(`${options.label} 没有选中任何 Case`, { code: "selection_error" });
   return {
     outcome: cases.some((item) => item.status === "FAIL" || item.status === "ERROR") ? "FAIL" : "SUCCESS",
-    testResults: result.groups,
+    testResults: groups,
     diagnostics,
   };
 }

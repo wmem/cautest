@@ -130,7 +130,7 @@ export async function executeScriptTest(definition: ScriptTestDefinition, option
       });
       cases.push(result);
       if (status === "SKIP") event("SKIP", { case: name, reason: error?.message ?? "显式跳过" });
-      event("CASE_END", { case: name, status, durationMs: result.durationMs });
+      event("CASE_END", { case: name, status, durationMs: result.durationMs, ...(error === undefined ? {} : {error}) });
       return result;
     },
   });

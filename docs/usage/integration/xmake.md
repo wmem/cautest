@@ -4,7 +4,7 @@
 
 ```lua {% process=false %}
 add_repositories("wmem-xmake-addon git@github.com:wmem/xmake-addons.git")
-add_addons("cautest 0.8.0")
+add_addons("cautest 0.9.0")
 ```
 
 ```lua {% process=false %}

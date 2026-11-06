@@ -30,6 +30,40 @@ CAUTEST_REGISTRY(cautest_mcu_registry,
 
 Suite 分散在多个翻译单元时，在组合 Registry 的文件使用 `CAUTEST_SUITE_DECLARE(name)` 和 `CAUTEST_SUITE_REF(name)`。
 
+## 测试目的与预期行为
+
+Job 的 `description` 在 JS/Lua 配置中填写。Suite、Case 的说明可写在紧邻定义宏之前的块注释中：
+
+```c {% process=false %}
+/**
+ * @purpose 验证两个正整数相加
+ * @expected 输入 2 和 3，返回 5
+ */
+CAUTEST_CASE(adds_two_numbers)
+{
+    CAUTEST_EXPECT_EQ_INT(5, 2 + 3);
+}
+
+/** @purpose 验证数学加法接口 */
+CAUTEST_SUITE(example_math, CAUTEST_CASE_ENTRY(adds_two_numbers));
+```
+
+每个标签独占一行，后续无标签的非空行作为该字段的续行。`@purpose` 保存为
+`description`，Case 的 `@expected` 保存为 `expectedBehavior`。支持 `CAUTEST_CASE`、
+`CAUTEST_PARAM_CASE`、`CAUTEST_SUITE` 和 `CAUTEST_SUITE_WITH_FIXTURES`；登记宏确定归属。
+参数实例继承 Case 说明。没有对应标签时，字段保存为空字符串，不从名称或断言推测。
+
+Host 只读取当前测试产物的来源列表，将说明与实际发现并执行的 Suite/Case 关联，
+保存到 Job 的 `groups[].cases[]` 中。不会因此创建额外测试或执行源码。源码位置同时保存。
+提取器不解释条件编译：同名定义无法唯一匹配时，相应说明留空并记录 `test_info_ambiguous`；
+源码不可读时记录 `test_info_unavailable`，测试仍正常执行。
+
+Native、Kernel 和 Driver 的直接构建入口使用其测试源码；MCU host-simulated 使用固件源码。
+Xmake Provider 导出目标及链接库的源码列表，额外的测试 Header 或自定义构建来源可在
+目标声明 `add_values("cautest.testSources", "实际源码路径")`，使用绝对路径或相对工程根目录的路径。只有二进制、没有来源列表的
+Artifact 或 Direct Session，说明保持空字符串。报告中的预期行为属于作者声明；实际结果和
+断言 expected/actual 始终取自执行过程。
+
 ## 添加参数化 Case
 
 参数表的每一行包含稳定标签和一个值。Case 通过强类型指针读取该值：

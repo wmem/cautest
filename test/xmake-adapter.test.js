@@ -13,6 +13,14 @@ function json(root,args,code=0){return JSON.parse(run(root,['ct','--json',...arg
 async function result(root,args=[],code=0){return JSON.parse(await readFile(json(root,['--reporter=json,junit',...args],code).resultPath,'utf8'));}
 const artifact=j=>j.artifacts.find(a=>a.kind==='build-artifact');
 const when={skip:!xmake};
+test('workflow provider can run a generic Job without Cases and preserve step failures',when,()=>fixture(async root=>{
+ await writeFile(path.join(root,'generic.mjs'),`import {defineStep} from '@cautest/config';\nexport function create({options}) { return [defineStep({kind:'generic',name:'task',phase:'run',execute(){if(options.fail)throw new Error('generic task failure');}})]; }\n`);
+ await appendFile(path.join(root,'ctest.lua'),'\nctest.workflow {id="system.generic",policy={resultMode="steps"},provider={module="generic.mjs",export="create"},options={}}\nctest.workflow {id="system.generic.failed",policy={resultMode="steps"},provider={module="generic.mjs",export="create"},options={fail=true}}\n');
+ const passed=await result(root,['system.generic']);
+ assert.equal(passed.status,'SUCCESS');assert.equal(passed.jobs[0].resultMode,'steps');assert.deepEqual(passed.jobs[0].groups,[]);
+ const failed=await result(root,['system.generic.failed'],2);
+ assert.equal(failed.status,'ERROR');assert.deepEqual(failed.jobs[0].groups,[]);assert.match(JSON.stringify(failed.jobs[0].errors),/generic task failure/);
+}));
 test('nested project builds and artifact queries retain explicit project selection',when,()=>fixture(async root=>{
  const nested=path.join(root,'nested');await mkdir(nested);
  await cp(path.join(kit,'examples/xmake/native'),nested,{recursive:true});
@@ -43,6 +51,11 @@ test('real vendored entry: side-effect-free list/plan, deterministic fragments, 
 }));
 test('real Native multi-module/suite CTP, same-build source reuse and product library macro isolation',when,()=>fixture(async root=>{
  const r=await result(root);assert.equal(r.status,'SUCCESS');assert.equal(r.jobs.length,2);assert.equal(r.jobs.flatMap(j=>j.groups).length,3);assert.equal(r.jobs.flatMap(j=>j.groups.flatMap(g=>g.cases)).length,5);
+ const math=r.jobs.find(j=>j.jobId==='unit.math').groups.find(g=>g.name==='math_test');
+ assert.equal(math.description,'验证加法和缩放接口');
+ assert.equal(math.cases.find(c=>c.name==='adds').description,'验证两个正整数相加');
+ assert.equal(math.cases.find(c=>c.name==='adds').expectedBehavior,'输入 2 和 3，返回 5');
+ assert.equal(math.cases.find(c=>c.name==='scales').description,'');
  for(const job of r.jobs){const a=artifact(job);assert.match(a.buildId,/^[a-f0-9]{24}$/);assert.notEqual(a.buildId,a.fingerprint);assert.equal(a.metadata.receipt.target,job.jobId==='unit.math'?'test.math':'test.checksum');}
  run(root,['build','-y','demo'],0,{CAUTEST_NODE:'/missing/node'});const executable=path.join(root,'build/linux/x86_64/release/demo');assert.equal(spawnSync(executable,[],{encoding:'utf8'}).status,0);
  const pass=await result(root,['--suite=math_second','unit.math']);assert.equal(pass.jobs[0].groups[0].cases.length,1);

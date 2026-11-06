@@ -4,6 +4,31 @@
 
 `examples/workflow/` 提供一个完全在本机运行的组合示例：它把 Native C Test 与启动服务后的 Script System Test 合并到 `system.composed-local`。
 
+## 没有 Case 的通用任务
+
+构建检查、文件处理等任务可以使用相同的 Job 和 Workflow，只需显式声明按步骤判定结果：
+
+```js {% process=false %}
+import {execStep, testJob} from "@cautest/config.js";
+
+const task = testJob({
+  id: "system.check-node",
+  level: "system",
+  description: "确认 Node 命令能够正常执行",
+  policy: {resultMode: "steps"},
+  workflow: [execStep({name: "check-node", program: process.execPath, args: ["--version"]})],
+});
+```
+
+通用任务不需要返回 `testResults`。终端显示步骤完成数与当前步骤，结束摘要隐藏空用例统计；
+失败后的 always Collect 和资源清理继续执行。常规测试 Job 继续使用默认 `resultMode: "cases"`，
+避免空测试被误报为成功。
+
+源码仓库执行 `node scripts/demo-progress.mjs --generic` 查看约 6 秒的模拟任务演示；
+添加 `--fail` 展示步骤错误、后续步骤跳过和收集/清理，此时预期退出码为 2。
+
+## 组合测试示例
+
 ```text {% process=false %}
 examples/workflow/
 ├── cautest.config.mjs

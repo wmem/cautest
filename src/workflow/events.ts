@@ -17,8 +17,10 @@ export class EventRecorder {
   #sequence = 0;
   readonly #stream?: WriteStream;
   #streamError?: Error;
+  readonly #onEvent: ((event: WorkflowEvent) => void) | undefined;
 
-  constructor(options: { readonly file?: string } = {}) {
+  constructor(options: { readonly file?: string; readonly onEvent?: ((event: WorkflowEvent) => void) | undefined } = {}) {
+    this.#onEvent = options.onEvent;
     if (options.file !== undefined) {
       mkdirSync(path.dirname(options.file), { recursive: true });
       this.#stream = createWriteStream(options.file, { flags: "w" });
@@ -30,6 +32,7 @@ export class EventRecorder {
     const event = Object.freeze({ version: CAUTEST_EVENT_SCHEMA_VERSION, sequence: ++this.#sequence, timestamp: new Date().toISOString(), type, ...payload });
     this.#events.push(event);
     this.#stream?.write(`${JSON.stringify(event)}\n`);
+    this.#onEvent?.(event);
     return event;
   }
 
@@ -37,6 +40,7 @@ export class EventRecorder {
     const event = Object.freeze({ version: CAUTEST_EVENT_SCHEMA_VERSION, sequence: ++this.#sequence, timestamp: new Date().toISOString(), type, ...payload });
     if (this.#stream !== undefined && !this.#stream.write(`${JSON.stringify(event)}\n`)) await once(this.#stream, "drain");
     if (this.#streamError !== undefined) throw this.#streamError;
+    this.#onEvent?.(event);
     return event;
   }
 

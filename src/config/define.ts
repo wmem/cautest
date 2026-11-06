@@ -69,15 +69,17 @@ function environment(value: unknown, label: string): EnvironmentVariables {
 }
 
 function policy(value: unknown): Readonly<Required<TestJobPolicyInput>> {
-  if (value === undefined) return Object.freeze({ stopOnTestFailure: false, allowEmpty: false });
+  if (value === undefined) return Object.freeze({ resultMode: "cases", stopOnTestFailure: false, allowEmpty: false });
   object(value, "Job policy");
-  rejectUnknown(value, new Set(["stopOnTestFailure", "allowEmpty"]), "Job policy");
+  rejectUnknown(value, new Set(["resultMode", "stopOnTestFailure", "allowEmpty"]), "Job policy");
+  if (value.resultMode !== undefined && value.resultMode !== "cases" && value.resultMode !== "steps") throw new CautestError("policy.resultMode 必须是 cases 或 steps", {code: "config_error"});
   for (const key of ["stopOnTestFailure", "allowEmpty"] as const) {
     if (value[key] !== undefined && typeof value[key] !== "boolean") {
       throw new CautestError(`policy.${key} 必须是 boolean`, { code: "config_error" });
     }
   }
   return Object.freeze({
+    resultMode: value.resultMode ?? "cases",
     stopOnTestFailure: value.stopOnTestFailure ?? false,
     allowEmpty: value.allowEmpty ?? false,
   }) as Readonly<Required<TestJobPolicyInput>>;
