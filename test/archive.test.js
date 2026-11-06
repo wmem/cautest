@@ -36,6 +36,10 @@ test("便携包可解压、校验并直接运行", async (t) => {
   assert.ok(entries.includes("cautest/assets/cautest-c/LICENSE"));
   assert.ok(entries.includes("cautest/assets/cautest-c/include/cautest/cautest.h"));
   assert.ok(entries.includes("cautest/docs/usage/index.md"));
+  assert.ok(entries.includes("cautest/docs/edoc.config.js"));
+  assert.ok(entries.includes("cautest/docs/ir/reading.json"));
+  assert.ok(entries.includes("cautest/docs/usage/reference/ctp3.md"));
+  assert.ok(!entries.some((entry) => entry.startsWith("cautest/docs/development/")));
   assert.ok(entries.includes("cautest/lib/config/index.d.ts"));
   assert.ok(!entries.some((entry) => entry.endsWith(".map")));
   assert.ok(!entries.some((entry) => /\/(?:\.cautest|__pycache__)\//u.test(entry)));

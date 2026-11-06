@@ -1,8 +1,8 @@
-# 排查第一次运行失败
+{% section id="cautest:use:troubleshooting" title="排查第一次运行失败" %}
 
 先不要直接执行昂贵构建。回到配置所在目录，从环境检查和计划开始：
 
-```bash
+```bash {% process=false %}
 ./tools/cautest/cautest.js doctor --json
 ./tools/cautest/cautest.js list
 ./tools/cautest/cautest.js plan
@@ -14,20 +14,20 @@
 
 Native 或 MCU 模拟构建失败时，先确认 C Compiler 可执行、支持 C99，并能完成所需静态链接。加入 `--verbose` 可以把完整构建输出写到 stderr：
 
-```bash
+```bash {% process=false %}
 ./tools/cautest/cautest.js run --verbose
 ```
 
 Kernel 或 Driver 在第一次运行前应设置：
 
-```bash
+```bash {% process=false %}
 export KERNEL_SRC=/path/to/linux
 export BUSYBOX_SRC=/path/to/busybox
 ```
 
 同时为首次构建显式预留足够时间，最小配置如下：
 
-```js
+```js {% process=false %}
 const environment = umlKernelEnvironment({
   kernel: {
     sourceDir: process.env.KERNEL_SRC,
@@ -50,4 +50,8 @@ Driver Module 构建成功但 Guest 无法访问设备时，检查 Module 是否
 
 Script System Test 卡在启动阶段时，先检查 `processStart.ready` 对应的文件、端口或输出是否真的出现；进程退出、Ready Timeout 和 Case Timeout 是不同错误，应分别处理。
 
-运行结束后先读 `.cautest/results/<run-id>/summary.json`。测试 Assertion 失败返回 1；构建、环境、Target 或协议错误返回 2；CLI、配置或计划错误返回 3；第一次 Ctrl-C 完成收集和清理后返回 130。详细失败按 `failures.jsonl` 的 `detailRef` 进入 `result.json`，不要只依赖 Console 的摘要。
+运行结束后先读 `.cautest/results/<run-id>/summary.json`。测试 Assertion 失败返回 1；构建、环境、Target 或协议错误返回 2；CLI、配置或计划错误返回 3；第一次 Ctrl-C 完成收集和清理后返回 130。
+
+详细失败按 `failures.jsonl` 的 `detailRef` 进入 `result.json`，不要只依赖 Console 的摘要。
+
+{% /section %}

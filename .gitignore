@@ -3,3 +3,7 @@ dist/
 .cautest/
 release/
 *.tgz
+
+# edoc 生成产物
+/output/
+/.edoc-build/

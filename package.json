@@ -17,7 +17,9 @@
     "versions.json",
     "cautest.js",
     "xmake.lua",
-    "adapters"
+    "adapters",
+    "docs/_partials/installed.md",
+    "docs/ir/reading.json"
   ],
   "scripts": {
     "versions:sync": "node scripts/sync-versions.mjs --write",
@@ -37,7 +39,9 @@
     "test:xmake": "npm run build && node scripts/test-xmake.mjs",
     "test:xmake:kbuild": "npm run build && node scripts/test-xmake.mjs --kbuild",
     "test:xmake:uml": "npm run build && node test/integration/xmake-uml-smoke.mjs",
-    "test:xmake:matrix": "npm run build && node scripts/test-xmake.mjs --matrix"
+    "test:xmake:matrix": "npm run build && node scripts/test-xmake.mjs --matrix",
+    "docs:validate": "edoc validate",
+    "docs:build": "edoc"
   },
   "devDependencies": {
     "@types/node": "24.3.0",

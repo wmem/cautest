@@ -1,0 +1,28 @@
+{% section id="cautest:dev:contributing" title="开发与验证" %}
+
+在源码仓库根执行：
+
+```sh {% process=false %}
+npm ci
+npm run build
+npm test
+```
+
+源码开发使用 npm 和 package-lock.json。npm ci 的 prepare 会检查版本、编译 TypeScript 并生成 Build Info；如显式使用 --ignore-scripts，随后执行 npm run prepare。
+
+版本与公开声明先通过构建检查，再按影响范围运行 Host、C Runtime、安装/便携包以及实际 Xmake 验证。完整门禁和真实 UML、MCU 范围见[测试策略](acceptance/testing.md)。版本维护与发布步骤也在该文维护。
+
+修改文档路径时，同步检查 src/portable.ts 的安装交付、package.json 的 files 及 test/docs.test.js 的本地链接检查。使用文档与公开参考由安装包携带，开发资料和原始证据留在源码仓库。
+
+安装后的子集使用 projectId=cautest-usage，源码完整手册使用 cautest；指向完整源码手册的开发引用保持弱跳转。安装 README 模板位于 docs/_partials/installed.md，不作为正式文章发布。
+
+[架构与边界](architecture/overview.md)解释构建、协议、资源及取消清理职责；[历史兼容基线](history/xmake-compatibility.md)记录旧 JS 入口适配前的规则；当前共享选择行为见[测试模型](../usage/overview.md)。
+
+
+## 文档维护
+
+正式首页为 docs/index.mdoc；使用教程与完整参考放在 usage/，实现、设计和验收放在 development/。新增主题时更新对应层 index 的概览或 directory-order，不维护全局文章清单。稳定 section ID 用于长期引用，历史记录说明日期、版本和适用范围。
+
+从仓库根运行 edoc validate、edoc outline --depth 1 和 edoc，检查生成页面的目录、跳转及阅读顺序。生成的 output/ 与 .edoc-build/ 不作为手工维护源。
+
+{% /section %}

@@ -96,9 +96,9 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   }
   await cp(path.join(packageRoot, "dist/runtime/entry.js"), path.join(root, "cautest.js"));
   await cp(path.join(packageRoot, "dist/runtime/loader.js"), path.join(root, "loader.mjs"));
-  const installedGuide = path.join(packageRoot, "docs/usage/installed.md");
+  const installedGuide = path.join(packageRoot, "docs/_partials/installed.md");
   const installedTemplate = await readFile(installedGuide, "utf8");
-  const installedReadme = installedTemplate.replace("[使用指南](index.md)", "[使用指南](docs/usage/index.md)");
+  const installedReadme = installedTemplate.replace("[使用指南](../usage/index.md)", "[使用指南](docs/usage/index.md)");
   if (installedReadme === installedTemplate) throw new Error("安装说明缺少使用指南链接");
   await writeFile(path.join(root, "README.md"), installedReadme);
   await cp(path.join(packageRoot, "LICENSE"), path.join(root, "LICENSE"));
@@ -106,10 +106,16 @@ export async function createPortableTree(root: string, build: BuildInfo): Promis
   await cp(path.join(packageRoot, "adapters"), path.join(root, "adapters"), {recursive: true});
   await cp(path.join(packageRoot, "versions.json"), path.join(root, "versions.json"));
   await mkdir(path.join(root, "docs"));
-  await cp(path.join(packageRoot, "docs/usage"), path.join(root, "docs/usage"), {
-    recursive: true,
-    filter: (source) => source !== installedGuide,
-  });
+  await cp(path.join(packageRoot, "docs/usage"), path.join(root, "docs/usage"), { recursive: true });
+  await mkdir(path.join(root, "docs/ir"));
+  await cp(path.join(packageRoot, "docs/ir/reading.json"), path.join(root, "docs/ir/reading.json"));
+  // Installed manuals include only public usage, without source-only developer dependencies.
+  await writeFile(path.join(root, "docs/edoc.config.js"), `export default {
+  projectId: "cautest-usage",
+  title: "Cautest 使用文档",
+  documents: ["docs/usage/index.md", "docs/usage"],
+  output: {html: "output/index.html"},
+};\n`);
   await cp(path.join(packageRoot, "examples"), path.join(root, "examples"), {
     recursive: true,
     // 示例运行后的固件、测试结果及 Python 缓存不属于分发内容。

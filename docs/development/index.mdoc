@@ -1,0 +1,14 @@
+{% section id="cautest:dev:index" title="开发文档" %}
+
+{% directory-order items=["context.md", "architecture/", "contributing.mdoc", "capabilities/", "acceptance/", "history/"] /%}
+
+本区面向修改、维护和诊断 Cautest 的读者。安装和编写测试从[使用文档](../usage/index.md)进入。
+
+先阅读[项目背景与边界](context.md)，再根据修改范围进入[执行架构](architecture/overview.md)及[开发与验证](contributing.mdoc)。各目标环境的实现行为在 capabilities/ 中说明，公开合同在[查询参考](../usage/reference/index.mdoc)维护。
+
+当前已提供源码接入的 xmake ct、Addon 命令 xmake ctest 和 JS CLI，区别见[Xmake 接入](../usage/integration/xmake.md)。历史方案、实施阶段及当时的未实现状态保留在[历史记录](history/index.mdoc)，不用于判断当前能力。
+
+
+[按文件查阅源码与验证证据](sources.mdoc)。
+
+{% /section %}

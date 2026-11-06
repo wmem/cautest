@@ -1,0 +1,506 @@
+{
+  "objects": [
+    {
+      "id": "cautest:reading:model:config",
+      "kind": "node",
+      "label": "TestConfig：配置",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:model:jobs",
+      "kind": "node",
+      "label": "TestJob：执行实例",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:model:steps",
+      "kind": "node",
+      "label": "Workflow：有序步骤",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:model:result",
+      "kind": "node",
+      "label": "Result：测试结果",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:workflow:prepare",
+      "kind": "node",
+      "label": "prepare：准备",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:workflow:build",
+      "kind": "node",
+      "label": "build：构建",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:workflow:provision",
+      "kind": "node",
+      "label": "provision：目标就绪",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:workflow:run",
+      "kind": "node",
+      "label": "run：运行测试",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:workflow:collect",
+      "kind": "node",
+      "label": "collect：收集结果",
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution:task",
+      "kind": "node",
+      "label": "xmake ctest / ct",
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution:node",
+      "kind": "node",
+      "label": "Node：加载声明",
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution:workflow",
+      "kind": "node",
+      "label": "Workflow build Step",
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution:build",
+      "kind": "node",
+      "label": "xmake build / 产物查询",
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution:run",
+      "kind": "node",
+      "label": "原有 CTP / Result 执行",
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "cautest:reading:model:edge:jobs",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "展开配置 / Factory",
+      "endpoints": [
+        "cautest:reading:model:config",
+        "cautest:reading:model:jobs"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:model:config"
+        ],
+        "targets": [
+          "cautest:reading:model:jobs"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:model:edge:steps",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "prepare 到 collect",
+      "endpoints": [
+        "cautest:reading:model:jobs",
+        "cautest:reading:model:steps"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:model:jobs"
+        ],
+        "targets": [
+          "cautest:reading:model:steps"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:model:edge:result",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "步骤、用例与产物",
+      "endpoints": [
+        "cautest:reading:model:steps",
+        "cautest:reading:model:result"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:model:steps"
+        ],
+        "targets": [
+          "cautest:reading:model:result"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:workflow:edge:build",
+      "kind": "connection",
+      "class": "执行顺序",
+      "endpoints": [
+        "cautest:reading:workflow:prepare",
+        "cautest:reading:workflow:build"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:workflow:prepare"
+        ],
+        "targets": [
+          "cautest:reading:workflow:build"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      },
+      "label": "下一阶段"
+    },
+    {
+      "id": "cautest:reading:workflow:edge:provision",
+      "kind": "connection",
+      "class": "执行顺序",
+      "endpoints": [
+        "cautest:reading:workflow:build",
+        "cautest:reading:workflow:provision"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:workflow:build"
+        ],
+        "targets": [
+          "cautest:reading:workflow:provision"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      },
+      "label": "下一阶段"
+    },
+    {
+      "id": "cautest:reading:workflow:edge:run",
+      "kind": "connection",
+      "class": "执行顺序",
+      "endpoints": [
+        "cautest:reading:workflow:provision",
+        "cautest:reading:workflow:run"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:workflow:provision"
+        ],
+        "targets": [
+          "cautest:reading:workflow:run"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      },
+      "label": "下一阶段"
+    },
+    {
+      "id": "cautest:reading:workflow:edge:collect",
+      "kind": "connection",
+      "class": "执行顺序",
+      "endpoints": [
+        "cautest:reading:workflow:run",
+        "cautest:reading:workflow:collect"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:workflow:run"
+        ],
+        "targets": [
+          "cautest:reading:workflow:collect"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      },
+      "label": "下一阶段"
+    },
+    {
+      "id": "cautest:reading:xmake-execution:edge:node",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "导出 Manifest",
+      "endpoints": [
+        "cautest:reading:xmake-execution:task",
+        "cautest:reading:xmake-execution:node"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:xmake-execution:task"
+        ],
+        "targets": [
+          "cautest:reading:xmake-execution:node"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution:edge:workflow",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "选中 Job",
+      "endpoints": [
+        "cautest:reading:xmake-execution:node",
+        "cautest:reading:xmake-execution:workflow"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:xmake-execution:node"
+        ],
+        "targets": [
+          "cautest:reading:xmake-execution:workflow"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution:edge:build",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "构建 Provider",
+      "endpoints": [
+        "cautest:reading:xmake-execution:workflow",
+        "cautest:reading:xmake-execution:build"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:xmake-execution:workflow"
+        ],
+        "targets": [
+          "cautest:reading:xmake-execution:build"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution:edge:run",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "Receipt 就绪",
+      "endpoints": [
+        "cautest:reading:xmake-execution:build",
+        "cautest:reading:xmake-execution:run"
+      ],
+      "direction": {
+        "sources": [
+          "cautest:reading:xmake-execution:build"
+        ],
+        "targets": [
+          "cautest:reading:xmake-execution:run"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    }
+  ],
+  "views": [
+    {
+      "id": "cautest:reading:model",
+      "kind": "architecture",
+      "label": "从配置到结果",
+      "include": {
+        "objects": [
+          "cautest:reading:model:config",
+          "cautest:reading:model:jobs",
+          "cautest:reading:model:steps",
+          "cautest:reading:model:result"
+        ],
+        "relations": [
+          "cautest:reading:model:edge:jobs",
+          "cautest:reading:model:edge:steps",
+          "cautest:reading:model:edge:result"
+        ]
+      },
+      "layout": {
+        "direction": "TB",
+        "routing": "orthogonal",
+        "constraints": [
+          {
+            "type": "order",
+            "axis": "y",
+            "nodes": [
+              "cautest:reading:model:config",
+              "cautest:reading:model:jobs",
+              "cautest:reading:model:steps",
+              "cautest:reading:model:result"
+            ],
+            "gap": 36
+          },
+          {
+            "type": "align",
+            "axis": "x",
+            "nodes": [
+              "cautest:reading:model:config",
+              "cautest:reading:model:jobs",
+              "cautest:reading:model:steps",
+              "cautest:reading:model:result"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      }
+    },
+    {
+      "id": "cautest:reading:workflow",
+      "kind": "architecture",
+      "label": "一次正常 Job 的执行顺序",
+      "include": {
+        "objects": [
+          "cautest:reading:workflow:prepare",
+          "cautest:reading:workflow:build",
+          "cautest:reading:workflow:provision",
+          "cautest:reading:workflow:run",
+          "cautest:reading:workflow:collect"
+        ],
+        "relations": [
+          "cautest:reading:workflow:edge:build",
+          "cautest:reading:workflow:edge:provision",
+          "cautest:reading:workflow:edge:run",
+          "cautest:reading:workflow:edge:collect"
+        ]
+      },
+      "layout": {
+        "direction": "TB",
+        "routing": "orthogonal",
+        "constraints": [
+          {
+            "type": "order",
+            "axis": "y",
+            "nodes": [
+              "cautest:reading:workflow:prepare",
+              "cautest:reading:workflow:build",
+              "cautest:reading:workflow:provision",
+              "cautest:reading:workflow:run",
+              "cautest:reading:workflow:collect"
+            ],
+            "gap": 36
+          },
+          {
+            "type": "align",
+            "axis": "x",
+            "nodes": [
+              "cautest:reading:workflow:prepare",
+              "cautest:reading:workflow:build",
+              "cautest:reading:workflow:provision",
+              "cautest:reading:workflow:run",
+              "cautest:reading:workflow:collect"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.md"
+      },
+      "display": {
+        "showRelationLabels": false
+      }
+    },
+    {
+      "id": "cautest:reading:xmake-execution",
+      "kind": "architecture",
+      "label": "Xmake 命令如何复用现有执行链",
+      "include": {
+        "objects": [
+          "cautest:reading:xmake-execution:task",
+          "cautest:reading:xmake-execution:node",
+          "cautest:reading:xmake-execution:workflow",
+          "cautest:reading:xmake-execution:build",
+          "cautest:reading:xmake-execution:run"
+        ],
+        "relations": [
+          "cautest:reading:xmake-execution:edge:node",
+          "cautest:reading:xmake-execution:edge:workflow",
+          "cautest:reading:xmake-execution:edge:build",
+          "cautest:reading:xmake-execution:edge:run"
+        ]
+      },
+      "layout": {
+        "direction": "TB",
+        "routing": "orthogonal",
+        "constraints": [
+          {
+            "type": "order",
+            "axis": "y",
+            "nodes": [
+              "cautest:reading:xmake-execution:task",
+              "cautest:reading:xmake-execution:node",
+              "cautest:reading:xmake-execution:workflow",
+              "cautest:reading:xmake-execution:build",
+              "cautest:reading:xmake-execution:run"
+            ],
+            "gap": 36
+          },
+          {
+            "type": "align",
+            "axis": "x",
+            "nodes": [
+              "cautest:reading:xmake-execution:task",
+              "cautest:reading:xmake-execution:node",
+              "cautest:reading:xmake-execution:workflow",
+              "cautest:reading:xmake-execution:build",
+              "cautest:reading:xmake-execution:run"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "file": "docs/usage/integration/xmake.md"
+      }
+    }
+  ]
+}

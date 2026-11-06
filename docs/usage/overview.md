@@ -1,0 +1,145 @@
+{% section id="cautest:use:overview" title="测试组织模型" %}
+
+Cautest 使用同一套结构描述 Native、Kernel、Driver、MCU 和系统测试。理解这几层边界后，可以只进入当前需要的场景教程，不必阅读执行器源码。
+
+{% relation-diagram id="cautest:reading:model" /%}
+
+先看配置里有哪些 Job，再用 plan 看每个 Job 的步骤；run 执行后才产生 Result。Suite/Case 属于测试结果边界，具体关系在本页后面说明。
+
+```text {% process=false %}
+TestConfig
+├── defaults / profiles
+└── TestJob[]
+    └── Workflow Step[]
+        └── Test Result
+            └── Suite/Group → Case → Assertion/Diagnostic
+```
+
+## TestConfig 是项目入口
+
+项目根目录的 `cautest.config.mjs` Default Export 必须由 `testConfig()` 创建：
+
+```js {% process=false %}
+export default testConfig({
+  defaults: { resultDir: ".cautest/results" },
+  profiles: [{ id: "ci", reporters: ["json", "junit"] }],
+  jobs,
+});
+```
+
+`defaults` 只保存项目级受管目录和通用 Job/Step 超时。`profiles` 在运行时追加环境变量和 Reporter，不创建 Job，也不改变 Workflow 结构。
+
+## Job 是隔离和选择边界
+
+每个 Job 都有稳定 `id`、`level`、`tags`、`enabled`、超时、环境变量、失败策略和线性 Workflow。CLI 按 ID/Glob、Level 或 Tag 选择 Job；缓存、结果和 Job 超时也以 Job 为边界。
+
+Level 固定为：
+
+| Level | 含义 |
+| --- | --- |
+| `unit` | 单个模块或内部逻辑，外部依赖最少 |
+| `component` | 多份产品源码组成的组件或子系统 |
+| `integration` | Driver ABI、外部接口或多个组件协作 |
+| `system` | 从进程或系统外部验证完整行为 |
+
+### Job 选择的精确语义
+
+同一维度内，多个 Job ID Pattern 为 OR，多个 Level 为 OR，多个 Tag 为 AND；三个维度之间为 AND。Level 是类别，选择 `integration` 不会包含 `unit`。重复 Pattern 不重复执行 Job，结果保持配置顺序。
+
+| 条件 | 语义 |
+| --- | --- |
+| ID `unit.*`、`component.*` | 匹配任意一个 ID Pattern |
+| Level `unit`、`component` | Level 为其中一个 |
+| Tag `native`、`fast` | 同时包含两个 Tag |
+| 无筛选条件的 run | 所有 enabled Job，可能包括真实硬件测试 |
+| 显式指定 disabled Job 的 ID | run 仍不执行；无匹配时 CLI 退出 4 |
+| list / plan / doctor | 可选择 disabled Job；不会执行其 Workflow Step |
+
+旧 JS CLI 使用重复参数，例如 `--level unit --level component --tag native --tag fast`。共享 `selectJobs(jobs, options)` 接收数组，不拆分逗号；Xmake CLI 负责自己的逗号语法，不修改旧 CLI。
+
+`selectJobs()` 返回原 Job 对象组成的只读数组，不加载配置、构建或运行 Step。检查用途需要显式传 `includeDisabled: true`，默认按执行语义排除 disabled Job。
+
+一个 Job 可以包含多个测试源码、产品源码和 Suite。何时合并或拆分见[组织典型项目](writing/project-organization.md)。
+
+## 项目集合与执行环境
+
+`TestJobCommonInput.collections` 声明项目执行集合，`testEnvironment` 声明本执行实例的逻辑条件；两者不改变 C Test 的 `--suite`。同一语义测试在不同环境中需要分别登记执行实例，稳定 ID 区分实例，共用断言即可。
+
+项目可通过 `selection` 定义集合继承及默认环境，例如：
+
+```js {% process=false %}
+selection: {
+  defaultEnvironments: ["host"],
+  collections: {quick: [], smoke: [], regression: ["quick", "smoke"], release: ["regression"], all: ["*"]},
+}
+```
+
+集合先确定执行范围，再与已有筛选条件组合：
+
+| 条件 | 组合规则 |
+| --- | --- |
+| 同一 collection 的子集合 | 父集合递归包含子集合 |
+| 多个 --collection | OR |
+| 多个 --environment | OR |
+| collection / environment 与 ID、level、tag | 各维度之间 AND；Tag 的既有 AND 不变 |
+| ["*"] | 包含当前范围全部测试，执行时仍排除 disabled |
+
+集合声明直接归属；循环、未知集合和错误登记会报配置错误。默认环境的应用条件是：
+
+- 无显式 ID/环境时应用 defaultEnvironments；单独指定 level 或 collection 不解除默认环境。
+- 显式 ID/Glob 或环境后才扩大范围。
+- 未设置 selection 的工程保持原来的默认行为。
+
+list/plan 应用同一选择，不执行 Workflow，也不获取资源锁。
+
+Xmake 使用逗号列表，例如 `xmake ctest --collection=quick,smoke --environment=host,board-debug`。JS CLI 可重复这两个选项，也支持逗号列表；共享 `selectJobs()` API 接收数组和可选 policy，不替调用者拆分字符串。环境和直接集合会保留在计划及实际 Job 报告中。
+
+Xmake Job 可声明 `locks = {"workspace:project"}`，在构建前的 prepare 阶段获取，重复资源去重，直到 Job 清理结束才释放。不同逻辑环境应对同一设备使用相同物理 resourceId；多个锁按一致顺序声明，防止循环等待。
+
+自定义工作流也可使用 `physicalResourceStep({phase: "prepare", ...})`，默认仍为 provision。
+
+## Workflow 是严格有序的执行计划
+
+所有标准 Job 最终都会展开为普通 Step，Phase 顺序固定为：
+
+{% relation-diagram id="cautest:reading:workflow" /%}
+
+图示为正常主线；失败后的收集和清理遵守下面的规则。
+
+`plan` 用于在执行前查看实际 Step。普通 Step 失败后不再启动后续普通 Step；`runWhen: "always"` 或 `"on-failure"` 的 Collect Step仍可运行，已登记的 Cleanup 按 LIFO 顺序执行。
+
+只有多个能力确实需要共享一次生命周期、状态和失败传播时，才使用 `composeJobWorkflows()` 或 `standardJobFragment()`。多个独立 Job 不需要组合 Workflow。
+
+## Suite 和 Case 是测试结果边界
+
+C Test 源文件用 `CAUTEST_CASE`/`CAUTEST_PARAM_CASE` 声明 Case，用 `CAUTEST_SUITE` 组合 Case。Native、Kernel Test Module 和 Driver Guest Job 根据配置的 `suites` 生成 Registry；MCU/Freestanding 通常由 Firmware 显式声明 Registry。
+
+`suites` 是构建期 Registry 中的合法 C 符号，不能写通配符；`run.suite` 才是运行时选择。
+
+CLI 可以按 Suite、Case 和 Parameter 按字段覆盖标准 C Test Run 的选择；未覆盖字段仍来自配置，不把配置中的 Suite 选择当作不可突破的隔离边界，也不修改 Registry。
+
+Script System Test 使用 `defineScriptTest()` 声明 JavaScript Case，并产生相同的结构化 PASS、FAIL、SKIP、ERROR 结果。
+
+## 每种测试使用什么构造函数
+
+| 场景 | Job 和辅助入口 | 说明 |
+| --- | --- | --- |
+| Native C | `nativeCTestJob()`、`nativeCTestJobFactory()` | 本机编译和运行一个或多个 C 测试源码 |
+| Kernel UML | `umlKernelEnvironment()`、`kernelCTestJob()`、`kernelCTestJobFactory()` | 复用 Kernel/BusyBox 环境，生成 Kernel Test Module |
+| Driver Unit | Kernel UML 上述入口 | 产品源码与测试一起编入 Test Module，不加载真实 Driver ABI |
+| Driver ABI | `driverAbiCTestJob()`、`driverAbiCTestJobFactory()` | 构建真实 Driver、可选 Probe 和 Guest C Test |
+| MCU | `mcuCTestJob()` | 使用已有、命令构建或 Host 模拟 Firmware，通过 Board Adapter 运行 |
+| System Script | `scriptSystemTestJob()`、`defineScriptTest()` | 用 JavaScript Case 验证服务、CLI 或外部系统行为 |
+| 自定义 Workflow | `testJob()`、`defineStep()`、`defineFragment()` | 标准 Job 无法表达时才进入低级 Workflow |
+
+所有场景都可以配合 `withJobDefaults()` 和 `jobNamespace()` 批量生成普通 Job。System Workflow 还提供 `processStart()`、`processAttach()`、`execStep()`、`externalTest()`、`collectLogs()` 等标准 Step。
+
+## 配置、运行与结果的关系
+
+根配置加载后先规范化公共默认项，再由 Job Factory 生成普通 Job。`list` 查看最终 Job 元数据，`plan` 查看 Workflow，`doctor` 对所选 Job 的实际输入和宿主工具做静态诊断，`run` 才启动执行器。
+
+每次运行形成独立 Result，包含 Job、Step、Suite/Case、事件、诊断和 Artifact。标准文件和 Reporter 见[结果目录与 Reporter](reference/results.md)。命令选择和退出状态见 [cautest.js 命令参考](reference/cli.md)。
+
+精确函数签名、Interface 名称和声明文件位置见[配置 API 索引](reference/config.md)。
+
+{% /section %}

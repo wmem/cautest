@@ -37,10 +37,20 @@ test("安装器生成仅含运行 JS 和公开声明的自包含便携目录", a
   assert.equal((await readFile(path.join(destination, "lib/pattern/glob.js"), "utf8")).includes("globMatcher"), true);
   assert.match(await readFile(path.join(destination, "README.md"), "utf8"), /\[使用指南\]\(docs\/usage\/index\.md\)/u);
   assert.match(await readFile(path.join(destination, "docs/usage/index.md"), "utf8"), /doctor.*list.*plan.*run/su);
-  assert.match(await readFile(path.join(destination, "docs/usage/linux-driver-unit.md"), "utf8"), /kernelCTestJobFactory/u);
-  for (const document of ["project-organization.md", "model.md", "config-reference.md", "cli.md", "results.md"]) {
+  assert.match(await readFile(path.join(destination, "docs/usage/scenarios/linux-driver-unit.md"), "utf8"), /kernelCTestJobFactory/u);
+  for (const document of ["writing/project-organization.md", "overview.md", "reference/config.md", "reference/cli.md", "reference/results.md"]) {
     assert.equal((await lstat(path.join(destination, "docs/usage", document))).isFile(), true, document);
   }
+  for (const document of ["reference/index.mdoc", "reference/c-test-api.md", "reference/ctp3.md", "reference/sources.mdoc"]) {
+    assert.equal((await lstat(path.join(destination, "docs/usage", document))).isFile(), true, document);
+  }
+  const documentationConfig = (await import(path.join(destination, "docs/edoc.config.js"))).default;
+  assert.equal(documentationConfig.projectId, "cautest-usage");
+  const readingData = JSON.parse(await readFile(path.join(destination, "docs/ir/reading.json"), "utf8"));
+  assert.ok(readingData.views.some((view) => view.id === "cautest:reading:workflow"));
+  assert.deepEqual(documentationConfig.documents, ["docs/usage/index.md", "docs/usage"]);
+  await assert.rejects(lstat(path.join(destination, "docs/development")));
+  await assert.rejects(lstat(path.join(destination, "docs/_partials")));
   await assert.rejects(lstat(path.join(destination, "docs/usage/installed.md")));
   await assert.rejects(lstat(path.join(destination, "docs/index.md")));
   await assert.rejects(lstat(path.join(destination, "docs/specifications")));

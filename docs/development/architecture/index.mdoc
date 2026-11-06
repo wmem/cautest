@@ -1,0 +1,15 @@
+{% section id="cautest:dev:architecture:index" title="架构与边界" %}
+
+{% directory-order items=["overview.md", "artifact-contract.md", "c-kit.md"] /%}
+
+先理解统一执行链路，再查询产物与 C Runtime 的职责边界。
+
+| 阅读任务 | 入口 |
+| --- | --- |
+| 理解构建、Target、Host 与结果如何协作 | [执行架构](overview.md) |
+| 修改 Artifact Provider 或检查 Receipt | [Artifact Receipt v2 与构建产物合同](artifact-contract.md) |
+| 构建或交付独立 C Runtime | [C Kit 构建与消费](c-kit.md) |
+
+初期 Xmake PoC 和适配前兼容基线保存在[历史记录](../history/index.mdoc)，不能据当时的未实现状态判断当前功能。
+
+{% /section %}
